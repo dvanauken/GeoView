@@ -2,11 +2,11 @@ import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } fr
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
 import { GeoModel } from '../../../models/geo-model';
-import { FeatureModel } from '../../../models/feature.model';
 import { CriteriaModel } from '../../../models/criteria.model';
 import { ModelListener } from '../../../interfaces/model-listener';
 import { SelectionListener } from '../../../interfaces/selection-listener';
 import { FilterListener } from '../../../interfaces/filter-listener';
+import { Feature } from 'geojson';
 
 @Component({
   selector: 'app-map',
@@ -28,8 +28,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
 
   constructor() { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -43,17 +42,15 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
     this.updateMapData(model);
   }
 
-  onSelect(feature: FeatureModel): void {
+  onSelect(feature: Feature): void {
     // Implement logic to notify other components about the selection
     console.log('Feature selected:', feature);
-    // For example, you might emit an event here
     this.highlightFeature(feature);
   }
 
-  onDeselect(feature: FeatureModel): void {
+  onDeselect(feature: Feature): void {
     // Implement logic to notify other components about the deselection
     console.log('Feature deselected:', feature);
-    // For example, you might emit an event here
   }
 
   onClearSelection(): void {}
@@ -104,59 +101,58 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
     this.g.selectAll('path').remove();
 
     this.g.selectAll('path')
-      .data(model.data.features as FeatureModel[])
+      .data(model.data.features)
       .enter()
       .append('path')
-      //.attr('d', this.path)
       .attr('d', (d) => this.path(d as any) || '')
       .attr('fill', '#ccc')
       .attr('stroke', '#333')
-      .on('click', (event: PointerEvent, d: FeatureModel) => this.onFeatureClick(event, d));
+      .on('click', (event: PointerEvent, d: Feature) => this.onFeatureClick(event, d));
   }
 
-private onFeatureClick(event: PointerEvent, feature: FeatureModel): void {
-  console.log('Feature clicked:', feature);
+  private onFeatureClick(event: PointerEvent, feature: Feature): void {
+    console.log('Feature clicked:', feature);
 
-  // Prevent the event from bubbling up to parent elements
-  event.stopPropagation();
+    // Prevent the event from bubbling up to parent elements
+    event.stopPropagation();
 
-  // Toggle the selection state of the clicked feature
-  const isSelected = feature.properties.selected;
-  feature.properties.selected = !isSelected;
+    // Toggle the selection state of the clicked feature
+    const isSelected = feature.properties?.selected;
+    feature.properties = { ...feature.properties, selected: !isSelected };
 
-  // Update the visual representation of the clicked feature
-  this.g.selectAll('path')
-    .filter((d: any) => d.id === feature.id)
-    .attr('fill', this.getFeatureColor(feature))
-    .attr('stroke-width', this.getFeatureStrokeWidth(feature));
-
-  // If this feature was just selected, deselect all other features
-  if (!isSelected) {
+    // Update the visual representation of the clicked feature
     this.g.selectAll('path')
-      .filter((d: any) => d.id !== feature.id)
-      .each((d: any) => {
-        d.properties.selected = false;
-      })
-      .attr('fill', (d: any) => this.getFeatureColor(d))
-      .attr('stroke-width', (d: any) => this.getFeatureStrokeWidth(d));
+      .filter((d: any) => d.id === feature.id)
+      .attr('fill', this.getFeatureColor(feature))
+      .attr('stroke-width', this.getFeatureStrokeWidth(feature));
+
+    // If this feature was just selected, deselect all other features
+    if (!isSelected) {
+      this.g.selectAll('path')
+        .filter((d: any) => d.id !== feature.id)
+        .each((d: any) => {
+          d.properties.selected = false;
+        })
+        .attr('fill', (d: any) => this.getFeatureColor(d))
+        .attr('stroke-width', (d: any) => this.getFeatureStrokeWidth(d));
+    }
+
+    // Notify other components about the selection change
+    if (feature.properties?.selected) {
+      this.onSelect(feature);
+    } else {
+      this.onDeselect(feature);
+    }
+
+    // Optionally center the map on the selected feature
+    if (feature.properties?.selected) {
+      this.centerMapOnFeature(feature);
+    }
   }
 
-  // Emit an event or call a method to notify other components about the selection change
-  if (feature.properties.selected) {
-    this.onSelect(feature);
-  } else {
-    this.onDeselect(feature);
-  }
-
-  // If you want to center the map on the selected feature, you can add this:
-  if (feature.properties.selected) {
-    this.centerMapOnFeature(feature);
-  }
-}
-
-  private highlightFeature(feature: FeatureModel): void {
+  private highlightFeature(feature: Feature): void {
     this.g.selectAll('path')
-      .attr('fill', (d: FeatureModel) => d === feature ? '#ff7f00' : '#ccc');
+      .attr('fill', (d: Feature) => d === feature ? '#ff7f00' : '#ccc');
   }
 
   private applyFilter(criteria: CriteriaModel): void {
@@ -166,29 +162,23 @@ private onFeatureClick(event: PointerEvent, feature: FeatureModel): void {
 
   onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void {
     if (this.currentModel) {
-      // Find the feature in the current model
       const updatedFeature = this.currentModel.features.find(f => f.id === featureId);
 
       if (updatedFeature) {
-        // Update the feature's properties
         Object.assign(updatedFeature.properties, properties);
 
-        // Update the map visualization
+        // Update map visualization
         this.g.selectAll('path')
           .filter((d: any) => d.id === featureId)
           .attr('fill', this.getFeatureColor(updatedFeature))
           .attr('stroke-width', this.getFeatureStrokeWidth(updatedFeature));
 
-        // If the update includes changes that affect the feature's shape or position,
-        // we need to redraw the path
         if (properties.geometry) {
           this.g.selectAll('path')
             .filter((d: any) => d.id === featureId)
             .attr('d', (d) => this.path(d as any) || '');
         }
 
-        // If there are any specific property updates that require special handling,
-        // add them here. For example:
         if ('visible' in properties) {
           this.g.selectAll('path')
             .filter((d: any) => d.id === featureId)
@@ -205,18 +195,16 @@ private onFeatureClick(event: PointerEvent, feature: FeatureModel): void {
   }
 
   // Helper methods for feature styling
-  private getFeatureColor(feature: FeatureModel): string {
-    // Implement your color logic here. For example:
-    return feature.properties.color || '#ccc';
+  private getFeatureColor(feature: Feature): string {
+    return feature.properties?.color || '#ccc';
   }
 
-  private getFeatureStrokeWidth(feature: FeatureModel): number {
-    // Implement your stroke width logic here. For example:
-    return feature.properties.selected ? 2 : 1;
+  private getFeatureStrokeWidth(feature: Feature): number {
+    return feature.properties?.selected ? 2 : 1;
   }
 
   // Helper method to center the map on a feature
-  private centerMapOnFeature(feature: FeatureModel): void {
+  private centerMapOnFeature(feature: Feature): void {
     const bounds = this.path.bounds(feature as any);
     const dx = bounds[1][0] - bounds[0][0];
     const dy = bounds[1][1] - bounds[0][1];

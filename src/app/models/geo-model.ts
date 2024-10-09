@@ -1,5 +1,4 @@
 import { Feature, FeatureCollection, Geometry } from 'geojson';
-import { FeatureModel } from './feature.model';
 
 export class GeoModel {
   private featureCollection: FeatureCollection;
@@ -12,8 +11,8 @@ export class GeoModel {
     return this.featureCollection;
   }
 
-  get features(): FeatureModel[] {
-    return this.featureCollection.features.map(f => new FeatureModel(f));
+  get features(): Feature[] {
+    return this.featureCollection.features;
   }
 
   getFeatureById(id: string | number): Feature | undefined {

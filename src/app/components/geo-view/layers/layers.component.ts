@@ -2,8 +2,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { DataService } from '../../../services/data.service';
-import { GeoJSONModel } from '../../../models/geo-json.model';
-import { Feature } from 'geojson';
+import { Feature, FeatureCollection, GeoJsonObject } from 'geojson';
 
 interface Layer {
   id: string;
@@ -21,13 +20,13 @@ interface Layer {
 export class LayersComponent implements OnInit, OnDestroy {
   layers: Layer[] = [];
   private subscription: Subscription = new Subscription();
-  private geoData: GeoJSONModel | null = null;
+  private geoData: FeatureCollection | null = null;
 
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
     this.subscription.add(
-      this.dataService.geoData$.subscribe(geoData => {
+      this.dataService.geoData$.subscribe((geoData: FeatureCollection | null) => {
         if (geoData) {
           this.geoData = geoData;
           this.updateLayersFromGeoData(geoData);
@@ -46,9 +45,11 @@ export class LayersComponent implements OnInit, OnDestroy {
   }
 
   updateLayerOpacity(layer: Layer, event: Event): void {
-    const opacity = (event.target as HTMLInputElement).valueAsNumber;
-    layer.opacity = opacity;
-    this.updateLayer(layer);
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement) {
+      layer.opacity = inputElement.valueAsNumber;
+      this.updateLayer(layer);
+    }
   }
 
   moveLayerUp(index: number): void {
@@ -68,7 +69,7 @@ export class LayersComponent implements OnInit, OnDestroy {
   private updateLayer(layer: Layer): void {
     if (this.geoData) {
       const updatedFeatures = this.geoData.features.map(feature => {
-        if (feature.id === layer.id) {
+        if (feature.id?.toString() === layer.id) {
           return {
             ...feature,
             properties: {
@@ -81,10 +82,10 @@ export class LayersComponent implements OnInit, OnDestroy {
         return feature;
       });
 
-      const updatedGeoData = new GeoJSONModel({
+      const updatedGeoData: FeatureCollection = {
         type: 'FeatureCollection',
         features: updatedFeatures
-      });
+      };
 
       this.dataService.updateGeoData(updatedGeoData);
     }
@@ -93,19 +94,19 @@ export class LayersComponent implements OnInit, OnDestroy {
   private updateLayerOrder(): void {
     if (this.geoData) {
       const orderedFeatures = this.layers.map(layer =>
-        this.geoData!.features.find(f => f.id === layer.id)!
-      );
+        this.geoData!.features.find(f => f.id?.toString() === layer.id)
+      ).filter((feature): feature is Feature => !!feature); // Ensures filtering out undefined
 
-      const updatedGeoData = new GeoJSONModel({
+      const updatedGeoData: FeatureCollection = {
         type: 'FeatureCollection',
         features: orderedFeatures
-      });
+      };
 
       this.dataService.updateGeoData(updatedGeoData);
     }
   }
 
-  private updateLayersFromGeoData(geoData: GeoJSONModel): void {
+  private updateLayersFromGeoData(geoData: FeatureCollection): void {
     this.layers = geoData.features.map(feature => ({
       id: feature.id?.toString() || '',
       name: feature.properties?.name || 'Unnamed Layer',

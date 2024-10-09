@@ -1,9 +1,9 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { GeoModel } from '../../../models/geo-model';
-import { FeatureModel } from '../../../models/feature.model';
 import { CriteriaModel } from '../../../models/criteria.model';
 import { ModelListener } from '../../../interfaces/model-listener';
 import { SelectionListener } from '../../../interfaces/selection-listener';
+import { Feature } from 'geojson';
 
 @Component({
   selector: 'app-table',
@@ -12,12 +12,12 @@ import { SelectionListener } from '../../../interfaces/selection-listener';
 })
 export class TableComponent implements OnInit, ModelListener, SelectionListener {
   @Input() model: GeoModel | null = null;
-  @Output() featureSelect = new EventEmitter<FeatureModel>();
+  @Output() featureSelect = new EventEmitter<Feature>();
   @Output() filterChange = new EventEmitter<CriteriaModel>();
 
   displayedColumns: string[] = [];
   dataSource: any[] = [];
-  selectedFeature: FeatureModel | null = null;
+  selectedFeature: Feature | null = null;
 
   constructor() { }
 
@@ -28,16 +28,16 @@ export class TableComponent implements OnInit, ModelListener, SelectionListener 
   }
 
   onModelChange(model: GeoModel): void {
-    //this.model = model;
-    //this.updateTable();
+    this.model = model;
+    this.updateTable();
   }
 
-  onSelect(feature: FeatureModel): void {
+  onSelect(feature: Feature): void {
     this.selectedFeature = feature;
     this.highlightRow(feature);
   }
 
-  onDeselect(feature: FeatureModel): void {
+  onDeselect(feature: Feature): void {
     if (this.selectedFeature === feature) {
       this.selectedFeature = null;
     }
@@ -49,30 +49,30 @@ export class TableComponent implements OnInit, ModelListener, SelectionListener 
   }
 
   updateTable(): void {
-//     if (this.model && this.model.data.features.length > 0) {
-//       const firstFeature = this.model.data.features[0];
-//       this.displayedColumns = Object.keys(firstFeature.properties || {});
-//       this.dataSource = this.model.data.features.map(feature => feature.properties || {});
-//     } else {
-//       this.displayedColumns = [];
-//       this.dataSource = [];
-//     }
+    if (this.model && this.model.data.features.length > 0) {
+      const firstFeature = this.model.data.features[0];
+      this.displayedColumns = Object.keys(firstFeature.properties || {});
+      this.dataSource = this.model.data.features.map(feature => feature.properties || {});
+    } else {
+      this.displayedColumns = [];
+      this.dataSource = [];
+    }
   }
 
-onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void {
-//   if (this.model) {
-//     const feature = this.model.features.find(f => f.id === featureId);
-//     if (feature) {
-//       Object.assign(feature.properties, properties);
-//       this.updateTable();
-//     }
-//   }
-}
+  onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void {
+    if (this.model) {
+      const feature = this.model.features.find(f => f.id === featureId);
+      if (feature) {
+        Object.assign(feature.properties, properties);
+        this.updateTable();
+      }
+    }
+  }
 
   onRowClick(row: any): void {
     const feature = this.model?.data.features.find(f => f.properties === row);
     if (feature) {
-      this.featureSelect.emit(feature as FeatureModel);
+      this.featureSelect.emit(feature);
     }
   }
 
@@ -93,7 +93,7 @@ onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void {
     this.filterChange.emit(criteria);
   }
 
-  private highlightRow(feature: FeatureModel): void {
+  private highlightRow(feature: Feature): void {
     // Implement row highlighting logic
     // For example, you could add a CSS class to the selected row
     // This would require updating the template to use [class.selected]="row === selectedFeature?.properties"

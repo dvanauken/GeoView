@@ -1,17 +1,17 @@
-import { FeatureModel } from '../models/feature.model';
+import { Feature } from 'geojson';
 
 export interface SelectionListener {
   /**
    * Called when a feature is selected.
    * @param feature The selected feature
    */
-  onSelect(feature: FeatureModel): void;
+  onSelect(feature: Feature): void;
 
   /**
    * Called when a feature is deselected.
    * @param feature The deselected feature
    */
-  onDeselect(feature: FeatureModel): void;
+  onDeselect(feature: Feature): void;
 
   /**
    * Called when the selection is cleared.
