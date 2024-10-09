@@ -1,0 +1,30 @@
+.geo-view-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+
+  app-layers {
+    width: 200px;
+    overflow-y: auto;
+  }
+
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    app-map {
+      flex: 1;
+    }
+
+    app-slider {
+      height: 10px;
+      cursor: row-resize;
+    }
+
+    app-table {
+      height: 300px;
+      overflow-y: auto;
+    }
+  }
+}

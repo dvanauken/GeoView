@@ -1,0 +1,20 @@
+<div class="layers-container">
+  <h2>Layers</h2>
+  <ul class="layer-list">
+    <li *ngFor="let layer of layers; let i = index" class="layer-item">
+      <div class="layer-header">
+        <input type="checkbox" [checked]="layer.visible" (change)="toggleLayerVisibility(layer)">
+        <span class="layer-name">{{ layer.name }}</span>
+        <span class="layer-type">{{ layer.type }}</span>
+      </div>
+      <div class="layer-controls">
+        <label>
+          Opacity:
+          <input type="range" min="0" max="1" step="0.1" [value]="layer.opacity" (input)="updateLayerOpacity(layer, $event)">
+        </label>
+        <button (click)="moveLayerUp(i)" [disabled]="i === 0">↑</button>
+        <button (click)="moveLayerDown(i)" [disabled]="i === layers.length - 1">↓</button>
+      </div>
+    </li>
+  </ul>
+</div>
