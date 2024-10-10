@@ -106,13 +106,32 @@ export class LayersComponent implements OnInit, OnDestroy {
     }
   }
 
-  private updateLayersFromGeoData(geoData: FeatureCollection): void {
-    this.layers = geoData.features.map(feature => ({
-      id: feature.id?.toString() || '',
-      name: feature.properties?.name || 'Unnamed Layer',
-      type: 'geojson',
-      visible: feature.properties?.visible !== false,
-      opacity: feature.properties?.opacity || 1
-    }));
-  }
+//   private updateLayersFromGeoData(geoData: FeatureCollection): void {
+//     this.layers = geoData.features.map(feature => ({
+//       id: feature.id?.toString() || '',
+//       name: feature.properties?.name || 'Unnamed Layer',
+//       type: 'geojson',
+//       visible: feature.properties?.visible !== false,
+//       opacity: feature.properties?.opacity || 1
+//     }));
+//   }
+
+private updateLayersFromGeoData(geoData: FeatureCollection): void {
+  // Clear previous layers
+  this.layers = [];
+
+  // Add a single layer for the entire GeoJSON collection
+  const layer: Layer = {
+    id: 'main-layer',  // You can assign a unique id for the layer
+    name: geoData.features[0]?.properties?.name || 'Unnamed Layer',
+    type: 'geojson',
+    visible: true,
+    opacity: 1
+  };
+
+  // Push the single layer to the layers array
+  this.layers.push(layer);
+}
+
+
 }

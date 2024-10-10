@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ElementRef } from '@angular/core';
 import { GeoModel } from '../../../models/geo-model';
 import { CriteriaModel } from '../../../models/criteria.model';
 import { ModelListener } from '../../../interfaces/model-listener';
@@ -19,7 +19,8 @@ export class TableComponent implements OnInit, ModelListener, SelectionListener 
   dataSource: any[] = [];
   selectedFeature: Feature | null = null;
 
-  constructor() { }
+  constructor(public elementRef: ElementRef) {} // Inject ElementRef
+
 
   ngOnInit(): void {
     if (this.model) {

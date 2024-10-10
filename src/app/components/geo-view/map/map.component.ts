@@ -26,17 +26,24 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
   private height = 600;
   private currentModel: GeoModel | null = null;
 
-  constructor() { }
+  constructor(public elementRef: ElementRef) {} // Inject ElementRef
 
   ngOnInit(): void {}
 
-  ngAfterViewInit(): void {
-    this.initMap();
-  }
+ngAfterViewInit(): void {
+  this.initMap();
 
-  ngOnDestroy(): void {
-    // Clean up any subscriptions or event listeners if necessary
-  }
+  window.addEventListener('resize', () => {
+    const width = this.elementRef.nativeElement.offsetWidth;
+    const height = this.elementRef.nativeElement.offsetHeight;
+    this.resize(width, height); // Pass width and height
+  });
+
+  // Call resize initially to ensure the map starts with the correct size:
+  const initialWidth = this.elementRef.nativeElement.offsetWidth;
+  const initialHeight = this.elementRef.nativeElement.offsetHeight;
+  this.resize(initialWidth, initialHeight);
+}
 
   onModelChange(model: GeoModel): void {
     this.updateMapData(model);
@@ -60,6 +67,10 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
   }
 
   onClearFilter(): void {}
+
+  onResize() {
+    //this.resize();
+  }
 
   resize(width: number, height: number): void {
     this.width = width;
@@ -217,4 +228,9 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
       .duration(750)
       .call(this.zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
   }
+
+ngOnDestroy(): void {
+  // Cleanup logic can go here if necessary
+}
+
 }

@@ -27,3 +27,18 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+_____________.geo-view-container_________________
+|                                                 |
+| _________   _______.main-content______________  |
+||         | | _____________  _  _____________  | |
+||         | ||             ||s||             | | |
+||         | ||             ||l||             | | |
+||         | ||             ||i||             | | |
+|| app-    | ||   app-map   ||d||  app-       | | |
+||  layers | ||             ||e||  table      | | |
+||         | ||             ||r||             | | |
+||         | ||_____________||_||_____________| | |
+||_________| |__________________________________| |
+|_________________________________________________|
+|<-100px->| |<-- remaining horizontal space -->|

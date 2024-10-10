@@ -1,5 +1,5 @@
 // src/app/components/geo-view/geo-view.component.ts
-import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, Input, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { MapComponent } from './map/map.component';
 import { TableComponent } from './table/table.component';
 import { SliderComponent } from './slider/slider.component';
@@ -20,18 +20,75 @@ import { Feature, FeatureCollection } from 'geojson'; // Import correct types
 export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges, ModelListener, SelectionListener, FilterListener {
   @ViewChild(MapComponent) mapComponent!: MapComponent;
   @ViewChild(TableComponent) tableComponent!: TableComponent;
-  @ViewChild(SliderComponent) sliderComponent!: SliderComponent;
+  //@ViewChild(SliderComponent) sliderComponent!: SliderComponent;
+  @ViewChild('slider', { static: false }) slider!: ElementRef; // Access slider element
   @ViewChild(LayersComponent) layersComponent!: LayersComponent;
 
   @Input() geoData: FeatureCollection | null = null; // Use FeatureCollection from geojson
 
   model: GeoModel | null = null;
 
-  constructor(private dataService: DataService) {}
+  mapWidth: number = 50;  // Initial width of the map as 50%
+  tableWidth: number = 50;  // Initial width of the table as 50%
+
+  isDragging = false;
+
+  constructor(private dataService: DataService, private elRef: ElementRef) {}
 
   ngOnInit() {
     // Initialization logic if needed
   }
+
+
+  ngAfterViewInit(): void {
+    const slider = this.elRef.nativeElement.querySelector('#slider');
+    const mainContent = this.elRef.nativeElement.querySelector('.main-content');
+
+    slider.addEventListener('mousedown', (e: MouseEvent) => {
+      this.isDragging = true;
+      document.addEventListener('mousemove', this.onDrag.bind(this));
+      document.addEventListener('mouseup', this.stopDrag.bind(this));
+    });
+  }
+
+  onDrag(event: MouseEvent): void {
+    if (!this.isDragging) return;
+
+    const mainContent = this.elRef.nativeElement.querySelector('.main-content');
+    const mainContentRect = mainContent.getBoundingClientRect();
+
+    // Get new width for app-map based on slider position
+    const offsetX = event.clientX - mainContentRect.left;
+    const mapWidthPercentage = (offsetX / mainContentRect.width) * 100;
+    const tableWidthPercentage = 100 - mapWidthPercentage;
+
+    // Update map and table widths
+    this.elRef.nativeElement.querySelector('app-map').style.width = `${mapWidthPercentage}%`;
+    this.elRef.nativeElement.querySelector('app-table').style.width = `${tableWidthPercentage}%`;
+  }
+
+  stopDrag(): void {
+    this.isDragging = false;
+    document.removeEventListener('mousemove', this.onDrag.bind(this));
+    document.removeEventListener('mouseup', this.stopDrag.bind(this));
+  }
+
+//   ngAfterViewInit(): void {
+//     // Listen to slider position changes
+//     this.sliderComponent.positionChange.subscribe((position: number) => {
+//       this.adjustLayout(position);
+//     });
+//   }
+
+//   adjustLayout(sliderPosition: number): void {
+//     // Calculate the width for app-map and app-table based on slider position
+//     this.mapWidth = sliderPosition;
+//     this.tableWidth = 100 - sliderPosition;
+//
+//     // Apply new widths dynamically (if using inline styles)
+//     this.mapComponent.elementRef.nativeElement.style.width = `${this.mapWidth}%`;
+//     this.tableComponent.elementRef.nativeElement.style.width = `${this.tableWidth}%`;
+//   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['geoData'] && this.geoData) {
@@ -40,9 +97,9 @@ export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
     }
   }
 
-  ngAfterViewInit(): void {
-    this.setupChildInteractions();
-  }
+  //ngAfterViewInit(): void {
+  //  this.setupChildInteractions();
+  //}
 
   ngOnDestroy(): void {
     // Cleanup any subscriptions or resources
@@ -104,12 +161,9 @@ export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   onSliderMove(position: number): void {
-    const totalWidth = 800; // Assuming 800px width
     const mapWidth = position;
-    const tableWidth = totalWidth - position;
-
-    this.mapComponent?.resize(mapWidth, 400);
-    this.tableComponent?.resize(tableWidth, 400);
+    const currentHeight = this.elRef.nativeElement.offsetHeight; // Keep the current height
+    this.mapComponent.resize(mapWidth, currentHeight); // Call the resize method on MapComponent
   }
 
   private setupChildInteractions(): void {
