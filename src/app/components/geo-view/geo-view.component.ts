@@ -21,7 +21,7 @@ export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   @ViewChild(MapComponent) mapComponent!: MapComponent;
   @ViewChild(TableComponent) tableComponent!: TableComponent;
   //@ViewChild(SliderComponent) sliderComponent!: SliderComponent;
-  @ViewChild('slider', { static: false }) slider!: ElementRef; // Access slider element
+  @ViewChild(SliderComponent, { static: false }) slider!: ElementRef; // Access slider element
   @ViewChild(LayersComponent) layersComponent!: LayersComponent;
 
   @Input() geoData: FeatureCollection | null = null; // Use FeatureCollection from geojson
