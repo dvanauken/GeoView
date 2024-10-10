@@ -3,14 +3,25 @@
   <ul class="layer-list">
     <li *ngFor="let layer of layers; let i = index" class="layer-item">
       <div class="layer-header">
-        <input type="checkbox" [checked]="layer.visible" (change)="toggleLayerVisibility(layer)">
+        <input
+          type="checkbox"
+          [checked]="layer.visible"
+          (change)="toggleLayerVisibility(layer)"
+        />
         <span class="layer-name">{{ layer.name }}</span>
         <span class="layer-type">{{ layer.type }}</span>
       </div>
       <div class="layer-controls">
         <label>
           Opacity:
-          <input type="range" min="0" max="1" step="0.1" [value]="layer.opacity" (input)="updateLayerOpacity(layer, $event)">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            [value]="layer.opacity"
+            (input)="updateLayerOpacity(layer, $event)"
+          />
         </label>
       </div>
     </li>

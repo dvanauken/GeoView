@@ -30,33 +30,31 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
 
   ngOnInit(): void {}
 
-ngAfterViewInit(): void {
-  this.initMap();
+  ngAfterViewInit(): void {
+    this.initMap();
 
-  window.addEventListener('resize', () => {
-    const width = this.elementRef.nativeElement.offsetWidth;
-    const height = this.elementRef.nativeElement.offsetHeight;
-    this.resize(width, height); // Pass width and height
-  });
+    window.addEventListener('resize', () => {
+      const width = this.elementRef.nativeElement.offsetWidth;
+      const height = this.elementRef.nativeElement.offsetHeight;
+      this.resize(width, height); // Pass width and height
+    });
 
-  // Call resize initially to ensure the map starts with the correct size:
-  const initialWidth = this.elementRef.nativeElement.offsetWidth;
-  const initialHeight = this.elementRef.nativeElement.offsetHeight;
-  this.resize(initialWidth, initialHeight);
-}
+    // Call resize initially to ensure the map starts with the correct size:
+    const initialWidth = this.elementRef.nativeElement.offsetWidth;
+    const initialHeight = this.elementRef.nativeElement.offsetHeight;
+    this.resize(initialWidth, initialHeight);
+  }
 
   onModelChange(model: GeoModel): void {
-    this.updateMapData(model);
+    this.updateMapData(model);  // Call updateMapData when model changes
   }
 
   onSelect(feature: Feature): void {
-    // Implement logic to notify other components about the selection
     console.log('Feature selected:', feature);
     this.highlightFeature(feature);
   }
 
   onDeselect(feature: Feature): void {
-    // Implement logic to notify other components about the deselection
     console.log('Feature deselected:', feature);
   }
 
@@ -68,9 +66,7 @@ ngAfterViewInit(): void {
 
   onClearFilter(): void {}
 
-  onResize() {
-    //this.resize();
-  }
+  onResize() {}
 
   resize(width: number, height: number): void {
     this.width = width;
@@ -107,18 +103,24 @@ ngAfterViewInit(): void {
     this.g = this.svg.append('g');
   }
 
-  private updateMapData(model: GeoModel): void {
-    this.currentModel = model;
+  private renderGeoJSON(geoData: GeoModel): void {
+    // Clear previous paths
     this.g.selectAll('path').remove();
 
+    // Render all features in the GeoModel
     this.g.selectAll('path')
-      .data(model.data.features)
-      .enter()
-      .append('path')
-      .attr('d', (d) => this.path(d as any) || '')
-      .attr('fill', '#ccc')
-      .attr('stroke', '#333')
+      .data(geoData.data.features)  // Use the features from the GeoModel
+      .enter().append('path')
+      .attr('d', (d) => this.path(d as any) || '')  // Use D3's path generator
+      .attr('fill', (d: any) => d.geometry.type === 'Polygon' ? '#ccc' : 'none')  // Fill only polygons
+      .attr('stroke', (d: any) => d.geometry.type === 'LineString' ? 'blue' : '#333')  // Style the lines
+      .attr('stroke-width', (d: any) => d.geometry.type === 'LineString' ? 2 : 1)  // Thicker lines for city pairs
       .on('click', (event: PointerEvent, d: Feature) => this.onFeatureClick(event, d));
+  }
+
+  private updateMapData(model: GeoModel): void {
+    this.currentModel = model;
+    this.renderGeoJSON(model);  // Call renderGeoJSON when the model is updated
   }
 
   private onFeatureClick(event: PointerEvent, feature: Feature): void {
@@ -167,7 +169,6 @@ ngAfterViewInit(): void {
   }
 
   private applyFilter(criteria: CriteriaModel): void {
-    // Implement filtering logic
     console.log('Applying filter:', criteria);
   }
 
@@ -205,7 +206,6 @@ ngAfterViewInit(): void {
     }
   }
 
-  // Helper methods for feature styling
   private getFeatureColor(feature: Feature): string {
     return feature.properties?.color || '#ccc';
   }
@@ -214,7 +214,6 @@ ngAfterViewInit(): void {
     return feature.properties?.selected ? 2 : 1;
   }
 
-  // Helper method to center the map on a feature
   private centerMapOnFeature(feature: Feature): void {
     const bounds = this.path.bounds(feature as any);
     const dx = bounds[1][0] - bounds[0][0];
@@ -229,8 +228,7 @@ ngAfterViewInit(): void {
       .call(this.zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
   }
 
-ngOnDestroy(): void {
-  // Cleanup logic can go here if necessary
-}
-
+  ngOnDestroy(): void {
+    // Cleanup logic can go here if necessary
+  }
 }

@@ -1,8 +1,9 @@
 <div class="geo-view-container">
-  <app-layers></app-layers>
+  <app-layers [geoData]="geoData"></app-layers>
   <div class="main-content">
     <app-map></app-map>
-    <div id="slider" class="slider"></div> <!-- Replace app-slider with a custom div for the vertical slider -->
+    <div id="slider" class="slider"></div>
+    <!-- Replace app-slider with a custom div for the vertical slider -->
     <!--
     <app-slider (positionChange)="onSliderMove($event)"></app-slider>
     -->

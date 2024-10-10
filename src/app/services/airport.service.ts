@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AirportService {
   private airports: any[] = [];
@@ -16,17 +16,26 @@ export class AirportService {
     return this.http.get('assets/Airport.json').pipe(
       map((data: any[]) => {
         this.airports = data;
+
+        // Log each airport as it's loaded
+        this.airports.forEach((airport, index) => {
+          //console.log(`Airport ${index + 1}:`, airport);
+        });
+
+        //console.log('All airports loaded:', this.airports);  // Log the full airport list
         return this.airports;
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error loading Airport.json:', error);
-        return of([]);  // Return an empty array on error
-      })
+        return of([]); // Return an empty array on error
+      }),
     );
   }
 
   // Method to get airport by code
   getAirportByCode(code: string): any | undefined {
-    return this.airports.find(airport => airport.code === code);
+    const airport = this.airports.find((airport) => airport.code === code);
+    //console.log(`Looking up airport by code: ${code}`, airport);  // Debug: log airport lookup
+    return airport;
   }
 }

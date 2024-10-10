@@ -1,4 +1,11 @@
-import { Component, OnInit, Input, Output, EventEmitter, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+} from '@angular/core';
 import { GeoModel } from '../../../models/geo-model';
 import { CriteriaModel } from '../../../models/criteria.model';
 import { ModelListener } from '../../../interfaces/model-listener';
@@ -8,9 +15,11 @@ import { Feature } from 'geojson';
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.scss']
+  styleUrls: ['./table.component.scss'],
 })
-export class TableComponent implements OnInit, ModelListener, SelectionListener {
+export class TableComponent
+  implements OnInit, ModelListener, SelectionListener
+{
   @Input() model: GeoModel | null = null;
   @Output() featureSelect = new EventEmitter<Feature>();
   @Output() filterChange = new EventEmitter<CriteriaModel>();
@@ -20,7 +29,6 @@ export class TableComponent implements OnInit, ModelListener, SelectionListener 
   selectedFeature: Feature | null = null;
 
   constructor(public elementRef: ElementRef) {} // Inject ElementRef
-
 
   ngOnInit(): void {
     if (this.model) {
@@ -53,7 +61,9 @@ export class TableComponent implements OnInit, ModelListener, SelectionListener 
     if (this.model && this.model.data.features.length > 0) {
       const firstFeature = this.model.data.features[0];
       this.displayedColumns = Object.keys(firstFeature.properties || {});
-      this.dataSource = this.model.data.features.map(feature => feature.properties || {});
+      this.dataSource = this.model.data.features.map(
+        (feature) => feature.properties || {},
+      );
     } else {
       this.displayedColumns = [];
       this.dataSource = [];
@@ -62,7 +72,7 @@ export class TableComponent implements OnInit, ModelListener, SelectionListener 
 
   onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void {
     if (this.model) {
-      const feature = this.model.features.find(f => f.id === featureId);
+      const feature = this.model.features.find((f) => f.id === featureId);
       if (feature) {
         Object.assign(feature.properties, properties);
         this.updateTable();
@@ -71,7 +81,7 @@ export class TableComponent implements OnInit, ModelListener, SelectionListener 
   }
 
   onRowClick(row: any): void {
-    const feature = this.model?.data.features.find(f => f.properties === row);
+    const feature = this.model?.data.features.find((f) => f.properties === row);
     if (feature) {
       this.featureSelect.emit(feature);
     }

@@ -16,11 +16,13 @@ export class GeoModel {
   }
 
   getFeatureById(id: string | number): Feature | undefined {
-    return this.features.find(feature => feature.id === id);
+    return this.features.find((feature) => feature.id === id);
   }
 
   getFeaturesByProperty(key: string, value: any): Feature[] {
-    return this.features.filter(feature => feature.properties && feature.properties[key] === value);
+    return this.features.filter(
+      (feature) => feature.properties && feature.properties[key] === value,
+    );
   }
 
   addFeature(feature: Feature): void {
@@ -28,7 +30,7 @@ export class GeoModel {
   }
 
   removeFeature(id: string | number): void {
-    const index = this.features.findIndex(feature => feature.id === id);
+    const index = this.features.findIndex((feature) => feature.id === id);
     if (index !== -1) {
       this.featureCollection.features.splice(index, 1);
     }
@@ -42,16 +44,21 @@ export class GeoModel {
   }
 
   getPropertyKeys(): string[] {
-    const allKeys = this.features.flatMap(feature => Object.keys(feature.properties || {}));
+    const allKeys = this.features.flatMap((feature) =>
+      Object.keys(feature.properties || {}),
+    );
     return [...new Set(allKeys)]; // Remove duplicates
   }
 
   getBounds(): [number, number, number, number] | null {
     if (this.features.length === 0) return null;
 
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
 
-    this.features.forEach(feature => {
+    this.features.forEach((feature) => {
       const bounds = this.getGeometryBounds(feature.geometry);
       if (bounds) {
         minX = Math.min(minX, bounds[0]);
@@ -64,7 +71,9 @@ export class GeoModel {
     return [minX, minY, maxX, maxY];
   }
 
-  private getGeometryBounds(geometry: Geometry): [number, number, number, number] | null {
+  private getGeometryBounds(
+    geometry: Geometry,
+  ): [number, number, number, number] | null {
     switch (geometry.type) {
       case 'Point':
         const [x, y] = geometry.coordinates;
@@ -82,9 +91,11 @@ export class GeoModel {
     }
   }
 
-  private getCoordinatesBounds(coords: number[][]): [number, number, number, number] {
-    const xs = coords.map(c => c[0]);
-    const ys = coords.map(c => c[1]);
+  private getCoordinatesBounds(
+    coords: number[][],
+  ): [number, number, number, number] {
+    const xs = coords.map((c) => c[0]);
+    const ys = coords.map((c) => c[1]);
     return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
   }
 }

@@ -1,4 +1,10 @@
 <div class="geo-view-container">
+  <!-- Loading indicator -->
+  <div *ngIf="isLoadingCityPairs" class="loading-overlay">
+    <p>Loading city pairs...</p>
+  </div>
+
+  <!-- Main content -->
   <app-layers></app-layers>
   <div class="main-content">
     <app-map></app-map>

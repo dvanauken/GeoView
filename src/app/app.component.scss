@@ -1,0 +1,28 @@
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #333;
+}
+
+.geo-view-container {
+  position: relative; /* Important to position the overlay correctly */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.main-content {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+}

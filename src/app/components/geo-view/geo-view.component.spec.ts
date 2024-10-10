@@ -8,7 +8,7 @@ describe('GeoViewComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [GeoViewComponent]
+      declarations: [GeoViewComponent],
     });
     fixture = TestBed.createComponent(GeoViewComponent);
     component = fixture.componentInstance;

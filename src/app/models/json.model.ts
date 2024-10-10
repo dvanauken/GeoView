@@ -65,7 +65,9 @@ export class JSONModel {
   }
 
   map<T>(callback: (key: string, value: any) => T): T[] {
-    return Object.entries(this.data).map(([key, value]) => callback(key, value));
+    return Object.entries(this.data).map(([key, value]) =>
+      callback(key, value),
+    );
   }
 
   filter(predicate: (key: string, value: any) => boolean): JSONModel {

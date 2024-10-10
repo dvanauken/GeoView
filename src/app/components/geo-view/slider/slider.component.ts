@@ -3,12 +3,15 @@ import { Component, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-slider',
-  template: '<input type="range" min="0" max="100" [value]="sliderPosition" (input)="onSliderInput($event)">',
-  styles: [`
-    input[type="range"] {
-      width: 100%;
-    }
-  `]
+  template:
+    '<input type="range" min="0" max="100" [value]="sliderPosition" (input)="onSliderInput($event)">',
+  styles: [
+    `
+      input[type='range'] {
+        width: 100%;
+      }
+    `,
+  ],
 })
 export class SliderComponent {
   @Output() positionChange = new EventEmitter<number>();

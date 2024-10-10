@@ -1,5 +1,15 @@
 // src/app/components/geo-view/geo-view.component.ts
-import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, Input, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ElementRef,
+} from '@angular/core';
 import { MapComponent } from './map/map.component';
 import { TableComponent } from './table/table.component';
 import { SliderComponent } from './slider/slider.component';
@@ -15,9 +25,18 @@ import { Feature, FeatureCollection } from 'geojson'; // Import correct types
 @Component({
   selector: 'app-geo-view',
   templateUrl: './geo-view.component.html',
-  styleUrls: ['./geo-view.component.scss']
+  styleUrls: ['./geo-view.component.scss'],
 })
-export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges, ModelListener, SelectionListener, FilterListener {
+export class GeoViewComponent
+  implements
+    OnInit,
+    AfterViewInit,
+    OnDestroy,
+    OnChanges,
+    ModelListener,
+    SelectionListener,
+    FilterListener
+{
   @ViewChild(MapComponent) mapComponent!: MapComponent;
   @ViewChild(TableComponent) tableComponent!: TableComponent;
   //@ViewChild(SliderComponent) sliderComponent!: SliderComponent;
@@ -28,17 +47,19 @@ export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
 
   model: GeoModel | null = null;
 
-  mapWidth: number = 50;  // Initial width of the map as 50%
-  tableWidth: number = 50;  // Initial width of the table as 50%
+  mapWidth: number = 50; // Initial width of the map as 50%
+  tableWidth: number = 50; // Initial width of the table as 50%
 
   isDragging = false;
 
-  constructor(private dataService: DataService, private elRef: ElementRef) {}
+  constructor(
+    private dataService: DataService,
+    private elRef: ElementRef,
+  ) {}
 
   ngOnInit() {
     // Initialization logic if needed
   }
-
 
   ngAfterViewInit(): void {
     const slider = this.elRef.nativeElement.querySelector('#slider');
@@ -63,8 +84,10 @@ export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
     const tableWidthPercentage = 100 - mapWidthPercentage;
 
     // Update map and table widths
-    this.elRef.nativeElement.querySelector('app-map').style.width = `${mapWidthPercentage}%`;
-    this.elRef.nativeElement.querySelector('app-table').style.width = `${tableWidthPercentage}%`;
+    this.elRef.nativeElement.querySelector('app-map').style.width =
+      `${mapWidthPercentage}%`;
+    this.elRef.nativeElement.querySelector('app-table').style.width =
+      `${tableWidthPercentage}%`;
   }
 
   stopDrag(): void {
@@ -73,22 +96,22 @@ export class GeoViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
     document.removeEventListener('mouseup', this.stopDrag.bind(this));
   }
 
-//   ngAfterViewInit(): void {
-//     // Listen to slider position changes
-//     this.sliderComponent.positionChange.subscribe((position: number) => {
-//       this.adjustLayout(position);
-//     });
-//   }
+  //   ngAfterViewInit(): void {
+  //     // Listen to slider position changes
+  //     this.sliderComponent.positionChange.subscribe((position: number) => {
+  //       this.adjustLayout(position);
+  //     });
+  //   }
 
-//   adjustLayout(sliderPosition: number): void {
-//     // Calculate the width for app-map and app-table based on slider position
-//     this.mapWidth = sliderPosition;
-//     this.tableWidth = 100 - sliderPosition;
-//
-//     // Apply new widths dynamically (if using inline styles)
-//     this.mapComponent.elementRef.nativeElement.style.width = `${this.mapWidth}%`;
-//     this.tableComponent.elementRef.nativeElement.style.width = `${this.tableWidth}%`;
-//   }
+  //   adjustLayout(sliderPosition: number): void {
+  //     // Calculate the width for app-map and app-table based on slider position
+  //     this.mapWidth = sliderPosition;
+  //     this.tableWidth = 100 - sliderPosition;
+  //
+  //     // Apply new widths dynamically (if using inline styles)
+  //     this.mapComponent.elementRef.nativeElement.style.width = `${this.mapWidth}%`;
+  //     this.tableComponent.elementRef.nativeElement.style.width = `${this.tableWidth}%`;
+  //   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['geoData'] && this.geoData) {

@@ -31,7 +31,7 @@ import { SafeHtmlPipe } from './pipes/safe-html.pipe';
     ClickOutsideDirective,
 
     // Pipes
-    SafeHtmlPipe
+    SafeHtmlPipe,
   ],
   imports: [
     CommonModule,
@@ -68,7 +68,7 @@ import { SafeHtmlPipe } from './pipes/safe-html.pipe';
     ClickOutsideDirective,
 
     // Pipes
-    SafeHtmlPipe
-  ]
+    SafeHtmlPipe,
+  ],
 })
-export class SharedModule { }
+export class SharedModule {}

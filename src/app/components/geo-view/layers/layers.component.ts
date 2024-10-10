@@ -1,8 +1,6 @@
-// src/app/components/geo-view/layers/layers.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { FeatureCollection, Feature } from 'geojson'; // Correct types
 import { DataService } from '../../../services/data.service';
-import { Feature, FeatureCollection, GeoJsonObject } from 'geojson';
 
 interface Layer {
   id: string;
@@ -15,28 +13,27 @@ interface Layer {
 @Component({
   selector: 'app-layers',
   templateUrl: './layers.component.html',
-  styleUrls: ['./layers.component.scss']
+  styleUrls: ['./layers.component.scss'],
 })
-export class LayersComponent implements OnInit, OnDestroy {
-  layers: Layer[] = [];
-  private subscription: Subscription = new Subscription();
-  private geoData: FeatureCollection | null = null;
+export class LayersComponent implements OnInit, OnDestroy, OnChanges {
+  @Input() geoData: FeatureCollection | null = null; // Use this as input from parent
+
+  layers: Layer[] = []; // Define layers
 
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
-    this.subscription.add(
-      this.dataService.geoData$.subscribe((geoData: FeatureCollection | null) => {
-        if (geoData) {
-          this.geoData = geoData;
-          this.updateLayersFromGeoData(geoData);
-        }
-      })
-    );
+    // Initialization logic if necessary
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    // Cleanup any subscriptions or resources if necessary
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['geoData'] && this.geoData) {
+      this.updateLayersFromGeoData(this.geoData);
+    }
   }
 
   toggleLayerVisibility(layer: Layer): void {
@@ -54,29 +51,35 @@ export class LayersComponent implements OnInit, OnDestroy {
 
   moveLayerUp(index: number): void {
     if (index > 0) {
-      [this.layers[index - 1], this.layers[index]] = [this.layers[index], this.layers[index - 1]];
+      [this.layers[index - 1], this.layers[index]] = [
+        this.layers[index],
+        this.layers[index - 1],
+      ];
       this.updateLayerOrder();
     }
   }
 
   moveLayerDown(index: number): void {
     if (index < this.layers.length - 1) {
-      [this.layers[index], this.layers[index + 1]] = [this.layers[index + 1], this.layers[index]];
+      [this.layers[index], this.layers[index + 1]] = [
+        this.layers[index + 1],
+        this.layers[index],
+      ];
       this.updateLayerOrder();
     }
   }
 
   private updateLayer(layer: Layer): void {
     if (this.geoData) {
-      const updatedFeatures = this.geoData.features.map(feature => {
+      const updatedFeatures = this.geoData.features.map((feature) => {
         if (feature.id?.toString() === layer.id) {
           return {
             ...feature,
             properties: {
               ...feature.properties,
               visible: layer.visible,
-              opacity: layer.opacity
-            }
+              opacity: layer.opacity,
+            },
           };
         }
         return feature;
@@ -84,54 +87,63 @@ export class LayersComponent implements OnInit, OnDestroy {
 
       const updatedGeoData: FeatureCollection = {
         type: 'FeatureCollection',
-        features: updatedFeatures
+        features: updatedFeatures,
       };
 
-      this.dataService.updateGeoData(updatedGeoData);
+      this.dataService.updateGeoData(updatedGeoData); // Update via service
     }
   }
 
   private updateLayerOrder(): void {
     if (this.geoData) {
-      const orderedFeatures = this.layers.map(layer =>
-        this.geoData!.features.find(f => f.id?.toString() === layer.id)
-      ).filter((feature): feature is Feature => !!feature); // Ensures filtering out undefined
+      const orderedFeatures = this.layers
+        .map((layer) =>
+          this.geoData!.features.find((f) => f.id?.toString() === layer.id),
+        )
+        .filter((feature): feature is Feature => !!feature); // Ensures filtering out undefined
 
       const updatedGeoData: FeatureCollection = {
         type: 'FeatureCollection',
-        features: orderedFeatures
+        features: orderedFeatures,
       };
 
       this.dataService.updateGeoData(updatedGeoData);
     }
   }
 
-//   private updateLayersFromGeoData(geoData: FeatureCollection): void {
-//     this.layers = geoData.features.map(feature => ({
-//       id: feature.id?.toString() || '',
-//       name: feature.properties?.name || 'Unnamed Layer',
-//       type: 'geojson',
-//       visible: feature.properties?.visible !== false,
-//       opacity: feature.properties?.opacity || 1
-//     }));
-//   }
+  /**
+   * Group features into logical layers.
+   * For example, group all "Polygon" features into one layer,
+   * or group based on properties like feature type or another field.
+   */
+  private updateLayersFromGeoData(geoData: FeatureCollection): void {
+    // Clear previous layers
+    this.layers = [];
 
-private updateLayersFromGeoData(geoData: FeatureCollection): void {
-  // Clear previous layers
-  this.layers = [];
+    // Example grouping logic: Group features by their "type" (Polygon, Point, etc.)
+    const groupedLayers: { [key: string]: Feature[] } = {};
 
-  // Add a single layer for the entire GeoJSON collection
-  const layer: Layer = {
-    id: 'main-layer',  // You can assign a unique id for the layer
-    name: geoData.features[0]?.properties?.name || 'Unnamed Layer',
-    type: 'geojson',
-    visible: true,
-    opacity: 1
-  };
+    geoData.features.forEach((feature) => {
+      const layerType = feature.geometry.type; // Example: group by geometry type (Point, LineString, etc.)
 
-  // Push the single layer to the layers array
-  this.layers.push(layer);
-}
+      // Initialize the layer group if it doesn't exist
+      if (!groupedLayers[layerType]) {
+        groupedLayers[layerType] = [];
+      }
 
+      // Add the feature to the appropriate layer group
+      groupedLayers[layerType].push(feature);
+    });
 
+    // Create a layer for each group
+    Object.keys(groupedLayers).forEach((layerType, index) => {
+      this.layers.push({
+        id: `layer-${index}`,
+        name: `${layerType} Layer`, // Naming the layer by geometry type
+        type: 'geojson',
+        visible: true,
+        opacity: 1,
+      });
+    });
+  }
 }

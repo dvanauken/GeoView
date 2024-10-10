@@ -6,11 +6,13 @@ import { FeatureCollection } from 'geojson';
 import { JSONModel } from '../models/json.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataService {
   private geoDataSubject = new BehaviorSubject<FeatureCollection | null>(null);
-  private jsonDataSubject = new BehaviorSubject<{[key: string]: JSONModel}>({});
+  private jsonDataSubject = new BehaviorSubject<{ [key: string]: JSONModel }>(
+    {},
+  );
   geoData$ = this.geoDataSubject.asObservable();
   jsonData$ = this.jsonDataSubject.asObservable();
 
@@ -18,19 +20,19 @@ export class DataService {
 
   loadGeoJSON(url: string): Observable<FeatureCollection> {
     return this.http.get<FeatureCollection>(url).pipe(
-      tap(data => console.log('Received GeoJSON data:', data)),
-      tap(data => this.geoDataSubject.next(data)),
-      catchError(this.handleError<FeatureCollection>('loadGeoJSON'))
+      tap((data) => console.log('Received GeoJSON data:', data)),
+      tap((data) => this.geoDataSubject.next(data)),
+      catchError(this.handleError<FeatureCollection>('loadGeoJSON')),
     );
   }
   loadJSON(url: string, key: string): Observable<JSONModel> {
     return this.http.get(url).pipe(
-      map(data => new JSONModel(data)),
-      tap(model => {
+      map((data) => new JSONModel(data)),
+      tap((model) => {
         const currentData = this.jsonDataSubject.value;
         this.jsonDataSubject.next({ ...currentData, [key]: model });
       }),
-      catchError(this.handleError<JSONModel>('loadJSON'))
+      catchError(this.handleError<JSONModel>('loadJSON')),
     );
   }
 

@@ -5,11 +5,11 @@ import { GeoViewComponent } from './components/geo-view/geo-view.component';
 const routes: Routes = [
   { path: 'geo-view', component: GeoViewComponent },
   { path: '', redirectTo: '/geo-view', pathMatch: 'full' },
-  { path: '**', redirectTo: '/geo-view' }
+  { path: '**', redirectTo: '/geo-view' },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

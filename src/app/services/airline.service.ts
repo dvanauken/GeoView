@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AirlineService {
   private airlines: any[] = [];
@@ -18,15 +18,15 @@ export class AirlineService {
         this.airlines = data;
         return this.airlines;
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error loading Airline.json:', error);
-        return of([]);  // Return an empty array on error
-      })
+        return of([]); // Return an empty array on error
+      }),
     );
   }
 
   // Method to get airline by code
   getAirlineByCode(code: string): any | undefined {
-    return this.airlines.find(airline => airline.code === code);
+    return this.airlines.find((airline) => airline.code === code);
   }
 }

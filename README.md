@@ -4,6 +4,8 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 Clear-Host; ng build
 https://en.wikipedia.org/wiki/Agenda_47
+npx prettier --write src/
+npx prettier --write src/app/app.component.ts
 
 ## Development server
 

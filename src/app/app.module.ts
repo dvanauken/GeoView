@@ -1,4 +1,4 @@
-import { NgModule, APP_INITIALIZER  } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
@@ -18,11 +18,20 @@ import { AirportService } from './services/airport.service';
 import { AirlineService } from './services/airline.service';
 
 // Function to preload airport and airline data
-export function preloadData(airportService: AirportService, airlineService: AirlineService) {
-  return () => Promise.all([
-    airportService.loadAirports().toPromise(),
-    airlineService.loadAirlines().toPromise()
-  ]);
+// Function to preload airport and airline data
+export function preloadData(
+  airportService: AirportService,
+  airlineService: AirlineService
+) {
+  return () =>
+    Promise.all([
+      airportService.loadAirports().toPromise().then(() => {
+        console.log('Airports preloaded successfully');
+      }),
+      airlineService.loadAirlines().toPromise().then(() => {
+        console.log('Airlines preloaded successfully');
+      })
+    ]);
 }
 
 
@@ -33,7 +42,7 @@ export function preloadData(airportService: AirportService, airlineService: Airl
     MapComponent,
     TableComponent,
     LayersComponent,
-    SliderComponent
+    SliderComponent,
   ],
   imports: [
     BrowserModule,
@@ -42,7 +51,7 @@ export function preloadData(airportService: AirportService, airlineService: Airl
     FormsModule,
     ReactiveFormsModule,
     AppRoutingModule,
-    SharedModule
+    SharedModule,
   ],
   providers: [
     AirportService,
@@ -51,10 +60,10 @@ export function preloadData(airportService: AirportService, airlineService: Airl
       provide: APP_INITIALIZER,
       useFactory: preloadData,
       deps: [AirportService, AirlineService],
-      multi: true
-    }
+      multi: true,
+    },
   ],
 
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
