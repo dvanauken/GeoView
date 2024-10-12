@@ -1,43 +1,21 @@
 .geo-view-container {
   display: flex;
   flex-direction: row;
-  height: 100vh; /* Full height for the container, optional */
-  overflow: hidden; /* Prevent scrollbars on the window */
-}
-
-app-layers {
-  width: 300px; /* Fixed width for app-layers */
-  display: block;
-  height: 100%; /* Ensure layers also take full height */
+  height: 100vh;
+  width: 100vw;
+  background-color: green;  /* For debugging visibility */
 }
 
 .main-content {
   display: flex;
-  flex-direction: row;
-  flex: 1; /* Consume the remaining horizontal space */
-  height: 100%; /* Full height for the main-content */
+  flex-grow: 1;
+  position: relative;  /* Required for the absolutely positioned slider */
+  height: 100%;
+  overflow: hidden;
 }
 
-app-map {
-  flex: 1; /* Takes 50% of the remaining space */
-  display: block;
-}
-
-app-slider {
-  width: 10px; /* Fixed width for the slider */
-  display: block;
-}
-
-.slider {
-  width: 10px; /* Narrow vertical slider */
-  background-color: #ccc;
-  cursor: ew-resize; /* Change cursor when hovering over slider */
-  height: 100%; /* Full height */
-  position: relative;
-  z-index: 1;
-}
-
-app-table {
-  flex: 1; /* Takes the other 50% of the remaining space */
-  display: block;
+app-map, app-table {
+  flex-basis: 50%;  /* Start with 50% width for both map and table */
+  height: 100%;
+  transition: flex-basis 0.3s ease;  /* Smooth resizing */
 }

@@ -82,9 +82,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
 
   private initMap(): void {
     this.svg = d3.select(this.mapContainer.nativeElement)
-      .append('svg')
-      .attr('width', this.width)
-      .attr('height', this.height);
+      .append('svg');
 
     this.projection = d3Geo.geoMercator()
       .scale(150)

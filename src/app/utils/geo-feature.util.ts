@@ -9,10 +9,10 @@ export function createGreatCircleFeature(
   airportService: AirportService,
   airlineService: AirlineService
 ): Feature<LineString> | null {
-  console.log('Looking up base airport:', cityPair.base);
+  //console.log('Looking up base airport:', cityPair.base);
   const baseAirport = airportService.getAirportByCode(cityPair.base);
 
-  console.log('Looking up ref airport:', cityPair.ref);
+  //console.log('Looking up ref airport:', cityPair.ref);
   const refAirport = airportService.getAirportByCode(cityPair.ref);
 
   if (!baseAirport || !refAirport) {

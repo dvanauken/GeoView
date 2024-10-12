@@ -1,12 +1,10 @@
+<div>Map Width: {{ mapWidth }}%</div>
+<div>Table Width: {{ tableWidth }}%</div>
 <div class="geo-view-container">
   <app-layers [geoData]="geoData"></app-layers>
   <div class="main-content">
-    <app-map></app-map>
-    <div id="slider" class="slider"></div>
-    <!-- Replace app-slider with a custom div for the vertical slider -->
-    <!--
+    <app-map [style.flex-basis.%]="mapWidth"></app-map>
     <app-slider (positionChange)="onSliderMove($event)"></app-slider>
-    -->
-    <app-table></app-table>
+    <app-table [style.flex-basis.%]="tableWidth"></app-table>
   </div>
 </div>

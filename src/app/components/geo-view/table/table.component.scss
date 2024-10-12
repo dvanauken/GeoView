@@ -1,38 +1,6 @@
 .table-container {
-  width: 100%;
+  background-color: pink;
   height: 100%;
-  overflow: auto;
+  overflow: auto;  /* Enable scroll if the table overflows */
 }
 
-.table-header {
-  position: sticky;
-  top: 0;
-  background-color: #f5f5f5;
-  padding: 10px;
-  z-index: 1;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-th {
-  background-color: #f2f2f2;
-  cursor: pointer;
-}
-
-tr:hover {
-  background-color: #f5f5f5;
-}
-
-tr.selected {
-  background-color: #e0e0e0;
-}

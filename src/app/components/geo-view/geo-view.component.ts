@@ -9,6 +9,7 @@ import {
   OnChanges,
   SimpleChanges,
   ElementRef,
+  ChangeDetectorRef
 } from '@angular/core';
 import { MapComponent } from './map/map.component';
 import { TableComponent } from './table/table.component';
@@ -55,7 +56,13 @@ export class GeoViewComponent
   constructor(
     private dataService: DataService,
     private elRef: ElementRef,
-  ) {}
+    private changeDetectorRef: ChangeDetectorRef
+   ) { }
+
+//   constructor(
+//     private dataService: DataService,
+//     private elRef: ElementRef,
+//   ) {}
 
   ngOnInit() {
     // Initialization logic if needed
@@ -75,19 +82,12 @@ export class GeoViewComponent
   onDrag(event: MouseEvent): void {
     if (!this.isDragging) return;
 
-    const mainContent = this.elRef.nativeElement.querySelector('.main-content');
-    const mainContentRect = mainContent.getBoundingClientRect();
-
-    // Get new width for app-map based on slider position
+    const mainContentRect = this.elRef.nativeElement.querySelector('.main-content').getBoundingClientRect();
     const offsetX = event.clientX - mainContentRect.left;
-    const mapWidthPercentage = (offsetX / mainContentRect.width) * 100;
-    const tableWidthPercentage = 100 - mapWidthPercentage;
+    this.mapWidth = (offsetX / mainContentRect.width) * 100;
+    this.tableWidth = 100 - this.mapWidth;
 
-    // Update map and table widths
-    this.elRef.nativeElement.querySelector('app-map').style.width =
-      `${mapWidthPercentage}%`;
-    this.elRef.nativeElement.querySelector('app-table').style.width =
-      `${tableWidthPercentage}%`;
+    this.changeDetectorRef.detectChanges();
   }
 
   stopDrag(): void {
@@ -115,7 +115,7 @@ export class GeoViewComponent
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['geoData'] && this.geoData) {
-      console.log('GeoView received data:', this.geoData);
+      //console.log('GeoView received data:', this.geoData);
       this.updateModel();
     }
   }
@@ -183,11 +183,20 @@ export class GeoViewComponent
     // this.tableComponent?.onClearFilter(); // Uncomment when table filtering is implemented
   }
 
-  onSliderMove(position: number): void {
-    const mapWidth = position;
-    const currentHeight = this.elRef.nativeElement.offsetHeight; // Keep the current height
-    this.mapComponent.resize(mapWidth, currentHeight); // Call the resize method on MapComponent
+//   onSliderMove(position: number): void {
+//     const mapWidth = position;
+//     const currentHeight = this.elRef.nativeElement.offsetHeight; // Keep the current height
+//     this.mapComponent.resize(mapWidth, currentHeight); // Call the resize method on MapComponent
+//   }
+
+  onSliderMove(newPosition: number) {
+      console.log("Slider moved to:", newPosition);  // Check if this logs correctly
+    // Assuming you have a similar method handling slider movements
+    this.mapWidth = newPosition;
+    this.tableWidth = 100 - newPosition;
+    this.changeDetectorRef.detectChanges();
   }
+
 
   private setupChildInteractions(): void {
     // Setup any necessary interactions or event subscriptions between child components
