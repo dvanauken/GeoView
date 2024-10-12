@@ -1,21 +1,49 @@
 .geo-view-container {
   display: flex;
-  flex-direction: row;
   height: 100vh;
   width: 100vw;
-  background-color: green;  /* For debugging visibility */
+}
+
+.layers-panel {
+  width: 250px;
+  min-width: 250px; // Ensure it doesn't shrink
+  height: 100%;
+  overflow-y: auto;
+  background-color: cyan; // Keep the cyan background for visibility
 }
 
 .main-content {
   display: flex;
   flex-grow: 1;
-  position: relative;  /* Required for the absolutely positioned slider */
+  position: relative;
   height: 100%;
   overflow: hidden;
 }
 
 app-map, app-table {
-  flex-basis: 50%;  /* Start with 50% width for both map and table */
   height: 100%;
-  transition: flex-basis 0.3s ease;  /* Smooth resizing */
+  transition: width 0.1s ease;
+}
+
+
+
+app-slider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background-color: red;
+  cursor: col-resize;
+  z-index: 10;
+  left: 50%; // Start at 50%
+  transform: translateX(-50%);
+}
+
+.debug-info {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 5px;
+  border-radius: 5px;
 }

@@ -111,8 +111,7 @@ export class TableComponent
   }
 
   resize(width: number, height: number): void {
-    // Implement resize logic if necessary
-    // For example, you might want to adjust the table's container size
-    // or update the number of visible rows based on the new height
-  }
-}
+    this.elementRef.nativeElement.style.width = `${width}%`;
+    this.elementRef.nativeElement.style.height = `${height}px`;
+    // Adjust table layout if necessary
+  }}

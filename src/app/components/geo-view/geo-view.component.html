@@ -1,10 +1,13 @@
-<div>Map Width: {{ mapWidth }}%</div>
-<div>Table Width: {{ tableWidth }}%</div>
 <div class="geo-view-container">
-  <app-layers [geoData]="geoData"></app-layers>
+  <app-layers [geoData]="geoData" class="layers-panel"></app-layers>
   <div class="main-content">
-    <app-map [style.flex-basis.%]="mapWidth"></app-map>
+    <app-map [ngStyle]="{'width': mapWidth + '%'}"></app-map>
     <app-slider (positionChange)="onSliderMove($event)"></app-slider>
-    <app-table [style.flex-basis.%]="tableWidth"></app-table>
+    <app-table [ngStyle]="{'width': tableWidth + '%'}"></app-table>
   </div>
+</div>
+
+<div class="debug-info">
+  Map Width: {{ mapWidth }}%
+  Table Width: {{ tableWidth }}%
 </div>

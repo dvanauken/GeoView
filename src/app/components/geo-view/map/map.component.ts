@@ -43,7 +43,15 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
     const initialWidth = this.elementRef.nativeElement.offsetWidth;
     const initialHeight = this.elementRef.nativeElement.offsetHeight;
     this.resize(initialWidth, initialHeight);
+
+    // Force layout recalculation after the initial render completes
+    requestAnimationFrame(() => {
+      const width = this.elementRef.nativeElement.offsetWidth;
+      const height = this.elementRef.nativeElement.offsetHeight;
+      this.resize(width, height);
+    });
   }
+
 
   onModelChange(model: GeoModel): void {
     this.updateMapData(model);  // Call updateMapData when model changes
