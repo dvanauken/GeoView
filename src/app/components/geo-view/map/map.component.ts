@@ -99,7 +99,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
     this.path = d3Geo.geoPath().projection(this.projection);
 
     this.zoom = d3.zoom()
-      .scaleExtent([1, 8])
+      .scaleExtent([1, 20])
       .on('zoom', (event) => {
         this.g.attr('transform', event.transform);
       });
@@ -110,18 +110,38 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
   }
 
   private renderGeoJSON(geoData: GeoModel): void {
-    // Clear previous paths
-    this.g.selectAll('path').remove();
+    // Clear previous paths to avoid duplication
+    this.g.selectAll<SVGPathElement, any>('path').remove();
 
-    // Render all features in the GeoModel
-    this.g.selectAll('path')
-      .data(geoData.data.features)  // Use the features from the GeoModel
-      .enter().append('path')
-      .attr('d', (d) => this.path(d as any) || '')  // Use D3's path generator
-      .attr('fill', (d: any) => d.geometry.type === 'Polygon' ? '#ccc' : 'none')  // Fill only polygons
-      .attr('stroke', (d: any) => d.geometry.type === 'LineString' ? 'blue' : '#333')  // Style the lines
-      .attr('stroke-width', (d: any) => d.geometry.type === 'LineString' ? 2 : 1)  // Thicker lines for city pairs
-      .on('click', (event: PointerEvent, d: Feature) => this.onFeatureClick(event, d));
+    // Bind the GeoJSON features to the path elements
+    const paths = this.g.selectAll<SVGPathElement, any>('path')
+      .data(geoData.data.features, (d: any) => d.id || d.properties?.name || Math.random());
+
+    // Append new paths for each feature
+    paths.enter()
+      .append('path')
+      .attr('d', (d) => this.path(d as any) || '')  // Generate the path using D3's geoPath
+      .attr('class', (d: any) => this.getFeatureClass(d))  // Assign CSS class based on feature type
+      .merge(paths as d3.Selection<SVGPathElement, any, SVGGElement, unknown>)  // Ensure the types match
+      .attr('data-feature-id', (d: any) => d.id || '');  // Optional: Add data attribute for debugging
+
+    // Remove any paths that no longer have data bound to them
+    paths.exit().remove();
+  }
+
+
+
+
+  private getFeatureClass(feature: any): string {
+    switch (feature.geometry.type) {
+      case 'Polygon':
+      case 'MultiPolygon':
+        return 'polygon';  // Class for countries or regions
+      case 'LineString':
+        return 'line-route';  // Class for route lines
+      default:
+        return '';  // No class for unsupported types
+    }
   }
 
   private updateMapData(model: GeoModel): void {
@@ -130,42 +150,27 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
   }
 
   private onFeatureClick(event: PointerEvent, feature: Feature): void {
-    console.log('Feature clicked:', feature);
-
-    // Prevent the event from bubbling up to parent elements
     event.stopPropagation();
 
-    // Toggle the selection state of the clicked feature
     const isSelected = feature.properties?.selected;
     feature.properties = { ...feature.properties, selected: !isSelected };
 
-    // Update the visual representation of the clicked feature
+    // Add or remove the 'selected' class based on the feature's state
     this.g.selectAll('path')
       .filter((d: any) => d.id === feature.id)
-      .attr('fill', this.getFeatureColor(feature))
-      .attr('stroke-width', this.getFeatureStrokeWidth(feature));
+      .classed('selected', feature.properties.selected);
 
-    // If this feature was just selected, deselect all other features
     if (!isSelected) {
       this.g.selectAll('path')
         .filter((d: any) => d.id !== feature.id)
-        .each((d: any) => {
-          d.properties.selected = false;
-        })
-        .attr('fill', (d: any) => this.getFeatureColor(d))
-        .attr('stroke-width', (d: any) => this.getFeatureStrokeWidth(d));
+        .classed('selected', false);
     }
 
-    // Notify other components about the selection change
-    if (feature.properties?.selected) {
+    // Notify other components
+    if (feature.properties.selected) {
       this.onSelect(feature);
     } else {
       this.onDeselect(feature);
-    }
-
-    // Optionally center the map on the selected feature
-    if (feature.properties?.selected) {
-      this.centerMapOnFeature(feature);
     }
   }
 

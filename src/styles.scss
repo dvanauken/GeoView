@@ -127,3 +127,84 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+
+
+/* Container Styling */
+.map-container {
+  width: 100%;         /* Full width */
+  height: 100vh;       /* Full height of the viewport */
+  background-color: #f3f6fa;  /* Subtle light background for the map */
+  border-right: 2px solid #2b6cb0; /* Thin blue border separating the map from other content */
+  overflow: hidden;
+  position: relative;
+}
+
+/* SVG Styling */
+svg {
+  display: block;
+  width: 100%;   /* Full responsive width */
+  height: 100%;  /* Full responsive height */
+}
+
+/* Country and Region Styling */
+.polygon {
+  fill: #d1e7f1;  /* Light blue fill for countries */
+  stroke: #5a6772;  /* Subtle dark gray borders */
+  stroke-width: 1px;
+  transition: fill 0.3s, stroke-width 0.3s;  /* Smooth transitions on hover */
+  cursor: pointer;
+}
+
+/* Hover Effect for Countries */
+.polygon:hover {
+  fill: #60a5fa;  /* Brighter blue on hover */
+  stroke-width: 1.5px;  /* Slightly thicker borders */
+}
+
+/* Selected Country Styling */
+.polygon.selected {
+  fill: #ffa726;  /* Orange fill for selected countries */
+  stroke: #374151;  /* Dark gray border for contrast */
+  stroke-width: 2px;  /* Thicker border for selected state */
+}
+
+/* Route Line Styling */
+.line-route {
+  stroke: #2b6cb0;  /* Corporate blue for airline routes */
+  stroke-width: 0.5px;  /* Standard line thickness */
+  fill: none;  /* No fill for lines */
+  stroke-dasharray: 4 2;  /* Dashed lines for routes */
+  transition: stroke-width 0.3s, stroke-dasharray 0.3s;  /* Smooth interaction */
+}
+
+/* Hover Effect for Routes */
+.line-route:hover {
+  stroke: #1e3a8a;  /* Darker blue for emphasis on hover */
+  stroke-width: 3px;  /* Slightly thicker on hover */
+  stroke-dasharray: 0;  /* Solid line on hover */
+}
+
+/* Zoom Controls Styling */
+.zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.zoom-controls button {
+  background-color: #2b6cb0;  /* Blue buttons for zoom controls */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.zoom-controls button:hover {
+  background-color: #1a4e75;  /* Darker blue on hover */
+}
