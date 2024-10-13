@@ -13,6 +13,7 @@ export class AirlineService {
 
   // Method to load airline.json file
   loadAirlines(): Observable<any> {
+    console.log("loadAirlines.start")
     return this.http.get('assets/Airline.json').pipe(
       map((data: any[]) => {
         this.airlines = data;
@@ -23,6 +24,7 @@ export class AirlineService {
         return of([]); // Return an empty array on error
       }),
     );
+    console.log("loadAirlines.end")
   }
 
   // Method to get airline by code

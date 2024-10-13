@@ -1,24 +1,23 @@
-
 <div class="table-container">
   <div class="table-header">
     <input (keyup)="applyFilter($event.target.value)" placeholder="Filter" />
   </div>
   <table>
     <thead>
-      <tr>
-        <th *ngFor="let column of displayedColumns" (click)="sortData(column)">
-          {{ column }}
-        </th>
-      </tr>
+    <tr>
+      <th *ngFor="let column of displayedColumns" (click)="sortData(column)">
+        {{ column }}
+      </th>
+    </tr>
     </thead>
     <tbody>
-      <tr
-        *ngFor="let row of dataSource"
-        (click)="onRowClick(row)"
-        [class.selected]="row === selectedFeature?.properties"
-      >
-        <td *ngFor="let column of displayedColumns">{{ row[column] }}</td>
-      </tr>
+    <tr
+      *ngFor="let row of dataSource"
+      (click)="onRowClick(row)"
+      [class.selected]="row === selectedFeature?.properties"
+    >
+      <td *ngFor="let column of displayedColumns">{{ row[column] }}</td>
+    </tr>
     </tbody>
   </table>
 </div>

@@ -1,15 +1,4 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  AfterViewInit,
-  OnDestroy,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ElementRef,
-  ChangeDetectorRef
-} from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, Input, OnChanges, SimpleChanges, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { MapComponent } from './map/map.component';
 import { TableComponent } from './table/table.component';
 import { SliderComponent } from './slider/slider.component';
@@ -20,6 +9,7 @@ import { ModelListener } from '../../interfaces/model-listener';
 import { SelectionListener } from '../../interfaces/selection-listener';
 import { FilterListener } from '../../interfaces/filter-listener';
 import { Feature, FeatureCollection } from 'geojson';
+import { throttle } from 'lodash';
 
 @Component({
   selector: 'app-geo-view',
@@ -31,14 +21,10 @@ export class GeoViewComponent
     OnInit,
     AfterViewInit,
     OnDestroy,
-    OnChanges,
-    ModelListener,
-    SelectionListener,
-    FilterListener
-{
+    OnChanges {
+
   @ViewChild(MapComponent) mapComponent!: MapComponent;
   @ViewChild(TableComponent) tableComponent!: TableComponent;
-  @ViewChild(SliderComponent) sliderComponent!: SliderComponent;
   @ViewChild(LayersComponent) layersComponent!: LayersComponent;
 
   @Input() geoData: FeatureCollection | null = null;
@@ -48,19 +34,54 @@ export class GeoViewComponent
   mapWidth: number = 50;
   tableWidth: number = 50;
 
+  private startX: number = 0;
+  private startMapWidth: number = 50;
+
   private isUpdating = false;
+  private isDragging = false;
 
   constructor(
     private elRef: ElementRef,
-    private changeDetectorRef: ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     // Initialization logic if needed
   }
 
-  ngAfterViewInit(): void {
+  ngAfterViewInit() {
+    const slider = this.elRef.nativeElement.querySelector('#slider');
+    const container = this.elRef.nativeElement.querySelector('.main-content');
+
+    const resize = (e: MouseEvent) => {
+      if (!this.isDragging) return;
+
+      const dx = e.clientX - this.startX;
+      const containerWidth = container.offsetWidth;
+      let newMapWidth = (this.startMapWidth + dx / containerWidth * 100);
+      newMapWidth = Math.max(0, Math.min(100, newMapWidth));
+
+      this.onSliderMove(newMapWidth);
+    };
+
+    const mouseUp = () => {
+      this.isDragging = false;
+      document.removeEventListener('mousemove', resize);
+      document.removeEventListener('mouseup', mouseUp);
+    };
+
+    slider?.addEventListener('mousedown', (e: MouseEvent) => {
+      this.isDragging = true;
+      this.startX = e.clientX;
+      this.startMapWidth = this.mapWidth;
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', mouseUp);
+      e.preventDefault();
+    });
+
+    // Set initial slider position
     this.onSliderMove(50);
+    this.cdr.detectChanges();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -80,6 +101,24 @@ export class GeoViewComponent
     }
   }
 
+  onSliderMove(position: number): void {
+    this.mapWidth = Math.max(0, Math.min(100, position));
+    this.tableWidth = 100 - this.mapWidth;
+
+    const mapElement = this.elRef.nativeElement.querySelector('.map-container');
+    const tableElement = this.elRef.nativeElement.querySelector('.table-container');
+    const slider = this.elRef.nativeElement.querySelector('#slider');
+
+    if (mapElement && tableElement && slider) {
+      mapElement.style.flexBasis = `${this.mapWidth}%`;
+      tableElement.style.flexBasis = `${this.tableWidth}%`;
+      slider.style.left = `${this.mapWidth}%`;
+    }
+
+    this.cdr.detectChanges();
+  }
+
+
   onModelChange(model: GeoModel): void {
     this.model = model;
     if (this.mapComponent) {
@@ -88,60 +127,5 @@ export class GeoViewComponent
     if (this.tableComponent) {
       this.tableComponent.onModelChange(model);
     }
-  }
-
-  onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void {
-    if (this.model) {
-      const feature = this.model.getFeatureById(featureId);
-      if (feature) {
-        Object.assign(feature.properties, properties);
-        this.mapComponent?.onFeatureUpdate(featureId, properties);
-        this.tableComponent?.onFeatureUpdate(featureId, properties);
-      }
-    }
-  }
-
-  onSelect(feature: Feature): void {
-    this.mapComponent?.onSelect(feature);
-    this.tableComponent?.onSelect(feature);
-  }
-
-  onDeselect(feature: Feature): void {
-    this.mapComponent?.onDeselect(feature);
-    this.tableComponent?.onDeselect(feature);
-  }
-
-  onClearSelection(): void {
-    this.mapComponent?.onClearSelection();
-    this.tableComponent?.onClearSelection();
-  }
-
-  onFilter(criteria: CriteriaModel): void {
-    this.mapComponent?.onFilter(criteria);
-    // this.tableComponent?.onFilter(criteria); // Uncomment when table filtering is implemented
-  }
-
-  onClearFilter(): void {
-    this.mapComponent?.onClearFilter();
-    // this.tableComponent?.onClearFilter(); // Uncomment when table filtering is implemented
-  }
-
-  onSliderMove(position: number) {
-    if (this.isUpdating) return;
-    this.isUpdating = true;
-
-    this.mapWidth = position;
-    this.tableWidth = 100 - position;
-
-    this.changeDetectorRef.detectChanges();
-
-    if (this.mapComponent) {
-      this.mapComponent.resize(this.mapWidth, this.elRef.nativeElement.offsetHeight);
-    }
-    if (this.tableComponent) {
-      this.tableComponent.resize(this.tableWidth, this.elRef.nativeElement.offsetHeight);
-    }
-
-    this.isUpdating = false;
   }
 }

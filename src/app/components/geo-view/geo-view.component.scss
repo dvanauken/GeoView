@@ -1,49 +1,57 @@
+
 .geo-view-container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
-}
-
-.layers-panel {
-  width: 250px;
-  min-width: 250px; // Ensure it doesn't shrink
-  height: 100%;
-  overflow-y: auto;
-  background-color: lightgray; // Keep the cyan background for visibility
-}
-
-.main-content {
-  display: flex;
-  flex-grow: 1;
-  position: relative;
+  flex-direction: row;
   height: 100%;
   overflow: hidden;
 }
 
-app-map, app-table {
+.layers-panel {
+  flex: 0 0 20%; // Fixed width for layers panel
+  max-width: 300px;
+  min-width: 200px;
+  overflow: auto;
+  background: #f8f8f8; // Light gray for the side panel background
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
   height: 100%;
-  transition: width 0.1s ease;
+  position: relative; // Add this for absolute positioning of the slider
+}
+
+.map-container {
+  flex: 1 1 50%; // Flexibly adjust to 50% of main-content width
+  transition: flex-basis 0.3s ease-in-out; // Smooth transition for resizing
+  overflow: hidden; // Prevent overflow from showing up
+}
+
+.table-container {
+  flex: 1 1 50%;
+  transition: flex-basis 0.3s ease-in-out;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 
-
-app-slider {
+#slider {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 10px;
-  background-color: red;
+  background: purple;
   cursor: col-resize;
-  z-index: 10;
-  left: 50%; // Start at 50%
-  transform: translateX(-50%);
+  z-index: 1000; // To ensure it stays above other elements
+  transition: left 0.3s ease-in-out; // Smooth transition for slider movement
 }
 
 .debug-info {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background-color: rgba(255, 255, 255, 0.7);
+  margin-top: 10px;
+  font-size: 12px;
+  background-color: #f0f0f0;
   padding: 5px;
-  border-radius: 5px;
 }

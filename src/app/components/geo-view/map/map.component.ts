@@ -7,13 +7,14 @@ import { ModelListener } from '../../../interfaces/model-listener';
 import { SelectionListener } from '../../../interfaces/selection-listener';
 import { FilterListener } from '../../../interfaces/filter-listener';
 import { Feature } from 'geojson';
+import { throttle } from 'lodash';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
-export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelListener, SelectionListener, FilterListener {
+export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelListener {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef;
 
   private svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
@@ -25,36 +26,78 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
   private width = 800;
   private height = 600;
   private currentModel: GeoModel | null = null;
+  private throttledResize: () => void;
 
-  constructor(public elementRef: ElementRef) {} // Inject ElementRef
+  constructor(public elementRef: ElementRef) {
+    // Initialize the throttled resize function
+    this.throttledResize = throttle(() => {
+      const width = this.elementRef.nativeElement.offsetWidth;
+      const height = this.elementRef.nativeElement.offsetHeight;
+      console.log('Throttled resize event triggered. Width:', width, 'Height:', height);
+      this.resizeSVG(width, height);
+    }, 200);
+  }
 
   ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     this.initMap();
 
-    window.addEventListener('resize', () => {
-      const width = this.elementRef.nativeElement.offsetWidth;
-      const height = this.elementRef.nativeElement.offsetHeight;
-      this.resize(width, height); // Pass width and height
-    });
-
     // Call resize initially to ensure the map starts with the correct size:
     const initialWidth = this.elementRef.nativeElement.offsetWidth;
     const initialHeight = this.elementRef.nativeElement.offsetHeight;
-    this.resize(initialWidth, initialHeight);
+    this.resizeSVG(initialWidth, initialHeight);
 
-    // Force layout recalculation after the initial render completes
-    requestAnimationFrame(() => {
-      const width = this.elementRef.nativeElement.offsetWidth;
-      const height = this.elementRef.nativeElement.offsetHeight;
-      this.resize(width, height);
-    });
+    // Add resize event listener
+    window.addEventListener('resize', this.throttledResize);
   }
 
+  ngOnDestroy(): void {
+    // Remove resize event listener
+    window.removeEventListener('resize', this.throttledResize);
+  }
+
+  private initMap(): void {
+    this.svg = d3.select(this.mapContainer.nativeElement)
+      .append('svg')
+      .style('width', '100%')
+      .style('height', '100%');
+
+    this.projection = d3Geo.geoMercator()
+      .scale(150)
+      .translate([this.width / 2, this.height / 2]);
+
+    this.path = d3Geo.geoPath().projection(this.projection);
+
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 20])
+      .on('zoom', (event) => {
+        this.g.attr('transform', event.transform);
+      });
+
+    this.svg.call(this.zoom);
+
+    this.g = this.svg.append('g');
+  }
+
+  private resizeSVG(width: number, height: number): void {
+    if (this.width !== width || this.height !== height) {
+      this.width = width;
+      this.height = height;
+
+      this.projection.translate([this.width / 2, this.height / 2]);
+      this.svg.attr('viewBox', `0 0 ${this.width} ${this.height}`);
+
+      // Re-render GeoJSON if needed for responsive resizing
+      if (this.currentModel) {
+        this.renderGeoJSON(this.currentModel);
+      }
+    }
+  }
 
   onModelChange(model: GeoModel): void {
-    this.updateMapData(model);  // Call updateMapData when model changes
+    this.currentModel = model;
+    this.renderGeoJSON(model);
   }
 
   onSelect(feature: Feature): void {
@@ -73,41 +116,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
   }
 
   onClearFilter(): void {}
-
-  onResize() {}
-
-  resize(width: number, height: number): void {
-    this.width = width;
-    this.height = height;
-    this.svg
-      .attr('width', width)
-      .attr('height', height);
-    this.projection.translate([width / 2, height / 2]);
-    if (this.currentModel) {
-      this.updateMapData(this.currentModel);
-    }
-  }
-
-  private initMap(): void {
-    this.svg = d3.select(this.mapContainer.nativeElement)
-      .append('svg');
-
-    this.projection = d3Geo.geoMercator()
-      .scale(150)
-      .translate([this.width / 2, this.height / 2]);
-
-    this.path = d3Geo.geoPath().projection(this.projection);
-
-    this.zoom = d3.zoom()
-      .scaleExtent([1, 20])
-      .on('zoom', (event) => {
-        this.g.attr('transform', event.transform);
-      });
-
-    this.svg.call(this.zoom);
-
-    this.g = this.svg.append('g');
-  }
 
   private renderGeoJSON(geoData: GeoModel): void {
     // Clear previous paths to avoid duplication
@@ -129,9 +137,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
     paths.exit().remove();
   }
 
-
-
-
   private getFeatureClass(feature: any): string {
     switch (feature.geometry.type) {
       case 'Polygon':
@@ -144,36 +149,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
     }
   }
 
-  private updateMapData(model: GeoModel): void {
-    this.currentModel = model;
-    this.renderGeoJSON(model);  // Call renderGeoJSON when the model is updated
-  }
-
-  private onFeatureClick(event: PointerEvent, feature: Feature): void {
-    event.stopPropagation();
-
-    const isSelected = feature.properties?.selected;
-    feature.properties = { ...feature.properties, selected: !isSelected };
-
-    // Add or remove the 'selected' class based on the feature's state
-    this.g.selectAll('path')
-      .filter((d: any) => d.id === feature.id)
-      .classed('selected', feature.properties.selected);
-
-    if (!isSelected) {
-      this.g.selectAll('path')
-        .filter((d: any) => d.id !== feature.id)
-        .classed('selected', false);
-    }
-
-    // Notify other components
-    if (feature.properties.selected) {
-      this.onSelect(feature);
-    } else {
-      this.onDeselect(feature);
-    }
-  }
-
   private highlightFeature(feature: Feature): void {
     this.g.selectAll('path')
       .attr('fill', (d: Feature) => d === feature ? '#ff7f00' : '#ccc');
@@ -181,65 +156,5 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy, ModelList
 
   private applyFilter(criteria: CriteriaModel): void {
     console.log('Applying filter:', criteria);
-  }
-
-  onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void {
-    if (this.currentModel) {
-      const updatedFeature = this.currentModel.features.find(f => f.id === featureId);
-
-      if (updatedFeature) {
-        Object.assign(updatedFeature.properties, properties);
-
-        // Update map visualization
-        this.g.selectAll('path')
-          .filter((d: any) => d.id === featureId)
-          .attr('fill', this.getFeatureColor(updatedFeature))
-          .attr('stroke-width', this.getFeatureStrokeWidth(updatedFeature));
-
-        if (properties.geometry) {
-          this.g.selectAll('path')
-            .filter((d: any) => d.id === featureId)
-            .attr('d', (d) => this.path(d as any) || '');
-        }
-
-        if ('visible' in properties) {
-          this.g.selectAll('path')
-            .filter((d: any) => d.id === featureId)
-            .attr('visibility', properties.visible ? 'visible' : 'hidden');
-        }
-
-        if ('opacity' in properties) {
-          this.g.selectAll('path')
-            .filter((d: any) => d.id === featureId)
-            .attr('opacity', properties.opacity);
-        }
-      }
-    }
-  }
-
-  private getFeatureColor(feature: Feature): string {
-    return feature.properties?.color || '#ccc';
-  }
-
-  private getFeatureStrokeWidth(feature: Feature): number {
-    return feature.properties?.selected ? 2 : 1;
-  }
-
-  private centerMapOnFeature(feature: Feature): void {
-    const bounds = this.path.bounds(feature as any);
-    const dx = bounds[1][0] - bounds[0][0];
-    const dy = bounds[1][1] - bounds[0][1];
-    const x = (bounds[0][0] + bounds[1][0]) / 2;
-    const y = (bounds[0][1] + bounds[1][1]) / 2;
-    const scale = Math.max(1, Math.min(8, 0.9 / Math.max(dx / this.width, dy / this.height)));
-    const translate = [this.width / 2 - scale * x, this.height / 2 - scale * y];
-
-    this.svg.transition()
-      .duration(750)
-      .call(this.zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
-  }
-
-  ngOnDestroy(): void {
-    // Cleanup logic can go here if necessary
   }
 }

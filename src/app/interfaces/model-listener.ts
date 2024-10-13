@@ -7,10 +7,4 @@ export interface ModelListener {
    */
   onModelChange(model: GeoModel): void;
 
-  /**
-   * Called when a specific feature in the model is updated.
-   * @param featureId The ID of the updated feature
-   * @param properties The updated properties
-   */
-  onFeatureUpdate(featureId: string, properties: { [key: string]: any }): void;
 }

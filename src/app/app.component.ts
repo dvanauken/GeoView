@@ -29,32 +29,35 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    console.log('AppComponent initialized');
     this.loadGeoJSON();
     this.loadCityPairData(['XP']); // Load data for ZX airline
   }
 
   ngOnDestroy() {
+    console.log('AppComponent destroyed');
     this.subscription.unsubscribe();
   }
 
   private loadGeoJSON() {
+    console.log('Loading GeoJSON data...');
     d3.json('assets/110m/countries.geojson').then((data: any) => {
+      console.log('GeoJSON data loaded:', data);
       const geoData = data as FeatureCollection;
       this.geoDataSubject.next(geoData);
-      //console.log('GeoData loaded:', geoData);
     }).catch((error) => {
       console.error('Error loading GeoJSON:', error);
     });
   }
 
   loadCityPairData(airlinesToInclude: string[] = ['XP']) {
+    console.log('Loading City Pair data...');
     this.isLoadingCityPairs = true;
 
     d3.json('assets/citypair.20240823.json').then((data: any) => {
-      //console.log('Raw City Pair Data:', data);
-
+      console.log('Raw City Pair Data loaded');
       const cityPairs: CityPair[] = Array.isArray(data) ? data : [];
-      //console.log(`Total city pairs loaded: ${cityPairs.length}`);
+      console.log(`Total city pairs loaded: ${cityPairs.length}`);
 
       this.logAirlineCounts(cityPairs);
 
@@ -63,13 +66,12 @@ export class AppComponent implements OnInit, OnDestroy {
       console.log('First few filtered city pairs:', filteredData.slice(0, 5));
 
       const features = this.createFeatures(filteredData);
-      //onsole.log(`Created ${features.length} features`);
+      console.log(`Created ${features.length} features`);
 
       this.updateGeoData(features);
-
       this.isLoadingCityPairs = false;
     }).catch((error) => {
-      console.error('Error loading citypair.20240823.json:', error);
+      console.error('Error loading City Pair data:', error);
       this.isLoadingCityPairs = false;
     });
   }
@@ -79,16 +81,18 @@ export class AppComponent implements OnInit, OnDestroy {
       acc[pair.al] = (acc[pair.al] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    //console.log('Airline counts:', airlineCounts);
+    console.log('Airline counts:', airlineCounts);
   }
 
   private filterCityPairs(cityPairs: CityPair[], airlinesToInclude: string[]): CityPair[] {
+    console.log('Filtering city pairs...');
     return cityPairs.filter(cityPair => airlinesToInclude.includes(cityPair.al));
   }
 
   private createFeatures(filteredData: CityPair[]): Feature<LineString>[] {
+    console.log('Creating features from filtered data...');
     return filteredData.map((cityPair, index) => {
-      //console.log(`Processing city pair ${index}:`, cityPair);
+      console.log(`Processing city pair ${index}:`, cityPair);
       const feature = createGreatCircleFeature(cityPair, this.airportService, this.airlineService);
       if (!feature) {
         console.warn(`Failed to create feature for city pair:`, cityPair);
@@ -98,6 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private updateGeoData(features: Feature<LineString>[]) {
+    console.log('Updating geoData with new features...');
     const currentGeoData = this.geoDataSubject.value;
     if (currentGeoData) {
       const updatedGeoData: FeatureCollection = {
@@ -112,6 +117,6 @@ export class AppComponent implements OnInit, OnDestroy {
       };
       this.geoDataSubject.next(newGeoData);
     }
-   // console.log('Updated geoData with city pairs:', this.geoDataSubject.value);
+    console.log('geoData updated:', this.geoDataSubject.value);
   }
 }

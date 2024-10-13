@@ -17,9 +17,7 @@ import { Feature } from 'geojson';
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss'],
 })
-export class TableComponent
-  implements OnInit, ModelListener, SelectionListener
-{
+export class TableComponent implements OnInit, ModelListener, SelectionListener {
   @Input() model: GeoModel | null = null;
   @Output() featureSelect = new EventEmitter<Feature>();
   @Output() filterChange = new EventEmitter<CriteriaModel>();
@@ -28,7 +26,7 @@ export class TableComponent
   dataSource: any[] = [];
   selectedFeature: Feature | null = null;
 
-  constructor(public elementRef: ElementRef) {} // Inject ElementRef
+  constructor(public elementRef: ElementRef) {}
 
   ngOnInit(): void {
     if (this.model) {
@@ -54,7 +52,6 @@ export class TableComponent
 
   onClearSelection(): void {
     this.selectedFeature = null;
-    // Implement logic to clear row highlighting
   }
 
   updateTable(): void {
@@ -95,8 +92,7 @@ export class TableComponent
       if (valueA > valueB) return 1;
       return 0;
     });
-    // Trigger change detection
-    this.dataSource = [...this.dataSource];
+    this.dataSource = [...this.dataSource]; // Reassign to trigger change detection
   }
 
   applyFilter(filterValue: string): void {
@@ -106,12 +102,6 @@ export class TableComponent
 
   private highlightRow(feature: Feature): void {
     // Implement row highlighting logic
-    // For example, you could add a CSS class to the selected row
-    // This would require updating the template to use [class.selected]="row === selectedFeature?.properties"
+    // This requires updating the template to use [class.selected]="row === selectedFeature?.properties"
   }
-
-  resize(width: number, height: number): void {
-    this.elementRef.nativeElement.style.width = `${width}%`;
-    this.elementRef.nativeElement.style.height = `${height}px`;
-    // Adjust table layout if necessary
-  }}
+}
