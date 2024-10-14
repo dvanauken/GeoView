@@ -1,14 +1,21 @@
-<div class="geo-view-container">
-  <!-- Loading indicator -->
-  <div *ngIf="isLoadingCityPairs" class="loading-overlay">
-    <p>Loading city pairs...</p>
+<div class="container">
+  <div class="panel left-panel" [style.width.%]="leftPanelWidth">
+    <h2>Data Table</h2>
+    <app-table
+      [model]="geoData$ | async"
+      (featureSelect)="onFeatureSelect($event)"
+      (filterChange)="onFilterChange($event)">
+    </app-table>
   </div>
 
-  <!-- Main content -->
-  <app-layers></app-layers>
-  <div class="main-content">
-    <app-map></app-map>
-    <app-slider (positionChange)="onSliderMove($event)"></app-slider>
-    <app-table></app-table>
+  <app-divider
+    [orientation]="'vertical'"
+    [color]="'#007bff'"
+    [thickness]="4"
+    (positionChange)="onDividerPositionChange($event)">
+  </app-divider>
+
+  <div class="panel right-panel" [style.width.%]="100 - leftPanelWidth">
+    <app-map [geoData]="geoData$ | async"></app-map>
   </div>
 </div>

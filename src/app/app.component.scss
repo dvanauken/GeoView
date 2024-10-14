@@ -1,28 +1,65 @@
-//.loading-overlay {
-//  position: absolute;
-//  top: 0;
-//  left: 0;
-//  width: 100%;
-//  height: 100%;
-//  background: rgba(255, 255, 255, 0.8);
-//  display: flex;
-//  justify-content: center;
-//  align-items: center;
-//  z-index: 1000;
-//  font-size: 1.5em;
-//  font-weight: bold;
-//  color: #333;
-//}
-//
-//.geo-view-container {
-//  position: relative; /* Important to position the overlay correctly */
-//  display: flex;
-//  flex-direction: column;
-//  height: 100%;
-//}
-//
-//.main-content {
-//  display: flex;
-//  flex-grow: 1;
-//  flex-direction: row;
-//}
+.container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.panel {
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.left-panel {
+  background-color: #f0f0f0;
+}
+
+.right-panel {
+  background-color: #e0e0e0;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+app-divider {
+  flex: 0 0 auto;
+}
+
+.overflow-content {
+  min-width: 150%; // This will cause horizontal overflow
+  p {
+    margin-bottom: 20px;
+  }
+}
+
+.long-text {
+  white-space: nowrap; // This prevents text wrapping, forcing horizontal scroll
+}
+
+.table-container {
+  overflow: auto;
+  max-height: calc(100vh - 100px); // Adjust as needed to ensure vertical overflow
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 150%; // This will cause horizontal overflow
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap; // Prevent text wrapping in cells
+  }
+
+  th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+}

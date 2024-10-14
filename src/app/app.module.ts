@@ -16,6 +16,7 @@ import { SliderComponent } from './components/geo-view/slider/slider.component';
 
 import { AirportService } from './services/airport.service';
 import { AirlineService } from './services/airline.service';
+import { DividerComponent } from './components/divider/divider.component';
 
 // Function to preload airport and airline data
 // Function to preload airport and airline data
@@ -43,6 +44,7 @@ export function preloadData(
     TableComponent,
     LayersComponent,
     SliderComponent,
+    DividerComponent,
   ],
   imports: [
     BrowserModule,

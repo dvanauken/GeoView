@@ -165,13 +165,13 @@ svg {
 .polygon.selected {
   fill: #ffa726;  /* Orange fill for selected countries */
   stroke: #374151;  /* Dark gray border for contrast */
-  stroke-width: 2px;  /* Thicker border for selected state */
+  stroke-width: 1px;  /* Thicker border for selected state */
 }
 
 /* Route Line Styling */
 .line-route {
   stroke: #2b6cb0;  /* Corporate blue for airline routes */
-  stroke-width: 0.5px;  /* Standard line thickness */
+  stroke-width: 0.1px;  /* Standard line thickness */
   fill: none;  /* No fill for lines */
   stroke-dasharray: 4 2;  /* Dashed lines for routes */
   transition: stroke-width 0.3s, stroke-dasharray 0.3s;  /* Smooth interaction */
@@ -191,7 +191,7 @@ svg {
   right: 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 2px;
 }
 
 .zoom-controls button {

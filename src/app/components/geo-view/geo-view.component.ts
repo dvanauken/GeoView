@@ -120,12 +120,12 @@ export class GeoViewComponent
 
 
   onModelChange(model: GeoModel): void {
-    this.model = model;
-    if (this.mapComponent) {
-      this.mapComponent.onModelChange(model);
-    }
-    if (this.tableComponent) {
-      this.tableComponent.onModelChange(model);
-    }
+//     this.model = model;
+//     if (this.mapComponent) {
+//       this.mapComponent.onModelChange(model);
+//     }
+//     if (this.tableComponent) {
+//       this.tableComponent.onModelChange(model);
+//     }
   }
 }
