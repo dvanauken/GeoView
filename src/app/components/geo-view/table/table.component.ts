@@ -1,101 +1,82 @@
-import {
-  Component,
-  OnInit,
-  Input,
-  Output,
-  EventEmitter,
-  ElementRef,
-  OnChanges,
-  SimpleChanges,
-  AfterViewInit,
-  OnDestroy
-} from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { FeatureCollection, Feature } from 'geojson';
 
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.scss'],
+  styleUrls: ['./table.component.scss']
 })
-export class TableComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-  @Input() model: FeatureCollection | null = null;
-  @Output() featureSelect = new EventEmitter<Feature>();
-  @Output() filterChange = new EventEmitter<{ filterString: string }>();
+export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('tableContainer', { static: true }) tableContainer: ElementRef;
+  displayedColumns: string[] = []; // Define your table columns dynamically based on GeoJSON data
+  dataSource: any[] = []; // Add your data here
+  private geoData: FeatureCollection | null = null;
+  private resizeObserver!: ResizeObserver;
 
-  displayedColumns: string[] = [];
-  dataSource: any[] = [];
-  selectedFeature: Feature | null = null;
-  currentWidth: string = '50.00%';
-
-  private resizeObserver: ResizeObserver;
-
-  constructor(public elementRef: ElementRef) {
-    this.resizeObserver = new ResizeObserver(entries => {
-      for (let entry of entries) {
-        this.updateWidth(entry.contentRect.width);
-      }
-    });
-  }
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.updateTable();
+    // Fetch GeoJSON data
+    this.http.get<FeatureCollection>('assets/110m/countries.geojson').subscribe(geoJson => {
+      this.geoData = geoJson;
+      this.populateTable();
+    });
   }
 
   ngAfterViewInit(): void {
-    this.resizeObserver.observe(this.elementRef.nativeElement);
+    this.resizeTable(); // Initial table size adjustment
+
+    // Use ResizeObserver to detect size changes in the parent container (pane)
+    this.resizeObserver = new ResizeObserver(() => {
+      console.log('Table container resized.');
+      this.resizeTable(); // Adjust the table size on container resize
+    });
+
+    // Observe the parent container element
+    this.resizeObserver.observe(this.tableContainer.nativeElement);
   }
 
   ngOnDestroy(): void {
-    this.resizeObserver.disconnect();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['model']) {
-      this.updateTable();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect(); // Clean up observer on destroy
     }
   }
 
-  updateTable(): void {
-    if (this.model && this.model.features.length > 0) {
-      const firstFeature = this.model.features[0];
-      this.displayedColumns = Object.keys(firstFeature.properties || {});
-      this.dataSource = this.model.features.map(
-        (feature) => feature.properties || {},
-      );
-    } else {
-      this.displayedColumns = [];
-      this.dataSource = [];
+  private populateTable(): void {
+    if (this.geoData) {
+      const features = this.geoData.features;
+
+      if (features.length > 0) {
+        // Dynamically set the table columns based on the first feature's properties
+        this.displayedColumns = Object.keys(features[0].properties || {});
+
+        // Populate the data source with feature properties (non-geometry)
+        this.dataSource = features.map((feature: Feature) => feature.properties);
+      }
     }
   }
 
-  onRowClick(row: any): void {
-    const feature = this.model?.features.find((f) => f.properties === row);
-    if (feature) {
-      this.featureSelect.emit(feature);
-    }
-  }
+  resizeTable(): void {
+    if (this.tableContainer) {
+      const width = this.tableContainer.nativeElement.offsetWidth;
+      const height = this.tableContainer.nativeElement.offsetHeight;
 
-  sortData(column: string): void {
-    this.dataSource.sort((a, b) => {
-      const valueA = a[column];
-      const valueB = b[column];
-      if (valueA < valueB) return -1;
-      if (valueA > valueB) return 1;
-      return 0;
-    });
-    this.dataSource = [...this.dataSource]; // Reassign to trigger change detection
+      console.log(`Resizing table to ${width}x${height}`);
+
+      // Adjust table layout, such as setting widths or heights based on container size
+    }
   }
 
   applyFilter(filterValue: string): void {
-    this.filterChange.emit({ filterString: filterValue });
+    // Logic to filter table data based on input
   }
 
-  private highlightRow(feature: Feature): void {
-    // Implement row highlighting logic
-    // This requires updating the template to use [class.selected]="row === selectedFeature?.properties"
+  sortData(column: string): void {
+    // Logic to sort the data when a column header is clicked
   }
 
-  private updateWidth(width: number): void {
-    this.currentWidth = `${(width / window.innerWidth * 100).toFixed(2)}%`;
+  onRowClick(row: any): void {
+    // Logic to handle row click events
   }
 }

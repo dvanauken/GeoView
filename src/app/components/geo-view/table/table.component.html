@@ -1,8 +1,4 @@
-<div class="table-container">
-  <div class="overlay-text">
-    Left Panel<br>
-    This panel is also resizable. Current width: {{currentWidth}}
-  </div>
+<div #tableContainer class="table-container">
   <div class="table-header">
     <input class="filter-input" (input)="applyFilter($event.target.value)" placeholder="Filter data...">
   </div>
@@ -10,13 +6,13 @@
     <table>
       <thead>
       <tr>
-        <th *ngFor="let column of displayedColumns" (click)="sortData(column)">{{ column }}</th>
+        <th *ngFor="let column of displayedColumns" (click)="sortData(column)">
+          {{ column }}
+        </th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let row of dataSource"
-          (click)="onRowClick(row)"
-          [class.selected]="row === selectedFeature?.properties">
+      <tr *ngFor="let row of dataSource" (click)="onRowClick(row)" [class.selected]="row === selectedFeature?.properties">
         <td *ngFor="let column of displayedColumns">{{ row[column] }}</td>
       </tr>
       </tbody>
