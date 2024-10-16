@@ -16,7 +16,7 @@ export function createGreatCircleFeature(
   const refAirport = airportService.getAirportByCode(cityPair.ref);
 
   if (!baseAirport || !refAirport) {
-    console.error('Airport not found for base or ref:', cityPair.base, cityPair.ref);
+    //console.error('Airport not found for base or ref:', cityPair.base, cityPair.ref);
     return null;
   }
 

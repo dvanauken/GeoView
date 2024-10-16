@@ -20,7 +20,6 @@ interface CityPair {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  leftPanelWidth = 50; // Initial width of the left panel in percentage
   geoData$ = new BehaviorSubject<FeatureCollection | null>(null);
   isLoadingCityPairs: boolean = false;
   private subscription: Subscription = new Subscription();
@@ -39,11 +38,6 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     console.log('AppComponent destroyed');
     this.subscription.unsubscribe();
-  }
-
-  onDividerPositionChange(position: number) {
-    //console.log("onDividerPositionChange=" + position);
-    this.leftPanelWidth = position;
   }
 
   private loadGeoJSON() {

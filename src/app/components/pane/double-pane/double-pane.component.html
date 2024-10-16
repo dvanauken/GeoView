@@ -1,0 +1,5 @@
+<div #container class="double-pane-container">
+  <ng-content select="app-pane.left-panel"></ng-content>
+  <div #divider class="divider" (mousedown)="onMouseDown($event)" [style.left]="dividerPosition"></div>
+  <ng-content select="app-pane.right-panel"></ng-content>
+</div>

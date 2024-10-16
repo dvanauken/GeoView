@@ -1,140 +1,82 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
-import { FeatureCollection, Feature } from 'geojson';
-import { throttle } from 'lodash';
+import { FeatureCollection } from 'geojson';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
-export class MapComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
-  @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef;
-  @Input() geoData: FeatureCollection | null = null;
-
-  private svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-  private projection!: d3.GeoProjection;
-  private path!: d3.GeoPath;
-  private zoom!: d3.ZoomBehavior<Element, unknown>;
-  private g!: d3.Selection<SVGGElement, unknown, null, undefined>;
-
-  private width = 800;
-  private height = 600;
-  private throttledResize: () => void;
+export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('mapContainer', { static: true }) mapContainer: ElementRef;
+  private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  private projection: d3.GeoProjection;
+  private path: d3.GeoPath;
+  private geoData: FeatureCollection | null = null;
   private resizeObserver: ResizeObserver;
 
-  public currentWidth: string = '50.00%';
+  constructor(private http: HttpClient) {}
 
-  constructor(public elementRef: ElementRef) {
-    this.throttledResize = throttle(() => {
-      const width = this.elementRef.nativeElement.offsetWidth;
-      const height = this.elementRef.nativeElement.offsetHeight;
-      console.log('Throttled resize event triggered. Width:', width, 'Height:', height);
-      this.resizeSVG(width, height);
-    }, 200);
-
-    this.resizeObserver = new ResizeObserver(entries => {
-      for (let entry of entries) {
-        const { width, height } = entry.contentRect;
-        this.resizeSVG(width, height);
-      }
+  ngOnInit(): void {
+    this.http.get<FeatureCollection>('assets/110m/countries.geojson').subscribe(geoJson => {
+      this.geoData = geoJson;
+      this.initMap();
     });
   }
 
-  ngOnInit(): void {}
-
   ngAfterViewInit(): void {
-    this.initMap();
-    const initialWidth = this.elementRef.nativeElement.offsetWidth;
-    const initialHeight = this.elementRef.nativeElement.offsetHeight;
-    this.resizeSVG(initialWidth, initialHeight);
-    window.addEventListener('resize', this.throttledResize);
-    this.resizeObserver.observe(this.elementRef.nativeElement);
+    this.resizeMap(); // Initial resize
+
+    // Use ResizeObserver to detect size changes in the parent container
+    this.resizeObserver = new ResizeObserver(() => {
+      console.log('Map container resized.');
+      this.resizeMap(); // Adjust the map size on container resize
+    });
+
+    // Observe the parent container element
+    this.resizeObserver.observe(this.mapContainer.nativeElement);
   }
 
   ngOnDestroy(): void {
-    window.removeEventListener('resize', this.throttledResize);
-    this.resizeObserver.disconnect();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect(); // Clean up observer on destroy
+    }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['geoData'] && !changes['geoData'].firstChange) {
-      this.renderGeoJSON(this.geoData);
+  public resizeMap(): void {
+    if (this.mapContainer && this.geoData) {
+      const width = this.mapContainer.nativeElement.offsetWidth;
+      const height = this.mapContainer.nativeElement.offsetHeight;
+
+      console.log(`Resizing map to ${width}x${height}`);
+
+      this.svg.attr('width', width).attr('height', height);
+      this.projection.fitSize([width, height], this.geoData);
+      this.svg.selectAll('path')
+              .data(this.geoData.features)
+              .attr('d', this.path);
     }
   }
 
   private initMap(): void {
-    this.svg = d3.select(this.mapContainer.nativeElement)
-      .append('svg')
-      .style('width', '100%')
-      .style('height', '100%');
+    this.svg = d3.select(this.mapContainer.nativeElement).append('svg')
+                 .attr('width', this.mapContainer.nativeElement.offsetWidth)
+                 .attr('height', this.mapContainer.nativeElement.offsetHeight);
 
-    this.projection = d3Geo.geoMercator()
-      .scale(150)
-      .translate([this.width / 2, this.height / 2]);
-
+    this.projection = d3Geo.geoMercator();
     this.path = d3Geo.geoPath().projection(this.projection);
 
-    this.zoom = d3.zoom()
-      .scaleExtent([1, 20])
-      .on('zoom', (event) => {
-        this.g.attr('transform', event.transform);
-      });
+    this.projection.fitSize(
+      [this.mapContainer.nativeElement.offsetWidth, this.mapContainer.nativeElement.offsetHeight],
+      this.geoData
+    );
 
-    this.svg.call(this.zoom);
-
-    this.g = this.svg.append('g');
-  }
-
-  private resizeSVG(width: number, height: number): void {
-    if (this.width !== width || this.height !== height) {
-      this.width = width;
-      this.height = height;
-
-      this.currentWidth = `${(width / window.innerWidth * 100).toFixed(2)}%`;
-
-      this.projection.translate([this.width / 2, this.height / 2]);
-      this.svg.attr('viewBox', `0 0 ${this.width} ${this.height}`);
-
-      if (this.geoData) {
-        this.renderGeoJSON(this.geoData);
-      }
-    }
-  }
-
-  private renderGeoJSON(geoData: FeatureCollection | null): void {
-    if (!geoData) return;
-
-    this.g.selectAll<SVGPathElement, any>('path').remove();
-
-    const paths = this.g.selectAll<SVGPathElement, any>('path')
-      .data(geoData.features, (d: any) => d.id || d.properties?.name || Math.random());
-
-    paths.enter()
-      .append('path')
-      .attr('d', (d) => this.path(d as any) || '')
-      .attr('class', (d: any) => this.getFeatureClass(d))
-      .merge(paths as d3.Selection<SVGPathElement, any, SVGGElement, unknown>)
-      .attr('data-feature-id', (d: any) => d.id || '');
-
-    paths.exit().remove();
-  }
-
-  private getFeatureClass(feature: any): string {
-    switch (feature.geometry.type) {
-      case 'Polygon':
-      case 'MultiPolygon':
-        return 'polygon';
-      case 'LineString':
-        return 'line-route';
-      default:
-        return '';
-    }
-  }
-
-  public highlightFeature(feature: Feature): void {
-    this.g.selectAll('path')
-      .attr('fill', (d: any) => d === feature ? '#ff7f00' : '#ccc');
+    this.svg.append('g').selectAll('path')
+        .data(this.geoData.features)
+        .enter().append('path')
+        .attr('d', this.path)
+        .attr('class', 'country');
   }
 }

@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GeoViewComponent } from './geo-view.component';
+import { PaneComponent } from './pane.component';
 
-describe('GeoViewComponent', () => {
-  let component: GeoViewComponent;
-  let fixture: ComponentFixture<GeoViewComponent>;
+describe('PaneComponent', () => {
+  let component: PaneComponent;
+  let fixture: ComponentFixture<PaneComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [GeoViewComponent],
+      declarations: [PaneComponent]
     });
-    fixture = TestBed.createComponent(GeoViewComponent);
+    fixture = TestBed.createComponent(PaneComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -8,7 +8,6 @@ import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
 
 // GeoView Components
-import { GeoViewComponent } from './components/geo-view/geo-view.component';
 import { MapComponent } from './components/geo-view/map/map.component';
 import { TableComponent } from './components/geo-view/table/table.component';
 import { LayersComponent } from './components/geo-view/layers/layers.component';
@@ -17,6 +16,7 @@ import { SliderComponent } from './components/geo-view/slider/slider.component';
 import { AirportService } from './services/airport.service';
 import { AirlineService } from './services/airline.service';
 import { DividerComponent } from './components/divider/divider.component';
+import { PaneModule } from './components/pane/pane.module';
 
 // Function to preload airport and airline data
 // Function to preload airport and airline data
@@ -39,12 +39,11 @@ export function preloadData(
 @NgModule({
   declarations: [
     AppComponent,
-    GeoViewComponent,
     MapComponent,
     TableComponent,
     LayersComponent,
     SliderComponent,
-    DividerComponent,
+    DividerComponent
   ],
   imports: [
     BrowserModule,
@@ -54,6 +53,7 @@ export function preloadData(
     ReactiveFormsModule,
     AppRoutingModule,
     SharedModule,
+    PaneModule
   ],
   providers: [
     AirportService,

@@ -146,6 +146,7 @@ svg {
   height: 100%;  /* Full responsive height */
 }
 
+
 /* Country and Region Styling */
 .polygon {
   fill: #d1e7f1;  /* Light blue fill for countries */
@@ -171,7 +172,7 @@ svg {
 /* Route Line Styling */
 .line-route {
   stroke: #2b6cb0;  /* Corporate blue for airline routes */
-  stroke-width: 0.1px;  /* Standard line thickness */
+  stroke-width: 0.5px;  /* Standard line thickness */
   fill: none;  /* No fill for lines */
   stroke-dasharray: 4 2;  /* Dashed lines for routes */
   transition: stroke-width 0.3s, stroke-dasharray 0.3s;  /* Smooth interaction */
@@ -180,7 +181,7 @@ svg {
 /* Hover Effect for Routes */
 .line-route:hover {
   stroke: #1e3a8a;  /* Darker blue for emphasis on hover */
-  stroke-width: 3px;  /* Slightly thicker on hover */
+  stroke-width: 6px;  /* Slightly thicker on hover */
   stroke-dasharray: 0;  /* Solid line on hover */
 }
 
