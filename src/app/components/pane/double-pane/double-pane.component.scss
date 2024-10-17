@@ -5,23 +5,25 @@
 }
 
 .double-pane-container {
-  display: flex;      /* Align child panes horizontally */
-  width: 100%;        /* Full width of the container */
-  height: 100%;       /* Full height of the container */
-  position: relative; /* For absolute positioning of the divider */
+  display: flex;       /* Flex layout for left and right panels */
+  width: 100%;         /* Full width of the container */
+  height: 100%;        /* Full height of the container */
+  position: relative;  /* For positioning the divider */
 }
 
-.pane {
-  overflow: auto;     /* Ensure content can scroll if needed */
+.left-panel {
+  flex: 0 0 50%;       /* Start with 50% width, allow resizing */
+  max-width: 50%;      /* Prevent overflow */
+  display: flex;       /* Use flex for centering */
+  justify-content: center; /* Horizontally center the content */
+  align-items: center;     /* Vertically center the content */
+  overflow: hidden;    /* Prevent overflow scrollbars */
 }
 
-.left-pane {
-  flex: 0 0 50%;      /* Start with 50% width, allow resizing */
-  max-width: 50%;     /* Prevent overflow issues */
-}
-
-.right-pane {
-  flex: 1;            /* Take up remaining space */
+.right-panel {
+  flex: 1;             /* Take up remaining space */
+  height: 100%;        /* Full height for the right pane */
+  overflow: auto;      /* Allow scrolling if necessary */
 }
 
 .divider {
@@ -31,5 +33,5 @@
   width: 5px;
   background-color: #ccc;
   cursor: col-resize;
-  z-index: 10;        /* Ensure the divider stays on top */
+  z-index: 10;         /* Ensure the divider stays on top */
 }

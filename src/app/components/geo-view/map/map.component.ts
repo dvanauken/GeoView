@@ -27,56 +27,69 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.resizeMap(); // Initial resize
-
-    // Use ResizeObserver to detect size changes in the parent container
     this.resizeObserver = new ResizeObserver(() => {
       console.log('Map container resized.');
-      this.resizeMap(); // Adjust the map size on container resize
+      this.resizeMap();
     });
-
-    // Observe the parent container element
     this.resizeObserver.observe(this.mapContainer.nativeElement);
   }
 
   ngOnDestroy(): void {
     if (this.resizeObserver) {
-      this.resizeObserver.disconnect(); // Clean up observer on destroy
+      this.resizeObserver.disconnect();
     }
   }
 
   public resizeMap(): void {
     if (this.mapContainer && this.geoData) {
-      const width = this.mapContainer.nativeElement.offsetWidth;
-      const height = this.mapContainer.nativeElement.offsetHeight;
+      const containerWidth = this.mapContainer.nativeElement.offsetWidth;
+      const containerHeight = this.mapContainer.nativeElement.offsetHeight;
+      const width = containerWidth * 0.8;
+      const height = containerHeight * 0.8;
 
       console.log(`Resizing map to ${width}x${height}`);
 
-      this.svg.attr('width', width).attr('height', height);
-      this.projection.fitSize([width, height], this.geoData);
+      this.svg
+        .attr('width', width)
+        .attr('height', height)
+        .attr('viewBox', `0 0 ${width} ${height}`);
+
+      this.projection
+        .fitSize([width, height], this.geoData)
+        .translate([width / 2, height / 2]);
+
       this.svg.selectAll('path')
-              .data(this.geoData.features)
-              .attr('d', this.path);
+        .attr('d', this.path);
     }
   }
 
   private initMap(): void {
-    this.svg = d3.select(this.mapContainer.nativeElement).append('svg')
-                 .attr('width', this.mapContainer.nativeElement.offsetWidth)
-                 .attr('height', this.mapContainer.nativeElement.offsetHeight);
+    const containerWidth = this.mapContainer.nativeElement.offsetWidth;
+    const containerHeight = this.mapContainer.nativeElement.offsetHeight;
+    const width = containerWidth * 0.8;
+    const height = containerHeight * 0.8;
 
-    this.projection = d3Geo.geoMercator();
+    this.svg = d3.select(this.mapContainer.nativeElement).append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('preserveAspectRatio', 'xMidYMid meet');
+
+    this.projection = d3Geo.geoMercator()
+      .fitSize([width, height], this.geoData)
+      .translate([width / 2, height / 2]);
+
     this.path = d3Geo.geoPath().projection(this.projection);
 
-    this.projection.fitSize(
-      [this.mapContainer.nativeElement.offsetWidth, this.mapContainer.nativeElement.offsetHeight],
-      this.geoData
-    );
-
     this.svg.append('g').selectAll('path')
-        .data(this.geoData.features)
-        .enter().append('path')
-        .attr('d', this.path)
-        .attr('class', 'country');
+      .data(this.geoData.features)
+      .enter().append('path')
+      .attr('d', this.path)
+      .attr('class', 'country')
+      .style('stroke', '#333')
+      .style('stroke-width', '0.5px')
+      .style('fill', '#d1e7f1');
+
+    this.resizeMap(); // Ensure initial sizing is correct
   }
 }
