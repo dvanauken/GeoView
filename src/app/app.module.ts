@@ -28,7 +28,10 @@ export function preloadData(
       })
     ]);
 }
-
+// Function to preload data
+//export function preloadData(geoModelService: GeoModelService) {
+//  return () => geoModelService.loadData().toPromise();
+//}
 
 @NgModule({
   declarations: [
