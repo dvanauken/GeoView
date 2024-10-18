@@ -5,8 +5,8 @@ import { AirlineService } from './services/airline.service';
 import { createGreatCircleFeature } from './utils/geo-feature.util';
 import * as d3 from 'd3';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { MapComponent } from './components/geo-view/map/map.component';
-import { TableComponent } from './components/geo-view/table/table.component';
+import { MapComponent } from './components/map/map.component';
+import { TableComponent } from './components/table/table.component';
 
 interface CityPair {
   al: string;    // Airline code

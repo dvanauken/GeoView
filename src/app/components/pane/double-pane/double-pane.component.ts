@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild, AfterViewInit, AfterContentInit, Cont
 import { fromEvent, Subscription } from 'rxjs';
 import { throttleTime, takeUntil } from 'rxjs/operators';
 import { PaneComponent } from '../pane/pane.component';
-import { MapComponent } from '../../geo-view/map/map.component'; // Correct import
+import { MapComponent } from '../../map/map.component'; // Correct import
 
 @Component({
   selector: 'app-double-pane',
