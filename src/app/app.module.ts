@@ -14,20 +14,20 @@ import { AirportService } from './services/airport.service';
 import { AirlineService } from './services/airline.service';
 import { PaneModule } from './components/pane/pane.module';
 
-export function preloadData(
-  airportService: AirportService,
-  airlineService: AirlineService
-) {
-  return () =>
-    Promise.all([
-      airportService.loadAirports().toPromise().then(() => {
-        console.log('Airports preloaded successfully');
-      }),
-      airlineService.loadAirlines().toPromise().then(() => {
-        console.log('Airlines preloaded successfully');
-      })
-    ]);
-}
+// export function preloadData(
+//   airportService: AirportService,
+//   airlineService: AirlineService
+// ) {
+//   return () =>
+//     Promise.all([
+//       airportService.loadAirports().toPromise().then(() => {
+//         console.log('Airports preloaded successfully');
+//       }),
+//       airlineService.loadAirlines().toPromise().then(() => {
+//         console.log('Airlines preloaded successfully');
+//       })
+//     ]);
+// }
 // Function to preload data
 //export function preloadData(geoModelService: GeoModelService) {
 //  return () => geoModelService.loadData().toPromise();
@@ -49,14 +49,14 @@ export function preloadData(
     PaneModule
   ],
   providers: [
-    AirportService,
-    AirlineService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: preloadData,
-      deps: [AirportService, AirlineService],
-      multi: true,
-    },
+    // AirportService,
+    // AirlineService,
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: preloadData,
+    //   deps: [AirportService, AirlineService],
+    //   multi: true,
+    // },
   ],
 
   bootstrap: [AppComponent],

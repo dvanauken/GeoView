@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
 import { FeatureCollection } from 'geojson';
 import { HttpClient } from '@angular/common/http';
+import { DataModel } from '../../models/data-model';  // Import DataModel for loading features
 
 @Component({
   selector: 'app-map',
@@ -17,14 +18,27 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private geoData: FeatureCollection | null = null;
   private resizeObserver: ResizeObserver;
 
-  constructor(private http: HttpClient) {}
+
+constructor(private http: HttpClient) {}
+
+  // ngOnInit(): void {
+  //   this.http.get<FeatureCollection>('assets/110m/countries.geojson').subscribe(geoJson => {
+  //     this.geoData = geoJson;
+  //     this.initMap();
+  //   });
+  // }
 
   ngOnInit(): void {
-    this.http.get<FeatureCollection>('assets/110m/countries.geojson').subscribe(geoJson => {
-      this.geoData = geoJson;
-      this.initMap();
-    });
+    // Wrap the features from DataModel in a FeatureCollection
+    this.geoData = {
+      type: 'FeatureCollection',
+      features: DataModel.getInstance().getFeatures()
+    };
+
+    // Initialize the map with the loaded data
+    this.initMap();
   }
+
 
   ngAfterViewInit(): void {
     this.resizeObserver = new ResizeObserver(() => {

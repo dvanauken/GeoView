@@ -1,4 +1,8 @@
-<div class="app-container">
+<div *ngIf="isLoading" class="loading-container">
+  <img src="assets/spinner.gif" alt="Loading..." />
+</div>
+
+<div *ngIf="!isLoading" class="app-container">
   <app-double-pane>
     <app-pane class="left-panel">
       <app-map #map></app-map>

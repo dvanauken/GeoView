@@ -3,18 +3,83 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-family: 'Helvetica Neue', Arial, sans-serif; // Consistent sans-serif font
 }
 
 .table-content {
-  overflow: auto; /* Ensures scrolling if table content overflows */
+  overflow: auto; // Allows for scrolling when table overflows
+  position: relative; // Needed for sticky positioning context
+
+  table {
+    width: 95%; // Adjusting width for table within the container
+    margin: 10px auto; // Centers the table with reduced vertical margin
+    border-collapse: collapse; // Neat borders between cells
+    thead th {
+      position: sticky;
+      top: 0; // Stick to the top of the scrollable area
+      z-index: 10; // Ensures the header is above other content
+      background-color: #e6e6ff; // Soft lavender for a noticeable pop
+      box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4); // Adds subtle shadow under header
+    }
+  }
+
+  th, td {
+    padding: 2px; // Optimal padding for content
+    text-align: left; // Left-aligns text
+    border-bottom: 1px solid #e0e0e0; // Light gray border for separation
+    font-size: 12px; // Smaller font size for a more compact look
+    color: #333; // Dark gray text for contrast on light background
+  }
+
+  th {
+    color: #333; // Dark gray text in headers for readability
+  }
+
+  tr:nth-child(even) {
+    background-color: #ffffff; // White for even rows
+  }
+
+  tr:nth-child(odd) {
+    background-color: #f7f7f7; // Light gray for odd rows
+  }
+
+  tr:hover {
+    background-color: #f0f0f0; // Darker gray on hover for interaction
+  }
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+
+/* General styles that apply when printing */
+@media print {
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .table-container, .table-content {
+    width: 100%; /* Full width to use available space */
+    overflow: visible; /* Remove scroll bars in print */
+  }
+
+  .table-content {
+    page-break-after: always; /* Ensures the table starts on a new page if it follows another content */
+  }
+
+  table {
+    width: 100%; /* Maximize table width for print */
+    margin: 0; /* Remove margins for tighter print layout */
+  }
+
+  th, td {
+    page-break-inside: avoid; /* Avoid breaking rows across pages */
+    font-size: 10px; /* Smaller font size for compact print layout */
+  }
+
+  /* Specific adjustments for the map and table to ensure they print on separate pages */
+  #map, .map-container { /* Adjust the selector as per your map container */
+    width: 100%;
+    height: auto; /* Adjust height to fit content when printed */
+    page-break-after: always; /* Force page break after the map */
+  }
 }
 
-th, td {
-  padding: 8px;
-  border: 1px solid #ddd;
-}
+/* Additional print-specific styling can be added here */
