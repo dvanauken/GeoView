@@ -68,11 +68,12 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.svg.append('g').selectAll('path')
       .data(features)
       .enter().append('path')
+      .attr("class", d => d.geometry.type.toLowerCase()) // Sets class based on geometry type
       .attr('d', this.path)
-      .attr('class', 'country')
-      .style('stroke', '#333')
-      .style('stroke-width', '0.5px')
-      .style('fill', '#d1e7f1');
+      //.attr('class', 'country')
+      //.style('stroke', '#333')
+      //.style('stroke-width', '0.5px')
+      //.style('fill', '#d1e7f1');
   }
 
   public resizeMap(): void {

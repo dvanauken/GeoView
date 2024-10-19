@@ -51,3 +51,48 @@ html, body {
   height: 100%; /* Ensure full height for body and HTML */
   overflow: hidden; /* Prevent scrollbars on the overall window */
 }
+
+
+
+
+
+
+  ///* Base styles for all paths in the map, ensures no fill for line-related geometries by default */
+  //path {
+  //  fill: none;
+  //  stroke: #004165; /* United Airlines brand color, navy blue */
+  //  stroke-width: 2px;
+  //  stroke-linejoin: round;
+  //  stroke-linecap: round;
+  //}
+
+  /* Specific styles for point features (e.g., cities, airports) */
+  .point {
+    fill: #ffbb00; /* United Airlines brand secondary color, gold */
+    stroke: #0051ba; /* Another brand color, deep blue */
+    stroke-width: 0.5px;
+    r: 5px; /* Radius of the point */
+  }
+
+  /* MultiPoint should be similar to Point but might have smaller radius if points are dense */
+  .multipoint {
+    fill: #ffbb00;
+    stroke: #0051ba;
+    stroke-width: 1px;
+    r: 3px;
+  }
+
+  /* LineString styles, e.g., routes */
+  .linestring {
+    fill: none;
+    stroke: #0051ba;
+    stroke-width: 1px;
+  }
+
+  /* MultiPolygon, similar to Polygon but might include multiple distinct areas */
+  .polygon, .multipolygon {
+    fill: #bbddff; /* Slightly different blue for distinction */
+    stroke: #003355; /* Darker outline for better separation */
+    stroke-width: 0.5px;
+    fill-opacity: 0.5;
+  }
