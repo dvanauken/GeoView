@@ -1,18 +1,17 @@
 <div #tableContainer class="table-container">
-  <div class="table-header">
-    <input class="filter-input" (input)="applyFilter($event.target.value)" placeholder="Filter data...">
-  </div>
   <div class="table-content">
     <table>
       <thead>
       <tr>
-        <th *ngFor="let column of displayedColumns" (click)="sortData(column)">
+        <th *ngFor="let column of displayedColumns">
           {{ column }}
         </th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let row of dataSource" (click)="onRowClick(row)" [class.selected]="row === selectedFeature?.properties">
+      <tr *ngFor="let row of dataSource; let i = index"
+          [class.selected]="row.selected"
+          (click)="onRowClick(row, i, $event)">
         <td *ngFor="let column of displayedColumns">{{ row[column] }}</td>
       </tr>
       </tbody>

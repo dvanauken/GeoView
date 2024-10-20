@@ -21,12 +21,23 @@ export class RouteLayerService {
     const features: Feature<GeometryObject>[] = [];
     const unmappableCodes = new Set<string>();
 
-    // Filter city pairs first by airline and then by airport code 'IAH'
+    // Filter city pairs first by airline and then by airport code 'DEN'
+    // const filteredCityPairs = cityPairs.filter(pair =>
+    //   pair.al === 'DL' && (pair.base === 'DEN' || pair.ref === 'DEN')
+    // );
+    //const filteredCityPairs = cityPairs.filter(pair =>
+    //  pair.al === 'AM'
+    //);
+
+    // const filteredCityPairs = cityPairs.filter(pair =>
+    //   pair.al === 'UA' && !['LAX', 'IAH', 'DEN', 'SFO', 'IAD', 'EWR', 'ORD'].includes(pair.base) && !['LAX', 'IAH', 'DEN', 'SFO', 'IAD', 'EWR', 'ORD'].includes(pair.ref)
+    // );
+
     const filteredCityPairs = cityPairs.filter(pair =>
-      pair.al === 'UA' && (pair.base === 'DEN' || pair.ref === 'DEN')
+      pair.al === 'AA' && !['LAX', 'LGA', 'DCA', 'ORD', 'DFW', 'CLT', 'PHX', 'JFK', 'MIA', 'PHL' ].includes(pair.base) && !['LAX', 'LGA', 'DCA', 'ORD', 'DFW', 'CLT', 'PHX', 'JFK', 'MIA', 'PHL'].includes(pair.ref)
     );
 
-    filteredCityPairs.forEach(pair => {
+    filteredCityPairs.forEach((pair, index) => {
       const baseAirport = airportMap[pair.base];
       const refAirport = airportMap[pair.ref];
 
@@ -46,9 +57,11 @@ export class RouteLayerService {
 
       features.push({
         type: 'Feature',
+        id: `${pair.base}-${pair.ref}-${pair.al}`, // Ensure each feature has a unique ID
         properties: {
+          id: `${pair.base}-${pair.ref}-${pair.al}`, // Ensure each feature has a unique ID
           Airline: pair.al,
-          Base: baseAirport.code,  // Assuming 'code' is the airport code
+          Base: baseAirport.code,
           Ref: refAirport.code,
           'City 1': `${baseAirport.city}`,
           'City 2': `${refAirport.city}`,
@@ -59,11 +72,9 @@ export class RouteLayerService {
         }
       });
     });
-
     if (unmappableCodes.size > 0) {
       console.log('Unmappable airport codes:', Array.from(unmappableCodes).join(', '));
     }
-
     return features;
   }
 

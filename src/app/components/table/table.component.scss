@@ -46,40 +46,13 @@
   tr:hover {
     background-color: #f0f0f0; // Darker gray on hover for interaction
   }
+
+  tr.selected {
+    background-color: #add8e6; // Light blue background for selected rows
+    font-weight: bold; // Optional: makes the text bold
+  }
+
+
 }
 
 
-/* General styles that apply when printing */
-@media print {
-  body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-  }
-
-  .table-container, .table-content {
-    width: 100%; /* Full width to use available space */
-    overflow: visible; /* Remove scroll bars in print */
-  }
-
-  .table-content {
-    page-break-after: always; /* Ensures the table starts on a new page if it follows another content */
-  }
-
-  table {
-    width: 100%; /* Maximize table width for print */
-    margin: 0; /* Remove margins for tighter print layout */
-  }
-
-  th, td {
-    page-break-inside: avoid; /* Avoid breaking rows across pages */
-    font-size: 10px; /* Smaller font size for compact print layout */
-  }
-
-  /* Specific adjustments for the map and table to ensure they print on separate pages */
-  #map, .map-container { /* Adjust the selector as per your map container */
-    width: 100%;
-    height: auto; /* Adjust height to fit content when printed */
-    page-break-after: always; /* Force page break after the map */
-  }
-}
-
-/* Additional print-specific styling can be added here */

@@ -1,8 +1,9 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
-import { Feature, FeatureCollection } from 'geojson';
+import {Feature, FeatureCollection, GeometryObject} from 'geojson';
 import { DataModel } from '../../models/data-model';  // Ensure correct import path
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-map',
@@ -12,14 +13,23 @@ import { DataModel } from '../../models/data-model';  // Ensure correct import p
 export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer: ElementRef;
   private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  private g: d3.Selection<SVGGElement, unknown, null, undefined>;
   private projection: d3.GeoProjection;
   private path: d3.GeoPath;
   private resizeObserver: ResizeObserver;
+  private subscription: Subscription;
+  private zoom: d3.ZoomBehavior<Element, unknown>;
 
   constructor() {}
 
   ngOnInit(): void {
-    this.initMap();
+    this.initMap();  // Initialize the map first
+    this.subscription = DataModel.getInstance().getSelectedFeatures().subscribe(features => {
+      console.log('Received features to update selection:', features);
+      this.updateMapSelection(features);
+    });
+    // Uncomment below to test with a static feature after ensuring data loading is correct
+    // this.testFeatureSelection();
   }
 
   ngAfterViewInit(): void {
@@ -34,6 +44,17 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this.subscription.unsubscribe(); // Properly clean up the subscription
+  }
+
+  private updateMapSelection(features: Feature[] | null): void {
+    console.log('Updating map selection for features:', features?.map(f => f.id));
+    this.svg.selectAll('path')
+      .classed('selected', d => {
+        const isSelected = features?.some(f => f.id === (d as Feature).id);
+        console.log(`Feature ${((d as Feature).id)} selected: ${isSelected}`);
+        return isSelected;
+      });
   }
 
   private initMap(): void {
@@ -49,10 +70,21 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
+    this.g = this.svg.append('g');  // Group for the map paths
+
     this.projection = d3Geo.geoMercator()
       .translate([width / 2, height / 2]);
 
     this.path = d3Geo.geoPath().projection(this.projection);
+
+
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 50])
+      .on('zoom', (event) => {
+        this.g.attr('transform', event.transform);
+      });
+
+    this.svg.call(this.zoom);  // Apply the zoom behavior to the SVG
 
     layerNames.forEach(name => {
       const layer = DataModel.getInstance().getLayer(name);
@@ -60,20 +92,33 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
         this.addLayerToMap(layer.features);
       }
     });
-
     this.resizeMap(); // Ensure initial sizing is correct
   }
 
-  private addLayerToMap(features: Feature[]): void {
-    this.svg.append('g').selectAll('path')
-      .data(features)
+  // private addLayerToMap(features: Feature<GeometryObject>[]): void {
+  //   this.svg.append('g').selectAll('path')
+  //     .data(features, (d: any) => d.id)  // Use the 'id' to bind data
+  //     .enter().append('path')
+  //     .attr("class", d => d.geometry.type.toLowerCase())
+  //     .attr('d', this.path)
+  //     .on('click', (event, feature) => {
+  //       console.log('Clicked feature ID:', feature.id);  // Log to confirm the ID is accessible
+  //       this.selectFeature(event, feature);
+  //     })
+  //     .style('cursor', 'pointer');
+  // }
+  private addLayerToMap(features: Feature<GeometryObject>[]): void {
+    // Use the existing group 'g' that has the zoom behavior applied.
+    this.g.selectAll('path')
+      .data(features, (d: any) => d.id)  // Use the 'id' to bind data
       .enter().append('path')
-      .attr("class", d => d.geometry.type.toLowerCase()) // Sets class based on geometry type
+      .attr("class", d => d.geometry.type.toLowerCase())
       .attr('d', this.path)
-      //.attr('class', 'country')
-      //.style('stroke', '#333')
-      //.style('stroke-width', '0.5px')
-      //.style('fill', '#d1e7f1');
+      .on('click', (event, feature) => {
+        console.log('Clicked feature ID:', feature.id);  // Log to confirm the ID is accessible
+        this.selectFeature(event, feature);
+      })
+      .style('cursor', 'pointer');
   }
 
   public resizeMap(): void {
@@ -108,5 +153,27 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
     return allFeatures;
+  }
+
+  private selectFeature(event: MouseEvent, feature: Feature): void {
+    if (feature.id) {
+      DataModel.getInstance().setSelectedFeatures([feature]);
+      console.log('Selected feature set in DataModel:', feature.id);
+    } else {
+      console.error('Feature ID is undefined, cannot select');
+    }
+  }
+
+  private testFeatureSelection(): void {
+    const testFeature = {
+      type: 'Feature',
+      id: 'test1',
+      properties: { name: 'Test Feature' },
+      geometry: {
+        type: 'LineString',
+        coordinates: [[-101.744384, 39.32155], [-101.552982, 39.330048]]
+      }
+    };
+    this.selectFeature(new MouseEvent('click'), testFeature as any);
   }
 }

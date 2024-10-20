@@ -86,8 +86,14 @@ html, body {
   .linestring {
     fill: none;
     stroke: #0051ba;
-    stroke-width: 1px;
+    stroke-width: 0.5px;
+
+    &.selected {
+      stroke: #ffbb00; // Gold color for selection
+      stroke-width: 0.5px; // Make the line thicker when selected
+    }
   }
+
 
   /* MultiPolygon, similar to Polygon but might include multiple distinct areas */
   .sphere, .polygon, .multipolygon {

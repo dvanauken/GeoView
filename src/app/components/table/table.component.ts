@@ -1,7 +1,9 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ChangeDetectorRef } from '@angular/core';
 import { FeatureCollection, Feature } from 'geojson';
 import {DataModel} from "../../models/data-model";
+import { Subscription } from 'rxjs';
+
 
 @Component({
   selector: 'app-table',
@@ -10,93 +12,111 @@ import {DataModel} from "../../models/data-model";
 })
 export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('tableContainer', { static: true }) tableContainer: ElementRef;
-  displayedColumns: string[] = []; // Define your table columns dynamically based on GeoJSON data
-  dataSource: any[] = []; // Add your data here
+  displayedColumns: string[] = [];
+  dataSource: any[] = [];
   private resizeObserver!: ResizeObserver;
-  private selectedLayerName: string = '';  // Default or user-selected layer name
+  private selectedLayerName: string = '';
+  private subscription: Subscription;
+  selectedRows = new Set();
+  lastClickedRowIndex: number | null = null;
 
-  constructor() {}
+  constructor(private cdr: ChangeDetectorRef) {
+    console.log('TableComponent constructor called');
+  }
 
   ngOnInit(): void {
-    //this.loadLayerData();
-    this.loadSelectedLayerData();
+    this.loadSelectedLayerData(); // Ensure data is loaded
+    this.subscription = DataModel.getInstance().getSelectedFeatures().subscribe(features => {
+      this.updateTableSelection(features);
+    });
+  }
+
+  updateTableSelection(features: Feature[] | null): void {
+    if (!features) {
+      console.log('No features to update in table.');
+      return;
+    }
+
+    this.dataSource.forEach(row => {
+      const isSelected = features.some(feature => feature && feature.id === row.id);
+      if (isSelected !== row.selected) {
+        row.selected = isSelected;
+        console.log(`Row with ID ${row.id} selection updated to ${isSelected}`);
+      }
+    });
   }
 
   ngAfterViewInit(): void {
-    this.resizeTable(); // Initial table size adjustment
-
-    // Use ResizeObserver to detect size changes in the parent container (pane)
     this.resizeObserver = new ResizeObserver(() => {
-      console.log('Table container resized.');
-      this.resizeTable(); // Adjust the table size on container resize
+      this.resizeTable();
     });
-
-    // Observe the parent container element
     this.resizeObserver.observe(this.tableContainer.nativeElement);
   }
 
   ngOnDestroy(): void {
     if (this.resizeObserver) {
-      this.resizeObserver.disconnect(); // Clean up observer on destroy
+      this.resizeObserver.disconnect();
+    }
+    this.subscription.unsubscribe();
+  }
+
+  private loadSelectedLayerData(): void {
+    console.log('loadSelectedLayerData called');
+    // Example: Load layer data, assuming it's synchronous for simplicity
+    // In practice, you might need to handle asynchronous data fetching here
+    const selectedLayer = DataModel.getInstance().getSelectedLayer();
+    if (selectedLayer && selectedLayer.features) {
+      this.displayedColumns = Object.keys(selectedLayer.features[0].properties || {});
+      this.dataSource = selectedLayer.features.map(feature => ({
+        ...feature.properties,
+        id: feature.id,
+        selected: false  // Initialize selection state
+      }));
     }
   }
 
-  private loadLayerData(): void {
-    const layerNames = DataModel.getInstance().getLayers();
-    if (layerNames.length > 0) {
-      // Optionally, allow user selection or default to the first layer
-      this.selectedLayerName = layerNames[0];
-      this.populateTable(this.selectedLayerName);
-    }
-  }
-
-  private populateTable(layerName: string): void {
-    const layer = DataModel.getInstance().getLayer(layerName);
-    if (layer && layer.features) {
-      // Dynamically set the table columns based on the first feature's properties
-      this.displayedColumns = Object.keys(layer.features[0].properties || {});
-      // Populate the data source with feature properties (non-geometry)
-      this.dataSource = layer.features.map((feature: Feature) => feature.properties);
-    }
-  }
-
-  public selectLayer(layerName: string): void {
-    this.selectedLayerName = layerName;
-    this.populateTable(layerName);
-  }
 
   resizeTable(): void {
     if (this.tableContainer) {
       const width = this.tableContainer.nativeElement.offsetWidth;
       const height = this.tableContainer.nativeElement.offsetHeight;
-
       console.log(`Resizing table to ${width}x${height}`);
-
-      // Adjust table layout, such as setting widths or heights based on container size
     }
   }
 
-  private loadSelectedLayerData(): void {
-    const selectedLayer = DataModel.getInstance().getSelectedLayer();
-    if (selectedLayer && selectedLayer.features) {
-      // Set table columns based on properties of the first feature
-      this.displayedColumns = Object.keys(selectedLayer.features[0].properties || {});
-      // Populate the table data source with properties of each feature
-      this.dataSource = selectedLayer.features.map((feature: Feature) => feature.properties);
+  onRowClick(row: any, index: number, event: MouseEvent): void {
+    this.lastClickedRowIndex = index;  // Update the last clicked index for shift-click logic
+    let newSelection;
+    if (event.shiftKey && this.lastClickedRowIndex !== null) {
+      const start = Math.min(index, this.lastClickedRowIndex);
+      const end = Math.max(index, this.lastClickedRowIndex);
+      newSelection = this.dataSource.slice(start, end + 1);
+    } else if (event.ctrlKey || event.metaKey) {
+      newSelection = [...DataModel.getInstance().getSelectedFeatures().value || []];
+      const idx = newSelection.findIndex(item => item.id === row.id);
+      if (idx > -1) {
+        newSelection.splice(idx, 1);  // Deselect if already selected
+      } else {
+        newSelection.push(row);  // Select if not already selected
+      }
     } else {
-      console.error('No selected layer or no features available.');
+      newSelection = [row];  // Normal click, select only this row
     }
+
+    DataModel.getInstance().setSelectedFeatures(newSelection);
   }
 
-  applyFilter(filterValue: string): void {
-    // Logic to filter table data based on input
-  }
-
-  // sortData(column: string): void {
-  //   // Logic to sort the data when a column header is clicked
+  // isSelected(row: any): boolean {
+  //   // const selected = this.selectedRows.has(row);
+  //   // console.log(`Row selected: ${selected}, applying background: ${selected ? '#add8e6' : 'none'}`);
+  //   // return selected;
+  //   return true;
   // }
-  //
-  onRowClick(row: any): void {
-    // Logic to handle row click events
-  }
+
+  // private logSelectionState(): void {
+  //   console.log('Current selection state:');
+  //   console.log('Selected rows count:', this.selectedRows.size);
+  //   console.log('Selected rows:', Array.from(this.selectedRows));
+  //   console.log('Last clicked row index:', this.lastClickedRowIndex);
+  // }
 }
