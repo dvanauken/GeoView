@@ -22,9 +22,16 @@ export class RouteLayerService {
     const unmappableCodes = new Set<string>();
 
     // Filter city pairs first by airline and then by airport code 'DEN'
+
+    const filteredCityPairs = cityPairs.filter(pair =>
+      pair.al === '3M'
+    );
+
+
     // const filteredCityPairs = cityPairs.filter(pair =>
     //   pair.al === 'DL' && (pair.base === 'DEN' || pair.ref === 'DEN')
     // );
+
     //const filteredCityPairs = cityPairs.filter(pair =>
     //  pair.al === 'AM'
     //);
@@ -33,9 +40,9 @@ export class RouteLayerService {
     //   pair.al === 'UA' && !['LAX', 'IAH', 'DEN', 'SFO', 'IAD', 'EWR', 'ORD'].includes(pair.base) && !['LAX', 'IAH', 'DEN', 'SFO', 'IAD', 'EWR', 'ORD'].includes(pair.ref)
     // );
 
-    const filteredCityPairs = cityPairs.filter(pair =>
-      pair.al === 'AA' && !['LAX', 'LGA', 'DCA', 'ORD', 'DFW', 'CLT', 'PHX', 'JFK', 'MIA', 'PHL' ].includes(pair.base) && !['LAX', 'LGA', 'DCA', 'ORD', 'DFW', 'CLT', 'PHX', 'JFK', 'MIA', 'PHL'].includes(pair.ref)
-    );
+    // const filteredCityPairs = cityPairs.filter(pair =>
+    //   pair.al === 'AA' && !['LAX', 'LGA', 'DCA', 'ORD', 'DFW', 'CLT', 'PHX', 'JFK', 'MIA', 'PHL' ].includes(pair.base) && !['LAX', 'LGA', 'DCA', 'ORD', 'DFW', 'CLT', 'PHX', 'JFK', 'MIA', 'PHL'].includes(pair.ref)
+    // );
 
     filteredCityPairs.forEach((pair, index) => {
       const baseAirport = airportMap[pair.base];

@@ -61,8 +61,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     const layerNames = DataModel.getInstance().getLayers();
     const containerWidth = this.mapContainer.nativeElement.offsetWidth;
     const containerHeight = this.mapContainer.nativeElement.offsetHeight;
-    const width = containerWidth * 0.8;
-    const height = containerHeight * 0.8;
+    const width = containerWidth * 0.95;
+    const height = containerHeight * 0.95;
 
     this.svg = d3.select(this.mapContainer.nativeElement).append('svg')
       .attr('width', width)
@@ -76,6 +76,21 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .translate([width / 2, height / 2]);
 
     this.path = d3Geo.geoPath().projection(this.projection);
+
+    // Draw the spherical background
+    this.g.append("path")
+      .datum({type: "Sphere"})
+      .attr("class", "sphere")
+      .attr("d", this.path)
+      //.attr("fill", "#F5F5F5");  // Light blue fill, or choose any suitable color
+
+
+    // Draw the spherical background
+    this.g.append("path")
+      .datum({type: "Sphere"})
+      .attr("class", "sphere")
+      .attr("d", this.path)
+      .attr("fill", "#ADD8E6");  // Light blue fill, or choose any suitable color
 
 
     this.zoom = d3.zoom()
@@ -125,8 +140,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.mapContainer && this.svg) {
       const containerWidth = this.mapContainer.nativeElement.offsetWidth;
       const containerHeight = this.mapContainer.nativeElement.offsetHeight;
-      const width = containerWidth * 0.8;
-      const height = containerHeight * 0.8;
+      const width = containerWidth * 0.95;
+      const height = containerHeight * 0.95;
 
       console.log(`Resizing map to ${width}x${height}`);
 

@@ -96,7 +96,15 @@ html, body {
 
 
   /* MultiPolygon, similar to Polygon but might include multiple distinct areas */
-  .sphere, .polygon, .multipolygon {
+  .sphere {
+    fill: #F5F5F5; /* Slightly different blue for distinction */
+    stroke: none; /* Darker outline for better separation */
+    stroke-width: 0.5px;
+    //fill-opacity: 0.5;
+  }
+
+
+  .polygon, .multipolygon {
     fill: #bbddff; /* Slightly different blue for distinction */
     stroke: #003355; /* Darker outline for better separation */
     stroke-width: 0.5px;
