@@ -47,8 +47,11 @@ export class RouteLayerService {
       features.push({
         type: 'Feature',
         properties: {
-          name: `${baseAirport.city} to ${refAirport.city}`,
-          airline: pair.al
+          Airline: pair.al,
+          Base: baseAirport.code,  // Assuming 'code' is the airport code
+          Ref: refAirport.code,
+          'City 1': `${baseAirport.city}`,
+          'City 2': `${refAirport.city}`,
         },
         geometry: {
           type: 'LineString',

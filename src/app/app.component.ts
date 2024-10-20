@@ -54,7 +54,10 @@ export class AppComponent implements OnInit {
       this.fileService.loadGeoJSON('assets/out.20240823.json')
     ]).then(([airports, cityPairs]) => {
       const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5); // Adjust point density as needed
+
       DataModel.getInstance().addLayer('routes', routeLayer);
+      DataModel.getInstance().setSelectedLayer('routes');  // Correctly setting 'routes' after loading
+
       this.isLoading = false;
     }).catch((error) => {
       console.error('Error loading route data:', error);
