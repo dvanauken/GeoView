@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
   private loadRouteData(): void {
     Promise.all([
       this.fileService.loadGeoJSON('assets/Airport.json'),
-      this.fileService.loadGeoJSON('assets/citypair.20240823.json')
+      this.fileService.loadGeoJSON('assets/out.20240823.json')
     ]).then(([airports, cityPairs]) => {
       const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5); // Adjust point density as needed
       DataModel.getInstance().addLayer('routes', routeLayer);

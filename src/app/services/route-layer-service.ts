@@ -23,7 +23,7 @@ export class RouteLayerService {
 
     // Filter city pairs first by airline and then by airport code 'IAH'
     const filteredCityPairs = cityPairs.filter(pair =>
-      pair.al === 'AA' && (pair.base === 'IAH' || pair.ref === 'IAH')
+      pair.al === 'UA' && (pair.base === 'DEN' || pair.ref === 'DEN')
     );
 
     filteredCityPairs.forEach(pair => {
