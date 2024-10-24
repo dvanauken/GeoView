@@ -1,43 +1,36 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { FileService } from './file.service';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AirportService {
-  private airports: any[] = [];
+  private airportData: any[] = [];
+  private readonly cacheKey = 'airportDataCache';
 
-  constructor(private http: HttpClient) {}
+  constructor(private fileService: FileService) {}
 
-  // Method to load airport.json file
-  loadAirports(): Observable<any> {
-    console.log("loadAirports.start")
-    return this.http.get('assets/Airport.json').pipe(
-      map((data: any[]) => {
-        this.airports = data;
+  // Load Airport.json into memory and optionally cache it
+  loadAirportData(): Promise<void> {
+    const cachedData = localStorage.getItem(this.cacheKey);
 
-        // Log each airport as it's loaded
-        this.airports.forEach((airport, index) => {
-          //console.log(`Airport ${index + 1}:`, airport);
-        });
-
-        //console.log('All airports loaded:', this.airports);  // Log the full airport list
-        return this.airports;
-      }),
-      catchError((error) => {
-        console.error('Error loading Airport.json:', error);
-        return of([]); // Return an empty array on error
-      }),
-    );
-    console.log("loadAirports.end")
+    if (cachedData) {
+      this.airportData = JSON.parse(cachedData);
+      console.log('Loaded airport data from local storage cache:', this.airportData);
+      return Promise.resolve(); // Data is already loaded from cache
+    } else {
+      return this.fileService.loadGeoJSON('assets/Airport.json').then((data) => {
+        this.airportData = data;
+        localStorage.setItem(this.cacheKey, JSON.stringify(data));
+        console.log('Airport data loaded from file and stored in memory + cache:', this.airportData);
+      }).catch((error) => {
+        console.error('Error loading Airport data:', error);
+      });
+    }
   }
 
-  // Method to get airport by code
-  getAirportByCode(code: string): any | undefined {
-    const airport = this.airports.find((airport) => airport.code === code);
-    //console.log(`Looking up airport by code: ${code}`, airport);  // Debug: log airport lookup
-    return airport;
+  // Getter for accessing the in-memory airport data
+  getAirportData(): any[] {
+    return this.airportData;
   }
 }

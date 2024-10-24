@@ -28,9 +28,9 @@ export class RouteLayerService {
     );
 
 
-    // const filteredCityPairs = cityPairs.filter(pair =>
-    //   pair.al === 'DL' && (pair.base === 'DEN' || pair.ref === 'DEN')
-    // );
+//     const filteredCityPairs = cityPairs.filter(pair =>
+//       pair.al === 'DL' && (pair.base === 'ATL' || pair.ref === 'ATL')
+//     );
 
     //const filteredCityPairs = cityPairs.filter(pair =>
     //  pair.al === 'AM'
@@ -72,6 +72,8 @@ export class RouteLayerService {
           Ref: refAirport.code,
           'City 1': `${baseAirport.city}`,
           'City 2': `${refAirport.city}`,
+          'base': `(${baseAirport.lat}, ${baseAirport.lon})`,
+          'ref': `(${refAirport.lat}, ${refAirport.lon})`,
         },
         geometry: {
           type: 'LineString',

@@ -7,5 +7,12 @@ export enum ProjectionType {
     Mercator = 'mercator',
     Orthographic = 'orthographic',
     TiltedPerspective = 'tiltedPerspective',
-    TransverseMercator = 'transverseMercator'
+    TransverseMercator = 'transverseMercator',
+    Equirectangular = 'equirectangular',
+    NaturalEarth = 'naturalEarth',
+    AzimuthalEqualArea = 'azimuthalEqualArea',
+    Stereographic = 'stereographic',
+    AlbersUSA = 'albersUSA',
+    Sinusoidal = 'sinusoidal',
+    Mollweide= 'mollweide'
 }

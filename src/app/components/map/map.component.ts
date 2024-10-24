@@ -14,44 +14,29 @@ import { ProjectionType } from '../../enums/projection-type.enum';
 export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer: ElementRef;
   private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-  private g: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private gSphere: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private gCountries: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private gRoutes: d3.Selection<SVGGElement, unknown, null, undefined>;
   private projection: d3.GeoProjection;
   private path: d3.GeoPath;
   private resizeObserver: ResizeObserver;
   private subscription: Subscription;
   private zoom: d3.ZoomBehavior<Element, unknown>;
-  //private projectionType: string = 'mercator'; // Default to Mercator
-  private projectionType: ProjectionType = ProjectionType.LambertConicConformal;
-
-  //Todo
-  //-rotation[yaw, pitch, roll];
-  //--yaw = rotation[0];
-  //--pitch = rotation[1];
-  //--roll = rotation[2];
-  //-Export -> svg?, PDF
-  //-Extent
-  //-Labels (codes)
-  //-Table editing
-  //-Script tagging.
-  //-Table
-  //--sorting
-  //--filtering
-  //-Widgets
-  //--Roll, pitch, yaw widget
-  //--Layer widget
-  //-Level of Detail
-  //-Strokes should remain 1px for every zoom level
+  private projectionType: ProjectionType = ProjectionType.Orthographic;
 
   constructor() {}
 
   ngOnInit(): void {
+    console.log('MapComponent ngOnInit called.');
     this.initMap();
     this.subscription = DataModel.getInstance().getSelectedFeatures().subscribe(features => {
+      console.log('MapComponent received updated features:', features);
       this.updateMapSelection(features);
     });
   }
 
   ngAfterViewInit(): void {
+    console.log('MapComponent ngAfterViewInit called. Ready for interaction.');
     this.resizeObserver = new ResizeObserver(() => this.resizeMap());
     this.resizeObserver.observe(this.mapContainer.nativeElement);
   }
@@ -67,13 +52,12 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Draw the spherical background
     this.path = d3.geoPath().projection(this.projection); // Define the path generator with the set projection
-    this.g.append("path")
-      .datum({type: "Sphere"})
+    this.gSphere.append("path")
+      .datum({ type: "Sphere" })
       .attr("class", "sphere")
       .attr("d", this.path)
-
-    //Graticule
-    //Airport codes
+      .style('fill', '#f5f5f5 ') // Optional: Add fill style for the sphere background
+      .style('stroke', '#000'); // Optional: Add stroke style for the boundary of the sphere
 
     this.applyZoom();
     this.addLayers();
@@ -90,112 +74,76 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
-    this.g = this.svg.append('g');
+    // Separate groups for different layers
+    this.gSphere = this.svg.append('g').attr('class', 'sphere-layer');
+    this.gCountries = this.svg.append('g').attr('class', 'countries-layer');
+    this.gRoutes = this.svg.append('g').attr('class', 'routes-layer');
   }
 
-private setProjection(type: ProjectionType): void {
+  private setProjection(type: ProjectionType): void {
     const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
     const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
     const translate: [number, number] = [width / 2, height / 2];
-    const center: [number, number] = [0, 0];  // This is the correct tuple definition
-    const rotation: [number, number, number] = [-74, -41.5, 0]; // Ensure this is also correctly typed
 
-    switch (type) {
-      //case ProjectionType.Armadillo:
-      //  this.projection = d3.geoArmadillo()
-      //    .translate(translate)
-      //    .rotate(rotation)
-      //  break;
-      case ProjectionType.Gnomonic:
-        this.projection = d3.geoGnomonic()
-          .translate(translate)
-          .center(center)
-          .rotate(rotation)
-        break;
-      case ProjectionType.LambertConicConformal:
-         this.projection = d3.geoConicConformal()
-           .translate(translate)
-           .rotate(rotation)
-          .parallels([29.5, 45.5])  // Specific to this projection type
-        break;
-      case ProjectionType.Mercator:
-        this.projection = d3.geoMercator()
-          .translate(translate)
-          .center(center)
-          //.rotate(rotation)
-        break;
-      case ProjectionType.Orthographic:
-        this.projection = d3.geoOrthographic()
-          .translate(translate)
-          .rotate([74, -30])
-        break;
-      //case ProjectionType.TiltedPerspective:
-      //  // Using satellite for a 3D-like perspective view
-      //  this.projection = d3.geoSatellite()
-      //    .distance(1.5)  // This adjusts how much of the sphere is visible
-      //    .rotate(rotation)
-      //    .translate(translate)
-      //    .scale(5000)
-      //    .tilt(25);  // Simulating pitch
-      //  break;
-      case ProjectionType.TransverseMercator:
-        this.projection = d3.geoTransverseMercator()
-          .translate(translate)
-          //.rotate(rotation)
-          break;
-      default:
-        this.projection = d3.geoMercator()
-          .translate(translate)
-          //.rotate(rotation)
-        break;
+    const projection = d3['geoOrthographic']()
+      .translate(translate)
+      .center([-75, -30])
+      .rotate([75, -10, 0]);
+
+    if ('parallels' in projection) {
+      (projection as d3.GeoConicProjection).parallels([30.5, 45.5]);
     }
+
+    this.projection = projection;
     this.path = d3.geoPath().projection(this.projection);
-    this.redrawMap();
   }
 
   private applyZoom(): void {
-    this.zoom = d3.zoom()
-      .scaleExtent([1, 50])
-      .on('zoom', event => this.g.attr('transform', event.transform));
-    this.svg.call(this.zoom);
+    this.svg.call(
+      d3.zoom()
+        .scaleExtent([1, 50])
+        .on('zoom', (event) => {
+          this.gSphere.attr('transform', event.transform);
+          this.gCountries.attr('transform', event.transform);
+          this.gRoutes.attr('transform', event.transform);
+          this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke'); // Ensure stroke width is constant
+        })
+    );
   }
 
   private addLayers(): void {
-    const layerNames = DataModel.getInstance().getLayers();
-    layerNames.forEach(name => {
-      const layer = DataModel.getInstance().getLayer(name);
+    const layerNames = DataModel.getInstance().getLayerNames();
+    layerNames.forEach(layerName => {
+      const layer = DataModel.getInstance().getLayer(layerName);
       if (layer && layer.features) {
-        this.addLayerToMap(layer.features);
+        if (layerName === 'countries') {
+          // Add geography features
+          console.log(`Adding countries layer with ${layer.features.length} features.`);
+          this.gCountries.selectAll('path')
+            .data(layer.features, (d: any) => d.id)
+            .enter().append('path')
+            .attr("class", d => `${d.geometry.type.toLowerCase()} country`)
+            .attr('d', this.path)
+            .style('fill', '#cccccc'); // Optional: Add some styling for geography
+        } else if (layerName === 'routes') {
+          // Add route features
+          console.log(`Adding routes layer with ${layer.features.length} features.`);
+          this.gRoutes.selectAll('path')
+            .data(layer.features, (d: any) => d.id)
+            .enter().append('path')
+            .attr("class", d => `${d.geometry.type.toLowerCase()} route`)
+            .attr('d', this.path)
+            .style('stroke', '#ff0000') // Optional: Add styling for routes
+            .style('stroke-width', 0.5)
+            .style('fill', 'none')
+            .on('click', (event, feature) => {
+              console.log('Clicked feature ID:', feature.id);
+              this.selectFeature(event, feature);
+            })
+            .style('cursor', 'pointer');
+        }
       }
     });
-  }
-
-  private addLayerToMap(features: Feature<GeometryObject>[]): void {
-    this.g.selectAll('path')
-      .data(features, (d: any) => d.id)
-      .enter().append('path')
-      .attr("class", d => d.geometry.type.toLowerCase())
-      .attr('d', this.path)
-      .on('click', (event, feature) => {
-        console.log('Clicked feature ID:', feature.id);
-        this.selectFeature(event, feature);
-      })
-      .style('cursor', 'pointer');
-  }
-
-  private redrawMap(): void {
-    const features = this.getAllFeatures();
-    this.g.selectAll('path')
-      .data(features, (d: any) => d.id)
-      .join(
-        enter => enter.append('path')
-          .attr('class', d => d.geometry.type.toLowerCase())
-          .attr('d', this.path)
-          .on('click', (event, d) => this.selectFeature(event, d))
-          .style('cursor', 'pointer'),
-        update => update.attr('d', this.path),
-        exit => exit.remove()
-      );
   }
 
   public resizeMap(): void {
@@ -206,21 +154,9 @@ private setProjection(type: ProjectionType): void {
       const height = containerHeight * 0.95;
 
       this.svg.attr('width', width).attr('height', height).attr('viewBox', `0 0 ${width} ${height}`);
-      this.projection.fitSize([width, height], { type: 'FeatureCollection', features: this.getAllFeatures() });
+      this.projection.fitSize([width, height], { type: 'FeatureCollection', features: DataModel.getInstance().getAllFeatures() });
       this.svg.selectAll('path').attr('d', this.path);
     }
-  }
-
-  private getAllFeatures(): Feature[] {
-    const allFeatures = [];
-    const layerNames = DataModel.getInstance().getLayers();
-    layerNames.forEach(name => {
-      const layer = DataModel.getInstance().getLayer(name);
-      if (layer && layer.features) {
-        allFeatures.push(...layer.features);
-      }
-    });
-    return allFeatures;
   }
 
   private selectFeature(event: MouseEvent, feature: Feature): void {
@@ -234,8 +170,13 @@ private setProjection(type: ProjectionType): void {
 
   private updateMapSelection(features: Feature[] | null): void {
     console.log('Map features updated:', features);
-    this.svg.selectAll('path')
-      .classed('selected', d => features && features.some(f => f.id === (d as Feature).id));
+    this.gRoutes.selectAll('.selected').classed('selected', false); // Deselect previous selected routes
+    if (features) {
+      features.forEach(feature => {
+        this.gRoutes.selectAll('path')
+          .filter((d: Feature) => d.id === feature.id)
+          .classed('selected', true);
+      });
+    }
   }
-
 }

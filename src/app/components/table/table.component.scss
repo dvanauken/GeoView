@@ -14,6 +14,7 @@
     width: 95%; // Adjusting width for table within the container
     margin: 10px auto; // Centers the table with reduced vertical margin
     border-collapse: collapse; // Neat borders between cells
+    table-layout: fixed; // Forces consistent column widths
     thead th {
       position: sticky;
       top: 0; // Stick to the top of the scrollable area
@@ -29,6 +30,10 @@
     border-bottom: 1px solid #e0e0e0; // Light gray border for separation
     font-size: 12px; // Smaller font size for a more compact look
     color: #333; // Dark gray text for contrast on light background
+    overflow: hidden; // Prevents overflow content
+    text-overflow: ellipsis; // Adds ellipsis if content is too long
+    white-space: nowrap; // Prevents text from wrapping
+    max-width: 150px; // Set a maximum width for columns to avoid them being too wide
   }
 
   th {
@@ -53,6 +58,42 @@
   }
 
 
+    .new-entry-row {
+      background-color: #f8f9fa;
+
+      input {
+        width: 90%;
+        padding: 4px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 12px;
+
+        &:focus {
+          outline: none;
+          border-color: #80bdff;
+          box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+      }
+
+      span {
+        color: #6c757d;
+        font-style: italic;
+      }
+    }
+
+    button {
+      padding: 4px 8px;
+      margin: 0 2px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      background-color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+
+      &:hover {
+        background-color: #e9ecef;
+      }
+    }
+
+
 }
-
-

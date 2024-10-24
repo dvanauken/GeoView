@@ -82,17 +82,18 @@ html, body {
     r: 3px;
   }
 
-  /* LineString styles, e.g., routes */
-  .linestring {
-    fill: none;
-    stroke: #0051ba;
-    stroke-width: 0.5px;
+//   /* LineString styles, e.g., routes */
+//   .linestring {
+//     fill: none;
+//     stroke: #0051ba;
+//     stroke-width: 0.5px;
+//
+//     &.selected {
+//       stroke: #ffbb00; // Gold color for selection
+//       stroke-width: 0.5px; // Make the line thicker when selected
+//     }
+//   }
 
-    &.selected {
-      stroke: #ffbb00; // Gold color for selection
-      stroke-width: 0.5px; // Make the line thicker when selected
-    }
-  }
 
 
   /* MultiPolygon, similar to Polygon but might include multiple distinct areas */
@@ -109,4 +110,17 @@ html, body {
     stroke: #003355; /* Darker outline for better separation */
     stroke-width: 0.5px;
     //fill-opacity: 0.5;
+  }
+
+  /* LineString styles, e.g., routes */
+  .linestring {
+    fill: none;
+    stroke: #0051ba;
+    stroke-width: 1px;
+
+
+    &.selected {
+      stroke: #ffbb00; // Gold color for selection
+      stroke-width: 1.5px; // Make the line thicker when selected
+    }
   }
