@@ -21,6 +21,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer: ElementRef;
   private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
   private gSphere: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private gGraticule: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gCountries: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gRoutes: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gAirports: d3.Selection<SVGGElement, unknown, null, undefined>;
@@ -51,29 +52,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.resizeObserver) this.resizeObserver.disconnect();
-    this.subscription.unsubscribe();
-  }
-
-  private initMap(): void {
-    console.log('Initializing map.');
-    this.setupSVG();
-    this.setProjection(this.projectionType);
-
-    // Draw the spherical background
-    this.path = d3.geoPath().projection(this.projection); // Define the path generator with the set projection
-    this.gSphere.append("path")
-      .datum({ type: "Sphere" })
-      .attr("class", "sphere")
-      .attr("d", this.path)
-      .style('fill', '#f5f5f5 ') // Optional: Add fill style for the sphere background
-      .style('stroke', '#000'); // Optional: Add stroke style for the boundary of the sphere
-
-    this.applyZoom();
-    this.addLayers();
-
-     this.addAirports();  // Function to add airports
-
-    this.resizeMap();
+    if (this.subscription) this.subscription.unsubscribe();
   }
 
   private setupSVG(): void {
@@ -81,51 +60,113 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
     const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
 
+    // Clear any existing SVG
+    d3.select(this.mapContainer.nativeElement).selectAll('svg').remove();
+
     this.svg = d3.select(this.mapContainer.nativeElement).append('svg')
       .attr('width', width)
       .attr('height', height)
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
-    // Separate groups for different layers
+    // Create groups in correct order (bottom to top)
     this.gSphere = this.svg.append('g').attr('class', 'sphere-layer');
+    this.gGraticule = this.svg.append('g').attr('class', 'graticule-layer');
     this.gCountries = this.svg.append('g').attr('class', 'countries-layer');
     this.gRoutes = this.svg.append('g').attr('class', 'routes-layer');
     this.gAirports = this.svg.append('g').attr('class', 'airports-layer');
+  }
+
+  private initMap(): void {
+    console.log('Initializing map.');
+    this.setupSVG();
+    this.setProjection(this.projectionType);
+
+    // Draw the background sphere first
+    this.path = d3.geoPath().projection(this.projection);
+
+    // Add the base sphere with subtle color
+    this.gSphere.append("path")
+      .datum({type: "Sphere"})
+      .attr("class", "sphere-background")
+      .attr("d", this.path)
+      .style("fill", "#f8f9fa")
+      .style("stroke", "#ddd")
+      .style("stroke-width", "0.5px");
+
+    // Add graticule
+    const graticule = d3.geoGraticule();
+    this.gGraticule.append("path")
+      .datum(graticule)
+      .attr("class", "graticule")
+      .attr("d", this.path)
+      .style("fill", "none")
+      .style("stroke", "#eee")
+      .style("stroke-width", "0.3px");
+
+    // Now add other layers
+    this.addLayers();
+    this.applyZoom();
+    this.addAirports();
+    this.resizeMap();
   }
 
   private setProjection(type: ProjectionType): void {
     console.log('Setting projection:', type);
     const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
     const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
-    const translate: [number, number] = [width / 2, height / 2];
 
-    const projection = d3['geoOrthographic']()
-      .translate(translate)
-      .center([-75, -30])
-      .rotate([75, -10, 0]);
+    this.projection = d3.geoOrthographic()
+      .scale(Math.min(width, height) / 2.5)
+      .translate([width / 2, height / 2])
+      .center([0, 0])
+      .rotate([75, -10, 0])
+      .clipAngle(90);
 
-    if ('parallels' in projection) {
-      console.log('Setting parallels for projection.');
-      (projection as d3.GeoConicProjection).parallels([30.5, 45.5]);
-    }
-
-    this.projection = projection;
     this.path = d3.geoPath().projection(this.projection);
   }
 
   private applyZoom(): void {
     console.log('Applying zoom behavior to the map.');
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 8])
+      .on('zoom', (event) => {
+        this.gSphere.attr('transform', event.transform);
+        this.gGraticule.attr('transform', event.transform);
+        this.gCountries.attr('transform', event.transform);
+        this.gRoutes.attr('transform', event.transform);
+        this.gAirports.attr('transform', event.transform);
+        this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke');
+        this.updateAirportPositions();
+      });
+
+    this.svg.call(this.zoom);
+
+    // Add rotation handling
+    let dragStartRotate: [number, number] = [0, 0];
+    let dragStartMouse: [number, number] = [0, 0];
+
     this.svg.call(
-      d3.zoom()
-        .scaleExtent([1, 50])
-        .on('zoom', (event) => {
-          console.log('Zoom event triggered:', event.transform);
-          this.gSphere.attr('transform', event.transform);
-          this.gCountries.attr('transform', event.transform);
-          this.gRoutes.attr('transform', event.transform);
-          this.gAirports.attr('transform', event.transform);
-          this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke'); // Ensure stroke width is constant
+      d3.drag()
+        .on('start', (event) => {
+          dragStartRotate = [this.projection.rotate()[0], this.projection.rotate()[1]];
+          dragStartMouse = [event.x, event.y];
+        })
+        .on('drag', (event) => {
+          const scale = 0.25;
+          const rotate = [
+            dragStartRotate[0] + (event.x - dragStartMouse[0]) * scale,
+            dragStartRotate[1] + (dragStartMouse[1] - event.y) * scale
+          ];
+
+          this.projection.rotate([rotate[0], rotate[1], 0]);
+
+          // Update all paths and positions
+          this.gSphere.selectAll('path').attr('d', this.path);
+          this.gGraticule.selectAll('path').attr('d', this.path);
+          this.gCountries.selectAll('path').attr('d', this.path);
+          this.gRoutes.selectAll('path').attr('d', this.path);
+          this.updateAirportPositions();
         })
     );
   }
@@ -133,101 +174,156 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private addLayers(): void {
     console.log('Adding layers to the map.');
     const layerNames = DataModel.getInstance().getLayerNames();
-    const uniqueAirports = new Set<string>();
 
     layerNames.forEach(layerName => {
       console.log(`Processing layer: ${layerName}`);
       const layer = DataModel.getInstance().getLayer(layerName);
       if (layer && layer.features) {
         if (layerName === 'countries') {
-          // Add geography features
           console.log(`Adding countries layer with ${layer.features.length} features.`);
           this.gCountries.selectAll('path')
-            .data(layer.features, (d: any) => d.id)
+            .data(layer.features)
             .enter().append('path')
             .attr("class", d => `${d.geometry.type.toLowerCase()} country`)
             .attr('d', this.path)
-            .style('fill', '#cccccc'); // Optional: Add some styling for geography
+            .style('fill', '#cccccc')
+            .style('stroke', '#666666')
+            .style('stroke-width', '0.5px');
         } else if (layerName === 'routes') {
-          // Add route features
           console.log(`Adding routes layer with ${layer.features.length} features.`);
           this.gRoutes.selectAll('path')
-            .data(layer.features, (d: any) => d.id)
+            .data(layer.features)
             .enter().append('path')
             .attr("class", d => `${d.geometry.type.toLowerCase()} route`)
             .attr('d', this.path)
-            .style('stroke', '#ff0000') // Optional: Add styling for routes
-            .style('stroke-width', 0.5)
+            .style('stroke', '#ff0000')
+            .style('stroke-width', '1px')
             .style('fill', 'none')
-            .on('click', (event, feature) => {
-              console.log('Clicked feature ID:', feature.id);
-              this.selectFeature(event, feature);
-            })
+            .style('opacity', '0.6')
+            .on('click', (event, feature) => this.selectFeature(event, feature))
             .style('cursor', 'pointer');
-
-          // Collect unique airports from the routes
-layer.features.forEach((feature: any) => {
-  console.log('Processing route feature:', feature);
-  if (feature.properties && feature.properties.Base && feature.properties.Ref) {
-    uniqueAirports.add(feature.properties.Base);
-    uniqueAirports.add(feature.properties.Ref);
-  } else {
-    console.error('Route feature is missing Base or Ref airport:', feature);
-  }
-});
         }
       }
     });
+  }
 
-//     // Add airport circles and labels
-//     console.log('Adding airport circles and labels.');
-//     uniqueAirports.forEach((airportCode: string) => {
-//       console.log('Processing airport:', airportCode);
-//       const airport = DataModel.getInstance().getAirportDetails(airportCode);
-//       if (airport) {
-//         console.log('Adding airport circle and label for:', airportCode);
-//         // Add airport circles
-//         const projectedCoords = this.projection([airport.lon, airport.lat]);
-//         if (projectedCoords && !isNaN(projectedCoords[0]) && !isNaN(projectedCoords[1])) {
-//           console.log('Projected coordinates:', projectedCoords);
-//           this.gAirports.append('circle')
-//             .attr('class', 'airport-circle')
-//             .attr('cx', projectedCoords[0])
-//             .attr('cy', projectedCoords[1])
-//             .attr('r', 5)
-//             .style('fill', 'blue');
-//
-//           // Add airport labels
-//           this.gAirports.append('text')
-//             .attr('class', 'airport-label')
-//             .attr('x', projectedCoords[0] + 5) // Offset for better visibility
-//             .attr('y', projectedCoords[1])
-//             .text(airportCode)
-//             .style('font-size', '14px')
-//             .style('fill', 'black')
-//             .attr('vector-effect', 'non-scaling-stroke'); // Ensure text remains constant size
-//         } else {
-//           console.error('Failed to project coordinates for airport:', airportCode);
-//         }
-//       } else {
-//         console.error('Airport details not found for:', airportCode);
-//       }
-//     });
+  private addAirports(): void {
+    const layerNames = DataModel.getInstance().getLayerNames();
+    const uniqueAirports = new Set<string>();
+    const routeFeatures = new Set<Feature>();
 
+    // Collect all route features and airport codes
+    layerNames.forEach(layerName => {
+      const layer = DataModel.getInstance().getLayer(layerName);
+      if (layer && layer.features && layerName === 'routes') {
+        layer.features.forEach((feature: any) => {
+          if (feature.properties && feature.properties.Base && feature.properties.Ref) {
+            uniqueAirports.add(feature.properties.Base);
+            uniqueAirports.add(feature.properties.Ref);
+            routeFeatures.add(feature);
+          }
+        });
+      }
+    });
 
- }
+    // Create airport circles and labels
+    uniqueAirports.forEach((airportCode: string) => {
+      const airport = DataModel.getInstance().getAirportDetails(airportCode);
+      if (airport) {
+        const lon = Number(airport.lon);
+        const lat = Number(airport.lat);
+
+        if (!isNaN(lon) && !isNaN(lat)) {
+          const coords: [number, number] = [lon, lat];
+          if (d3.geoDistance(coords, [-this.projection.rotate()[0], -this.projection.rotate()[1]] as [number, number]) < Math.PI / 2) {
+            const projectedCoords = this.projection(coords as [number, number]);
+
+            if (projectedCoords && !isNaN(projectedCoords[0]) && !isNaN(projectedCoords[1])) {
+              // Add airport circle
+              this.gAirports.append('circle')
+                .attr('class', 'airport-circle')
+                .attr('cx', projectedCoords[0])
+                .attr('cy', projectedCoords[1])
+                .attr('r', 3)
+                .style('fill', 'blue')
+                .style('stroke', 'white')
+                .style('stroke-width', '1px')
+                .attr('data-airport', airportCode);
+
+              // Add airport label
+              this.gAirports.append('text')
+                .attr('class', 'airport-label')
+                .attr('x', projectedCoords[0] + 7)
+                .attr('y', projectedCoords[1] + 3)
+                .text(airportCode)
+                .style('font-size', '10px')
+                .style('fill', 'black')
+                .style('font-weight', 'bold')
+                .style('paint-order', 'stroke')
+                .style('stroke', 'white')
+                .style('stroke-width', '2px')
+                .attr('data-airport', airportCode);
+            }
+          }
+        }
+      }
+    });
+  }
+
+  private updateAirportPositions(): void {
+    this.gAirports.selectAll('.airport-circle, .airport-label').each((d: any, i, nodes) => {
+      const element = d3.select(nodes[i]);
+      const airportCode = element.attr('data-airport');
+      const airport = DataModel.getInstance().getAirportDetails(airportCode);
+
+      if (airport) {
+        const coords: [number, number] = [Number(airport.lon), Number(airport.lat)];
+        const visible = d3.geoDistance(coords, [-this.projection.rotate()[0], -this.projection.rotate()[1]] as [number, number]) < Math.PI / 2;
+
+        if (visible) {
+          const projectedCoords = this.projection(coords as [number, number]);
+
+          if (projectedCoords && !isNaN(projectedCoords[0]) && !isNaN(projectedCoords[1])) {
+            if (element.classed('airport-circle')) {
+              element
+                .attr('cx', projectedCoords[0])
+                .attr('cy', projectedCoords[1])
+                .style('display', 'block');
+            } else {
+              element
+                .attr('x', projectedCoords[0] + 7)
+                .attr('y', projectedCoords[1] + 3)
+                .style('display', 'block');
+            }
+          }
+        } else {
+          element.style('display', 'none');
+        }
+      }
+    });
+  }
 
   public resizeMap(): void {
     console.log('Resizing map.');
     if (this.mapContainer && this.svg) {
-      const containerWidth = this.mapContainer.nativeElement.offsetWidth;
-      const containerHeight = this.mapContainer.nativeElement.offsetHeight;
-      const width = containerWidth * 0.95;
-      const height = containerHeight * 0.95;
+      const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
+      const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
 
-      this.svg.attr('width', width).attr('height', height).attr('viewBox', `0 0 ${width} ${height}`);
-      this.projection.fitSize([width, height], { type: 'FeatureCollection', features: DataModel.getInstance().getAllFeatures() });
-      this.svg.selectAll('path').attr('d', this.path);
+      this.svg
+        .attr('width', width)
+        .attr('height', height)
+        .attr('viewBox', `0 0 ${width} ${height}`);
+
+      this.projection
+        .scale(Math.min(width, height) / 2.5)
+        .translate([width / 2, height / 2]);
+
+      // Update all paths and positions
+      this.gSphere.selectAll('path').attr('d', this.path);
+      this.gGraticule.selectAll('path').attr('d', this.path);
+      this.gCountries.selectAll('path').attr('d', this.path);
+      this.gRoutes.selectAll('path').attr('d', this.path);
+      this.updateAirportPositions();
     }
   }
 
@@ -243,64 +339,15 @@ layer.features.forEach((feature: any) => {
 
   private updateMapSelection(features: Feature[] | null): void {
     console.log('Updating map selection with features:', features);
-    this.gRoutes.selectAll('.selected').classed('selected', false); // Deselect previous selected routes
+    this.gRoutes.selectAll('.selected').classed('selected', false);
     if (features) {
       features.forEach(feature => {
         console.log('Selecting route feature on map:', feature.id);
         this.gRoutes.selectAll('path')
-          .filter((d: Feature) => d.id === feature.id)
-          .classed('selected', true);
+          .filter((d: any) => d.id === feature.id)
+          .classed('selected', true)
+          .raise();
       });
     }
   }
-
-
-private addAirports(): void {
-  // Gather unique airport codes. Replace this with your actual way of fetching airport codes
-  const layerNames = DataModel.getInstance().getLayerNames();
-  const uniqueAirports = new Set<string>();
-
-  layerNames.forEach(layerName => {
-    const layer = DataModel.getInstance().getLayer(layerName);
-    if (layer && layer.features) {
-      if (layerName === 'routes') {
-        layer.features.forEach((feature: any) => {
-          if (feature.properties && feature.properties.Base && feature.properties.Ref) {
-            uniqueAirports.add(feature.properties.Base);
-            uniqueAirports.add(feature.properties.Ref);
-          }
-        });
-      }
-    }
-  });
-
-  // Now proceed to project and draw airports
-  uniqueAirports.forEach((airportCode: string) => {
-    const airport = DataModel.getInstance().getAirportDetails(airportCode);
-    if (airport) {
-      const projectedCoords = this.projection([airport.lon, airport.lat]);
-      if (projectedCoords && !isNaN(projectedCoords[0]) && !isNaN(projectedCoords[1])) {
-        this.gAirports.append('circle')
-          .attr('class', 'airport-circle')
-          .attr('cx', projectedCoords[0])
-          .attr('cy', projectedCoords[1])
-          .attr('r', 5)
-          .style('fill', 'blue');
-
-        this.gAirports.append('text')
-          .attr('class', 'airport-label')
-          .attr('x', projectedCoords[0] + 5) // Offset for better visibility
-          .attr('y', projectedCoords[1])
-          .text(airportCode)
-          .style('font-size', '14px')
-          .style('fill', 'black');
-      } else {
-        console.error('Failed to project coordinates for airport:', airportCode);
-      }
-    } else {
-      console.error('Airport details not found for:', airportCode);
-    }
-  });
-}
-
 }
