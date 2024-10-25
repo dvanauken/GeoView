@@ -1,3 +1,6 @@
+@use '@angular/material' as mat;
+
+/* CSS Reset */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -17,7 +20,7 @@ summary, time, mark, audio, video {
   vertical-align: baseline;
 }
 
-/* HTML5 display-role reset for older browsers */
+/* HTML5 display-role reset */
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
   display: block;
@@ -25,20 +28,21 @@ footer, header, hgroup, menu, nav, section {
 
 body {
   line-height: 1;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
+/* Basic reset continued */
 ol, ul {
   list-style: none;
 }
 
 blockquote, q {
   quotes: none;
-}
-
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
-  content: none;
+  &:before, &:after {
+    content: '';
+    content: none;
+  }
 }
 
 table {
@@ -46,81 +50,60 @@ table {
   border-spacing: 0;
 }
 
-/* Global Styling */
+/* Global layout */
 html, body {
-  height: 100%; /* Ensure full height for body and HTML */
-  overflow: hidden; /* Prevent scrollbars on the overall window */
+  height: 100%;
+  overflow: hidden;
 }
 
+/* Map features styling */
+.point {
+  fill: #ffbb00;
+  stroke: #0051ba;
+  stroke-width: 0.5px;
+  r: 5px;
+}
 
+.multipoint {
+  fill: #ffbb00;
+  stroke: #0051ba;
+  stroke-width: 1px;
+  r: 3px;
+}
 
+.sphere {
+  fill: #F5F5F5;
+  stroke: none;
+}
 
+.polygon,
+.multipolygon {
+  fill: #bbddff;
+  stroke: #003355;
+  stroke-width: 0.5px;
+}
 
+.linestring {
+  fill: none;
+  stroke: #0051ba;
+  stroke-width: 1px;
 
-  ///* Base styles for all paths in the map, ensures no fill for line-related geometries by default */
-  //path {
-  //  fill: none;
-  //  stroke: #004165; /* United Airlines brand color, navy blue */
-  //  stroke-width: 2px;
-  //  stroke-linejoin: round;
-  //  stroke-linecap: round;
-  //}
-
-  /* Specific styles for point features (e.g., cities, airports) */
-  .point {
-    fill: #ffbb00; /* United Airlines brand secondary color, gold */
-    stroke: #0051ba; /* Another brand color, deep blue */
-    stroke-width: 0.5px;
-    r: 5px; /* Radius of the point */
+  &.selected {
+    stroke: #ffbb00;
+    stroke-width: 1.5px;
   }
+}
 
-  /* MultiPoint should be similar to Point but might have smaller radius if points are dense */
-  .multipoint {
-    fill: #ffbb00;
-    stroke: #0051ba;
-    stroke-width: 1px;
-    r: 3px;
-  }
+/* Angular Material Theme */
+@include mat.core();
 
-//   /* LineString styles, e.g., routes */
-//   .linestring {
-//     fill: none;
-//     stroke: #0051ba;
-//     stroke-width: 0.5px;
-//
-//     &.selected {
-//       stroke: #ffbb00; // Gold color for selection
-//       stroke-width: 0.5px; // Make the line thicker when selected
-//     }
-//   }
+$primary: mat.define-palette(mat.$indigo-palette);
+$accent: mat.define-palette(mat.$pink-palette);
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary,
+    accent: $accent,
+  )
+));
 
-
-
-  /* MultiPolygon, similar to Polygon but might include multiple distinct areas */
-  .sphere {
-    fill: #F5F5F5; /* Slightly different blue for distinction */
-    stroke: none; /* Darker outline for better separation */
-    stroke-width: 0.5px;
-    //fill-opacity: 0.5;
-  }
-
-
-  .polygon, .multipolygon {
-    fill: #bbddff; /* Slightly different blue for distinction */
-    stroke: #003355; /* Darker outline for better separation */
-    stroke-width: 0.5px;
-    //fill-opacity: 0.5;
-  }
-
-  /* LineString styles, e.g., routes */
-  .linestring {
-    fill: none;
-    stroke: #0051ba;
-    stroke-width: 1px;
-
-
-    &.selected {
-      stroke: #ffbb00; // Gold color for selection
-      stroke-width: 1.5px; // Make the line thicker when selected
-    }
-  }
+@include mat.all-component-themes($theme);

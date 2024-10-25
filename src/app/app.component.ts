@@ -4,6 +4,25 @@ import { DataModel } from './models/data-model';
 import { Layer } from './models/layer-model';
 import { RouteLayerService } from './services/route-layer-service';
 import { AirportService } from './services/airport.service'; // Correct import for AirportService
+import { MatTableDataSource } from '@angular/material/table';
+
+interface StatisticsElement {
+  category: string;
+  value: string | number;
+}
+
+// statisticsData: StatisticsElement[] = [];  // Initialize empty
+// statisticsData = new MatTableDataSource<StatisticsElement>();
+
+interface AirportData {
+  code: string;
+  region: number;
+  name: string;
+  city: string;
+  country: string;
+  lat: number;
+  lon: number;
+}
 
 @Component({
   selector: 'app-root',
@@ -12,6 +31,8 @@ import { AirportService } from './services/airport.service'; // Correct import f
 })
 export class AppComponent implements OnInit {
   isLoading = true;  // Show the spinner initially
+    displayedColumns: string[] = ['code', 'region', 'name', 'city', 'country', 'lat', 'lon'];
+    airportData: MatTableDataSource<AirportData>;
 
   constructor(
     private fileService: FileService,
@@ -19,38 +40,45 @@ export class AppComponent implements OnInit {
     private airportService: AirportService  // Inject the AirportService
   ) {}
 
-  ngOnInit(): void {
-    // Step 1: Load Airport Data
-    this.airportService.loadAirportData()
-      .then(() => {
-        // Log that Airport data is successfully loaded
-        console.log('Airport data loaded successfully.');
+ngOnInit(): void {
+  // Step 1: Load Airport Data
+  this.airportService.loadAirportData()
+    .then(() => {
+      // Log that Airport data is successfully loaded
+      console.log('Airport data loaded successfully.');
 
-        // Step 2: Load standard GeoJSON files
-        const geojsonFiles = ['countries.geojson']; // List of standard GeoJSON files to load
-        return Promise.all(
-          geojsonFiles.map(file => {
-            console.log('Loading GeoJSON file:', file); // Logging which GeoJSON file is being loaded
-            return this.loadGeoJSONFile(file); // Return the promise to ensure it is awaited
-          })
-        );
-      })
-      .then(() => {
-        // Step 3: Once all GeoJSON files are processed, proceed to load route data
-        console.log('GeoJSON files loaded successfully. Proceeding to load route data.');
-        return this.loadRouteData();
-      })
-      .catch((error) => {
-        // Catch any errors that occur during the chain
-        console.error('Error during initialization:', error);
-      })
-      .finally(() => {
-        // This block runs regardless of success or failure
-        console.log('Initialization complete');
-        console.log('DataModel layers after initialization:', DataModel.getInstance().getLayers());
-        this.isLoading = false;
-      });
-  }
+      const airports = this.airportService.getAirportData();
+      this.airportData = new MatTableDataSource(airports);
+      //// Get the loaded airport data from the AirportService
+      const airportData = this.airportService.getAirportData();
+      DataModel.getInstance().loadAirports(airportData);
+
+      // Step 2: Load standard GeoJSON files
+      const geojsonFiles = ['countries.geojson']; // List of standard GeoJSON files to load
+      return Promise.all(
+        geojsonFiles.map(file => {
+          console.log('Loading GeoJSON file:', file); // Logging which GeoJSON file is being loaded
+          return this.loadGeoJSONFile(file); // Return the promise to ensure it is awaited
+        })
+      );
+    })
+    .then(() => {
+      // Step 3: Once all GeoJSON files are processed, proceed to load route data
+      console.log('GeoJSON files loaded successfully. Proceeding to load route data.');
+      return this.loadRouteData();
+    })
+    .catch((error) => {
+      // Catch any errors that occur during the chain
+      console.error('Error during initialization:', error);
+    })
+    .finally(() => {
+      // This block runs regardless of success or failure
+      console.log('Initialization complete');
+      console.log('DataModel layers after initialization:', DataModel.getInstance().getLayers());
+      this.isLoading = false;
+    });
+}
+
 
   private loadGeoJSONFile(fileName: string): Promise<void> {
     const filePath = `assets/110m/${fileName}`;
@@ -97,4 +125,14 @@ export class AppComponent implements OnInit {
         throw error; // Propagate error to the main chain
       });
   }
+
+//   displayedColumns: string[] = ['category', 'value'];
+//   statisticsData: StatisticsElement[] = [
+//     { category: 'Total Routes', value: 1250 },
+//     { category: 'Active Airlines', value: 85 },
+//     { category: 'Average Distance', value: '2,345 km' },
+//     { category: 'Busiest Airport', value: 'ATL' },
+//     { category: 'Most Popular Route', value: 'JFK-LAX' },
+//     { category: 'Total Passengers', value: '12.5M' }
+//   ];
 }

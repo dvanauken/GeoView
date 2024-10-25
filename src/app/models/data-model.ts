@@ -4,6 +4,7 @@ import { Feature } from 'geojson';
 
 export class DataModel {
   private static instance: DataModel;
+  private airports: Map<string, { lon: number; lat: number }> = new Map();
   private layersMap: Map<string, Layer> = new Map();
   private selectedLayerName: string | null = null;  // Property to hold the selected layer name
   private selectedFeatures: BehaviorSubject<Feature[] | null> = new BehaviorSubject(null);
@@ -72,4 +73,22 @@ export class DataModel {
     });
     return allFeatures;
   }
+
+
+
+  // Method to load airport data dynamically
+  public loadAirports(airports: { code: string; lon: number; lat: number }[]): void {
+    airports.forEach(airport => {
+      this.airports.set(airport.code, { lon: airport.lon, lat: airport.lat });
+    });
+  }
+
+  public getAirportDetails(airportCode: string): { lon: number; lat: number } | undefined {
+    return this.airports.get(airportCode);
+  }
+
+
+
+
+
 }

@@ -108,7 +108,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       const isSelected = features.some(feature => feature && feature.id === row.id);
       if (isSelected !== row.selected) {
         row.selected = isSelected;
-        console.log(`Row with ID ${row.id} selection updated to ${isSelected}`);
+        //console.log(`Row with ID ${row.id} selection updated to ${isSelected}`);
       }
     });
   }

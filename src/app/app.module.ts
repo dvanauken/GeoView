@@ -14,6 +14,9 @@ import { AirportService } from './services/airport.service';
 import { AirlineService } from './services/airline.service';
 import { PaneModule } from './components/pane/pane.module';
 
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+
 // export function preloadData(
 //   airportService: AirportService,
 //   airlineService: AirlineService
@@ -46,7 +49,9 @@ import { PaneModule } from './components/pane/pane.module';
     FormsModule,
     ReactiveFormsModule,
     AppRoutingModule,
-    PaneModule
+    PaneModule,
+    MatTabsModule,
+    MatTableModule
   ],
   providers: [
     // AirportService,
