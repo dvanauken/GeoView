@@ -8,6 +8,7 @@ import { ProjectionType } from '../../enums/projection-type.enum';
 import { MatTableDataSource } from '@angular/material/table';
 import { Versor } from './versor';
 import { throttle } from 'lodash';
+import {GlobeDragHandler} from "./globe-drag-handler";
 
 
 
@@ -37,10 +38,14 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private projectionType: ProjectionType = ProjectionType.Orthographic;
   statisticsData: StatisticsElement[] = [];
 
-  // Track rotation state
-  private v0: [number, number, number]; // Mouse position at drag start
-  private r0: [number, number, number]; // Projection rotation at drag start
-  private q0: [number, number, number, number]; // Initial rotation quaternion
+  // ... other properties
+  private dragHandler: GlobeDragHandler;
+
+
+  // // Track rotation state
+  // private v0: [number, number, number]; // Mouse position at drag start
+  // private r0: [number, number, number]; // Projection rotation at drag start
+  // private q0: [number, number, number, number]; // Initial rotation quaternion
 
   constructor() {}
 
@@ -310,17 +315,25 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+
   private applyZoom(): void {
     console.log('Applying zoom behavior to the map.');
 
-    // Separate drag behavior for rotation
-    const dragBehavior = d3.drag()
-      .on('start', this.dragStarted.bind(this))
-      .on('drag', this.dragged.bind(this))
-      .on('end', this.dragEnded.bind(this));
+    // Initialize the drag handler
+    this.dragHandler = new GlobeDragHandler(
+      this.projection,
+      () => {
+        // Update all paths
+        this.gSphere.selectAll('path').attr('d', this.path);
+        this.gGraticule.selectAll('path').attr('d', this.path);
+        this.gCountries.selectAll('path').attr('d', this.path);
+        this.gRoutes.selectAll('path').attr('d', this.path);
+        this.updateAirportPositions();
+      }
+    );
 
     // Apply drag behavior only to the sphere background
-    this.gSphere.select('.sphere-background').call(dragBehavior);
+    this.dragHandler.attachDragBehavior(this.gSphere.select('.sphere-background'));
 
     // Regular zoom behavior (without drag)
     this.zoom = d3.zoom()
@@ -337,57 +350,87 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
         this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke');
         this.updateAirportPositions();
       });
+
     this.svg.call(this.zoom);
   }
 
-  private dragStarted(event: any): void {
-    this.v0 = [event.x, event.y, 0];
-    this.r0 = this.projection.rotate();
-  }
+  // private applyZoom(): void {
+  //   console.log('Applying zoom behavior to the map.');
+  //
+  //   // Separate drag behavior for rotation
+  //   const dragBehavior = d3.drag()
+  //     .on('start', this.dragStarted.bind(this))
+  //     .on('drag', this.dragged.bind(this))
+  //     .on('end', this.dragEnded.bind(this));
+  //
+  //   // Apply drag behavior only to the sphere background
+  //   this.gSphere.select('.sphere-background').call(dragBehavior);
+  //
+  //   // Regular zoom behavior (without drag)
+  //   this.zoom = d3.zoom()
+  //     .scaleExtent([1, 8])
+  //     .on('zoom', (event) => {
+  //       const { transform } = event;
+  //       // Only apply scale transform
+  //       const scaleTransformString = `scale(${transform.k})`;
+  //       this.gSphere.attr('transform', scaleTransformString);
+  //       this.gGraticule.attr('transform', scaleTransformString);
+  //       this.gCountries.attr('transform', scaleTransformString);
+  //       this.gRoutes.attr('transform', scaleTransformString);
+  //       this.gAirports.attr('transform', scaleTransformString);
+  //       this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke');
+  //       this.updateAirportPositions();
+  //     });
+  //   this.svg.call(this.zoom);
+  // }
 
-  private readonly throttledUpdate = throttle(() => {
-    // Update all paths
-    this.gSphere.selectAll('path').attr('d', this.path);
-    this.gGraticule.selectAll('path').attr('d', this.path);
-    this.gCountries.selectAll('path').attr('d', this.path);
-    this.gRoutes.selectAll('path').attr('d', this.path);
-    this.updateAirportPositions();
-  }, 16); // ~60fps (1000ms/60 ≈ 16ms)
+  // private dragStarted(event: any): void {
+  //   this.v0 = [event.x, event.y, 0];
+  //   this.r0 = this.projection.rotate();
+  // }
 
-  private dragged(event: any): void {
-    if (!this.v0) return;
+  // private readonly throttledUpdate = throttle(() => {
+  //   // Update all paths
+  //   this.gSphere.selectAll('path').attr('d', this.path);
+  //   this.gGraticule.selectAll('path').attr('d', this.path);
+  //   this.gCountries.selectAll('path').attr('d', this.path);
+  //   this.gRoutes.selectAll('path').attr('d', this.path);
+  //   this.updateAirportPositions();
+  // }, 16); // ~60fps (1000ms/60 ≈ 16ms)
 
-    const sensitivity = 0.25;
-    const xChange = (event.x - this.v0[0]) * sensitivity;
-    const yChange = (event.y - this.v0[1]) * sensitivity;
+  // private dragged(event: any): void {
+  //   if (!this.v0) return;
+  //
+  //   const sensitivity = 0.25;
+  //   const xChange = (event.x - this.v0[0]) * sensitivity;
+  //   const yChange = (event.y - this.v0[1]) * sensitivity;
+  //
+  //   // Update projection rotation
+  //   this.projection.rotate([
+  //     this.r0[0] + xChange,
+  //     this.r0[1] - yChange,
+  //     this.r0[2]
+  //   ]);
+  //
+  //   // Use throttled update instead of direct updates
+  //   this.throttledUpdate();
+  // }
 
-    // Update projection rotation
-    this.projection.rotate([
-      this.r0[0] + xChange,
-      this.r0[1] - yChange,
-      this.r0[2]
-    ]);
-
-    // Use throttled update instead of direct updates
-    this.throttledUpdate();
-  }
-
-  private dragEnded(): void {
-    this.v0 = undefined;
-    this.r0 = undefined;
-    this.q0 = undefined;
-
-    // Force a final update to ensure we render the final position
-    this.throttledUpdate.flush();
-  }
+  // private dragEnded(): void {
+  //   this.v0 = undefined;
+  //   this.r0 = undefined;
+  //   this.q0 = undefined;
+  //
+  //   // Force a final update to ensure we render the final position
+  //   this.throttledUpdate.flush();
+  // }
 
   // Make sure to clean up in ngOnDestroy
   ngOnDestroy(): void {
     if (this.resizeObserver) this.resizeObserver.disconnect();
     if (this.subscription) this.subscription.unsubscribe();
-    this.throttledUpdate.cancel(); // Cancel any pending updates
+    //this.throttledUpdate.cancel(); // Cancel any pending updates
+    if (this.dragHandler) this.dragHandler.destroy();
   }
-
-
 
 }
