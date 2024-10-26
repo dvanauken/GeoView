@@ -1,2 +1,2 @@
 To https://github.com/dvanauken/GeoView.git
- * [new tag]         v3.6.0 -> v3.6.0
+ * [new tag]         v3.7.0 -> v3.7.0

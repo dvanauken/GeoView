@@ -1,18 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
 import { FileService } from './services/file.service';
 import { DataModel } from './models/data-model';
 import { Layer } from './models/layer-model';
 import { RouteLayerService } from './services/route-layer-service';
-import { AirportService } from './services/airport.service'; // Correct import for AirportService
-import { MatTableDataSource } from '@angular/material/table';
+import { AirportService } from './services/airport.service';
+import {MatTableDataSource} from "@angular/material/table"; // Correct import for AirportService
 
 interface StatisticsElement {
   category: string;
   value: string | number;
 }
-
-// statisticsData: StatisticsElement[] = [];  // Initialize empty
-// statisticsData = new MatTableDataSource<StatisticsElement>();
 
 interface AirportData {
   code: string;
@@ -29,16 +27,21 @@ interface AirportData {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   isLoading = true;  // Show the spinner initially
-    displayedColumns: string[] = ['code', 'region', 'name', 'city', 'country', 'lat', 'lon'];
-    airportData: MatTableDataSource<AirportData>;
+  displayedColumns: string[] = ['code', 'region', 'name', 'city', 'country', 'lat', 'lon'];
+  airportData = new MatTableDataSource<AirportData>([]);
+
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private fileService: FileService,
     private routeLayerService: RouteLayerService,
     private airportService: AirportService  // Inject the AirportService
-  ) {}
+  ) {
+    this.airportData = new MatTableDataSource<AirportData>([]);
+  }
 
 
   async ngOnInit(): Promise<void> {
@@ -62,6 +65,32 @@ export class AppComponent implements OnInit {
       console.log('Initialization complete');
     }
   }
+
+  ngAfterViewInit() {
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      if (this.paginator) {
+        this.airportData.paginator = this.paginator;
+        this.cdr.detectChanges();
+        console.log("Paginator linked successfully");
+      } else {
+        console.warn("Paginator not found");
+      }
+    });
+  }
+
+  // Add tab change handler
+  onTabChange(event: any) {
+    if (event.index === 1) { // Airport tab index
+      setTimeout(() => {
+        if (this.paginator) {
+          this.airportData.paginator = this.paginator;
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
 
   private loadGeoJSONFile(fileName: string): Promise<void> {
     const filePath = `assets/110m/${fileName}`;

@@ -38,18 +38,22 @@
     height: calc(100% - 32px);
   }
 
-  // Make table dense
   .mat-mdc-table {
     width: 100%;
 
     .mat-mdc-row, .mat-mdc-header-row {
-      height: 32px !important;
+      height: 24px !important;  // Reduced from 32px
+      min-height: 24px !important; // Added to ensure consistent height
     }
 
     .mat-mdc-cell, .mat-mdc-header-cell {
       padding: 0 8px !important;
+      line-height: 24px !important; // Added to align text vertically
     }
   }
+
+
+
 }
 
 // Additional specific styles for your content
