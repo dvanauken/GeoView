@@ -1,36 +1,19 @@
 import { Injectable } from '@angular/core';
-import { FileService } from './file.service';
+import {DataModel} from "../models/data-model";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AirportService {
-  private airportData: any[] = [];
-  private readonly cacheKey = 'airportDataCache';
 
-  constructor(private fileService: FileService) {}
+  constructor() {}
 
-  // Load Airport.json into memory and optionally cache it
-  loadAirportData(): Promise<void> {
-    const cachedData = localStorage.getItem(this.cacheKey);
-
-    if (cachedData) {
-      this.airportData = JSON.parse(cachedData);
-      console.log('Loaded airport data from local storage cache:', this.airportData);
-      return Promise.resolve(); // Data is already loaded from cache
-    } else {
-      return this.fileService.loadGeoJSON('assets/Airport.json').then((data) => {
-        this.airportData = data;
-        localStorage.setItem(this.cacheKey, JSON.stringify(data));
-        console.log('Airport data loaded from file and stored in memory + cache:', this.airportData);
-      }).catch((error) => {
-        console.error('Error loading Airport data:', error);
-      });
-    }
-  }
-
-  // Getter for accessing the in-memory airport data
-  getAirportData(): any[] {
-    return this.airportData;
+  async loadAirportData(): Promise<any[]> {
+    const response = await fetch('assets/Airport.json');
+    if (!response.ok) throw new Error('Failed to fetch airport data');
+    const data = await response.json();
+    DataModel.getInstance().setAirports(data); // Assuming setAirports method is implemented in DataModel
+    console.log('Airport data loaded and stored in DataModel');
+    return data;
   }
 }

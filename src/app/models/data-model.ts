@@ -4,9 +4,9 @@ import { Feature } from 'geojson';
 
 export class DataModel {
   private static instance: DataModel;
-  private airports: Map<string, { lon: number; lat: number }> = new Map();
+  private airports: Map<string, any> = new Map(); // Changed to store any airport data
   private layersMap: Map<string, Layer> = new Map();
-  private selectedLayerName: string | null = null;  // Property to hold the selected layer name
+  private selectedLayerName: string | null = null;
   private selectedFeatures: BehaviorSubject<Feature[] | null> = new BehaviorSubject(null);
 
   private constructor() {}
@@ -76,19 +76,40 @@ export class DataModel {
 
 
 
-  // Method to load airport data dynamically
-  public loadAirports(airports: { code: string; lon: number; lat: number }[]): void {
+  // // Method to load airport data dynamically
+  // public loadAirports(airports: { code: string; lon: number; lat: number }[]): void {
+  //   airports.forEach(airport => {
+  //     this.airports.set(airport.code, airport);
+  //   });
+  //   console.log('Airports data updated in DataModel');
+  // }
+
+  public getAirports(): any[] {
+    return Array.from(this.airports.values());
+  }
+
+  // In DataModel class
+  public setAirports(airports: any[]): void {
+    this.airports.clear(); // Clear existing entries to ensure fresh initialization
     airports.forEach(airport => {
-      this.airports.set(airport.code, { lon: airport.lon, lat: airport.lat });
+      this.airports.set(airport.code, airport); // Assuming each airport object has a 'code' property
     });
-  }
-
-  public getAirportDetails(airportCode: string): { lon: number; lat: number } | undefined {
-    return this.airports.get(airportCode);
+    console.log('Airports data set in DataModel');
   }
 
 
+  public getAirport(code: string): any {
+    return this.airports.get(code);
+  }
 
-
+  // In DataModel class
+  public setAirport(airport: any): void {
+    if (airport && airport.code) {
+      this.airports.set(airport.code, airport); // Set or update the airport data by code
+      console.log(`Airport data updated for ${airport.code} in DataModel`);
+    } else {
+      console.error('Invalid airport data provided');
+    }
+  }
 
 }

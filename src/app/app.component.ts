@@ -40,45 +40,28 @@ export class AppComponent implements OnInit {
     private airportService: AirportService  // Inject the AirportService
   ) {}
 
-ngOnInit(): void {
-  // Step 1: Load Airport Data
-  this.airportService.loadAirportData()
-    .then(() => {
-      // Log that Airport data is successfully loaded
+
+  async ngOnInit(): Promise<void> {
+    try {
+      // Load airport data and update the application's data model
+      const airports = await this.airportService.loadAirportData();
+      this.airportData = new MatTableDataSource(airports);
       console.log('Airport data loaded successfully.');
 
-      const airports = this.airportService.getAirportData();
-      this.airportData = new MatTableDataSource(airports);
-      //// Get the loaded airport data from the AirportService
-      const airportData = this.airportService.getAirportData();
-      DataModel.getInstance().loadAirports(airportData);
+      // Load countries GeoJSON
+      await this.loadGeoJSONFile('countries.geojson');
+      console.log('Countries GeoJSON loaded successfully.');
 
-      // Step 2: Load standard GeoJSON files
-      const geojsonFiles = ['countries.geojson']; // List of standard GeoJSON files to load
-      return Promise.all(
-        geojsonFiles.map(file => {
-          console.log('Loading GeoJSON file:', file); // Logging which GeoJSON file is being loaded
-          return this.loadGeoJSONFile(file); // Return the promise to ensure it is awaited
-        })
-      );
-    })
-    .then(() => {
-      // Step 3: Once all GeoJSON files are processed, proceed to load route data
-      console.log('GeoJSON files loaded successfully. Proceeding to load route data.');
-      return this.loadRouteData();
-    })
-    .catch((error) => {
-      // Catch any errors that occur during the chain
+      // Load route data
+      await this.loadRouteData();
+      console.log('Route data loaded successfully.');
+    } catch (error) {
       console.error('Error during initialization:', error);
-    })
-    .finally(() => {
-      // This block runs regardless of success or failure
+    } finally {
+      this.isLoading = false; // Hide the spinner after all data is loaded or an error occurs
       console.log('Initialization complete');
-      console.log('DataModel layers after initialization:', DataModel.getInstance().getLayers());
-      this.isLoading = false;
-    });
-}
-
+    }
+  }
 
   private loadGeoJSONFile(fileName: string): Promise<void> {
     const filePath = `assets/110m/${fileName}`;
@@ -96,43 +79,36 @@ ngOnInit(): void {
     });
   }
 
-  private loadRouteData(): Promise<void> {
+  private async loadRouteData(): Promise<void> {
     console.log('Starting to load route data...');
 
-    // Use the in-memory airport data from AirportService
-    const airports = this.airportService.getAirportData();
+    // Retrieve the airport data from DataModel
+    const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
 
-    return this.fileService.loadGeoJSON('assets/citypair.20240823.json')
-      .then((cityPairs) => {
-        console.log('City pairs data loaded:', cityPairs);
-        const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5);
+    try {
+      // Load city pair data using Fetch API
+      const response = await fetch('assets/citypair.20240823.json');
+      if (!response.ok) throw new Error('Failed to fetch city pair data');
+      const cityPairs = await response.json();
+      console.log('City pairs data loaded:', cityPairs);
 
-        if (routeLayer) {
-          console.log('Route layer created successfully:', routeLayer);
-          DataModel.getInstance().addLayer('routes', routeLayer);
-          console.log('Routes layer added to DataModel.');
+      // Create route layer
+      const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5);
+      if (routeLayer) {
+        console.log('Route layer created successfully:', routeLayer);
+        DataModel.getInstance().addLayer('routes', routeLayer);
+        console.log('Routes layer added to DataModel.');
 
-          // Log all layers in DataModel after adding routes
-          console.log('DataModel layers after adding routes:', DataModel.getInstance().getLayers());
-
-          DataModel.getInstance().setSelectedLayer('routes');
-        } else {
-          console.error('Failed to create route layer. Route layer is null or undefined.');
-        }
-      })
-      .catch((error) => {
-        console.error('Error loading route data:', error);
-        throw error; // Propagate error to the main chain
-      });
+        // Log all layers in DataModel after adding routes
+        console.log('DataModel layers after adding routes:', DataModel.getInstance().getLayers());
+        DataModel.getInstance().setSelectedLayer('routes');
+      } else {
+        console.error('Failed to create route layer. Route layer is null or undefined.');
+      }
+    } catch (error) {
+      console.error('Error loading route data:', error);
+      throw error;  // Rethrow to allow handling at a higher level
+    }
   }
 
-//   displayedColumns: string[] = ['category', 'value'];
-//   statisticsData: StatisticsElement[] = [
-//     { category: 'Total Routes', value: 1250 },
-//     { category: 'Active Airlines', value: 85 },
-//     { category: 'Average Distance', value: '2,345 km' },
-//     { category: 'Busiest Airport', value: 'ATL' },
-//     { category: 'Most Popular Route', value: 'JFK-LAX' },
-//     { category: 'Total Passengers', value: '12.5M' }
-//   ];
 }

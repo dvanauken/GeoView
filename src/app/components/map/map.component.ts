@@ -187,7 +187,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Create airport circles and labels
     uniqueAirports.forEach((airportCode: string) => {
-      const airport = DataModel.getInstance().getAirportDetails(airportCode);
+      const airport = DataModel.getInstance().getAirport(airportCode);
       if (airport) {
         const lon = Number(airport.lon);
         const lat = Number(airport.lat);
@@ -233,7 +233,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.gAirports.selectAll('.airport-circle, .airport-label').each((d: any, i, nodes) => {
       const element = d3.select(nodes[i]);
       const airportCode = element.attr('data-airport');
-      const airport = DataModel.getInstance().getAirportDetails(airportCode);
+      const airport = DataModel.getInstance().getAirport(airportCode);
 
       if (airport) {
         const coords: [number, number] = [Number(airport.lon), Number(airport.lat)];
