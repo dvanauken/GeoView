@@ -6,6 +6,10 @@ import { DataModel } from '../../models/data-model';
 import { Subscription } from 'rxjs';
 import { ProjectionType } from '../../enums/projection-type.enum';
 import { MatTableDataSource } from '@angular/material/table';
+import { Versor } from './versor';
+import { throttle } from 'lodash';
+
+
 
 interface StatisticsElement {
   airportCode: string;
@@ -33,6 +37,11 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private projectionType: ProjectionType = ProjectionType.Orthographic;
   statisticsData: StatisticsElement[] = [];
 
+  // Track rotation state
+  private v0: [number, number, number]; // Mouse position at drag start
+  private r0: [number, number, number]; // Projection rotation at drag start
+  private q0: [number, number, number, number]; // Initial rotation quaternion
+
   constructor() {}
 
   ngOnInit(): void {
@@ -48,11 +57,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log('MapComponent ngAfterViewInit called. Ready for interaction.');
     this.resizeObserver = new ResizeObserver(() => this.resizeMap());
     this.resizeObserver.observe(this.mapContainer.nativeElement);
-  }
-
-  ngOnDestroy(): void {
-    if (this.resizeObserver) this.resizeObserver.disconnect();
-    if (this.subscription) this.subscription.unsubscribe();
   }
 
   private setupSVG(): void {
@@ -86,23 +90,23 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.path = d3.geoPath().projection(this.projection);
 
     // Add the base sphere with subtle color
-    this.gSphere.append("path")
-      .datum({type: "Sphere"})
-      .attr("class", "sphere-background")
-      .attr("d", this.path)
-      .style("fill", "#f8f9fa")
-      .style("stroke", "#ddd")
-      .style("stroke-width", "0.5px");
+    this.gSphere.append('path')
+      .datum({ type: 'Sphere' })
+      .attr('class', 'sphere-background')
+      .attr('d', this.path)
+      .style('fill', '#f8f9fa')
+      .style('stroke', '#ddd')
+      .style('stroke-width', '0.5px');
 
     // Add graticule
     const graticule = d3.geoGraticule();
-    this.gGraticule.append("path")
+    this.gGraticule.append('path')
       .datum(graticule)
-      .attr("class", "graticule")
-      .attr("d", this.path)
-      .style("fill", "none")
-      .style("stroke", "#eee")
-      .style("stroke-width", "0.3px");
+      .attr('class', 'graticule')
+      .attr('d', this.path)
+      .style('fill', 'none')
+      .style('stroke', '#eee')
+      .style('stroke-width', '0.3px');
 
     // Now add other layers
     this.addLayers();
@@ -120,55 +124,10 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .scale(Math.min(width, height) / 2.5)
       .translate([width / 2, height / 2])
       .center([0, 0])
-      .rotate([75, -10, 0])
+      .rotate([0, 0, 0])
       .clipAngle(90);
 
     this.path = d3.geoPath().projection(this.projection);
-  }
-
-  private applyZoom(): void {
-    console.log('Applying zoom behavior to the map.');
-    this.zoom = d3.zoom()
-      .scaleExtent([1, 8])
-      .on('zoom', (event) => {
-        this.gSphere.attr('transform', event.transform);
-        this.gGraticule.attr('transform', event.transform);
-        this.gCountries.attr('transform', event.transform);
-        this.gRoutes.attr('transform', event.transform);
-        this.gAirports.attr('transform', event.transform);
-        this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke');
-        this.updateAirportPositions();
-      });
-
-    this.svg.call(this.zoom);
-
-    // Add rotation handling
-    let dragStartRotate: [number, number] = [0, 0];
-    let dragStartMouse: [number, number] = [0, 0];
-
-    this.svg.call(
-      d3.drag()
-        .on('start', (event) => {
-          dragStartRotate = [this.projection.rotate()[0], this.projection.rotate()[1]];
-          dragStartMouse = [event.x, event.y];
-        })
-        .on('drag', (event) => {
-          const scale = 0.25;
-          const rotate = [
-            dragStartRotate[0] + (event.x - dragStartMouse[0]) * scale,
-            dragStartRotate[1] + (dragStartMouse[1] - event.y) * scale
-          ];
-
-          this.projection.rotate([rotate[0], rotate[1], 0]);
-
-          // Update all paths and positions
-          this.gSphere.selectAll('path').attr('d', this.path);
-          this.gGraticule.selectAll('path').attr('d', this.path);
-          this.gCountries.selectAll('path').attr('d', this.path);
-          this.gRoutes.selectAll('path').attr('d', this.path);
-          this.updateAirportPositions();
-        })
-    );
   }
 
   private addLayers(): void {
@@ -184,7 +143,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
           this.gCountries.selectAll('path')
             .data(layer.features)
             .enter().append('path')
-            .attr("class", d => `${d.geometry.type.toLowerCase()} country`)
+            .attr('class', d => `${d.geometry.type.toLowerCase()} country`)
             .attr('d', this.path)
             .style('fill', '#cccccc')
             .style('stroke', '#666666')
@@ -194,7 +153,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
           this.gRoutes.selectAll('path')
             .data(layer.features)
             .enter().append('path')
-            .attr("class", d => `${d.geometry.type.toLowerCase()} route`)
+            .attr('class', d => `${d.geometry.type.toLowerCase()} route`)
             .attr('d', this.path)
             .style('stroke', '#ff0000')
             .style('stroke-width', '1px')
@@ -350,4 +309,85 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
   }
+
+  private applyZoom(): void {
+    console.log('Applying zoom behavior to the map.');
+
+    // Separate drag behavior for rotation
+    const dragBehavior = d3.drag()
+      .on('start', this.dragStarted.bind(this))
+      .on('drag', this.dragged.bind(this))
+      .on('end', this.dragEnded.bind(this));
+
+    // Apply drag behavior only to the sphere background
+    this.gSphere.select('.sphere-background').call(dragBehavior);
+
+    // Regular zoom behavior (without drag)
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 8])
+      .on('zoom', (event) => {
+        const { transform } = event;
+        // Only apply scale transform
+        const scaleTransformString = `scale(${transform.k})`;
+        this.gSphere.attr('transform', scaleTransformString);
+        this.gGraticule.attr('transform', scaleTransformString);
+        this.gCountries.attr('transform', scaleTransformString);
+        this.gRoutes.attr('transform', scaleTransformString);
+        this.gAirports.attr('transform', scaleTransformString);
+        this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke');
+        this.updateAirportPositions();
+      });
+    this.svg.call(this.zoom);
+  }
+
+  private dragStarted(event: any): void {
+    this.v0 = [event.x, event.y, 0];
+    this.r0 = this.projection.rotate();
+  }
+
+  private readonly throttledUpdate = throttle(() => {
+    // Update all paths
+    this.gSphere.selectAll('path').attr('d', this.path);
+    this.gGraticule.selectAll('path').attr('d', this.path);
+    this.gCountries.selectAll('path').attr('d', this.path);
+    this.gRoutes.selectAll('path').attr('d', this.path);
+    this.updateAirportPositions();
+  }, 16); // ~60fps (1000ms/60 ≈ 16ms)
+
+  private dragged(event: any): void {
+    if (!this.v0) return;
+
+    const sensitivity = 0.25;
+    const xChange = (event.x - this.v0[0]) * sensitivity;
+    const yChange = (event.y - this.v0[1]) * sensitivity;
+
+    // Update projection rotation
+    this.projection.rotate([
+      this.r0[0] + xChange,
+      this.r0[1] - yChange,
+      this.r0[2]
+    ]);
+
+    // Use throttled update instead of direct updates
+    this.throttledUpdate();
+  }
+
+  private dragEnded(): void {
+    this.v0 = undefined;
+    this.r0 = undefined;
+    this.q0 = undefined;
+
+    // Force a final update to ensure we render the final position
+    this.throttledUpdate.flush();
+  }
+
+  // Make sure to clean up in ngOnDestroy
+  ngOnDestroy(): void {
+    if (this.resizeObserver) this.resizeObserver.disconnect();
+    if (this.subscription) this.subscription.unsubscribe();
+    this.throttledUpdate.cancel(); // Cancel any pending updates
+  }
+
+
+
 }
