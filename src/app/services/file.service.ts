@@ -12,4 +12,8 @@ export class FileService {
   loadGeoJSON(url: string): Promise<any> {
     return d3.json(url);  // Use D3 to load the GeoJSON data as a promise
   }
+
+  async loadCsv(csv: string) {
+    
+  }
 }

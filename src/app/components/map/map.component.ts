@@ -53,7 +53,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log('MapComponent ngOnInit called.');
     this.initMap();
     this.subscription = DataModel.getInstance().getSelectedFeatures().subscribe(features => {
-      console.log('MapComponent received updated features:', features);
+      //console.log('MapComponent received updated features:', features);
       this.updateMapSelection(features);
     });
   }
@@ -302,11 +302,11 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateMapSelection(features: Feature[] | null): void {
-    console.log('Updating map selection with features:', features);
+    //console.log('Updating map selection with features:', features);
     this.gRoutes.selectAll('.selected').classed('selected', false);
     if (features) {
       features.forEach(feature => {
-        console.log('Selecting route feature on map:', feature.id);
+        //console.log('Selecting route feature on map:', feature.id);
         this.gRoutes.selectAll('path')
           .filter((d: any) => d.id === feature.id)
           .classed('selected', true)

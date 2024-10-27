@@ -58,6 +58,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       // Load route data
       await this.loadRouteData();
       console.log('Route data loaded successfully.');
+
+
+      // const csvData = await this.fileService.loadCsv('assets/PanAm19840429.csv');
+      // console.log('CSV data loaded successfully:', csvData);
+
+
+
     } catch (error) {
       console.error('Error during initialization:', error);
     } finally {
@@ -119,7 +126,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       const response = await fetch('assets/citypair.20240823.json');
       if (!response.ok) throw new Error('Failed to fetch city pair data');
       const cityPairs = await response.json();
-      console.log('City pairs data loaded:', cityPairs);
+      //console.log('City pairs data loaded:', cityPairs);
 
       // Create route layer
       const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5);

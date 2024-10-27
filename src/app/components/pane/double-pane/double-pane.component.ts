@@ -24,15 +24,15 @@ export class DoublePaneComponent implements AfterViewInit, AfterContentInit, OnD
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngAfterViewInit(): void {
-    console.log('ngAfterViewInit: Checking if MapComponent is detected.');
-    console.log('MapComponent:', this.mapComponent);
+    //console.log('ngAfterViewInit: Checking if MapComponent is detected.');
+    //console.log('MapComponent:', this.mapComponent);
 
     this.updatePaneWidths();
   }
 
   ngAfterContentInit() {
-    console.log('DoublePaneComponent - ngAfterContentInit');
-    console.log('Number of panes:', this.panes.length);
+    //console.log('DoublePaneComponent - ngAfterContentInit');
+    //console.log('Number of panes:', this.panes.length);
   }
 
   ngOnDestroy(): void {
