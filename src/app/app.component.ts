@@ -5,7 +5,10 @@ import { DataModel } from './models/data-model';
 import { Layer } from './models/layer-model';
 import { RouteLayerService } from './services/route-layer-service';
 import { AirportService } from './services/airport.service';
-import {MatTableDataSource} from "@angular/material/table"; // Correct import for AirportService
+import {MatTableDataSource} from "@angular/material/table";
+import {FlightData} from "./interfaces/flight-data.interface"; // Correct import for AirportService
+import * as Papa from 'papaparse';
+
 
 interface StatisticsElement {
   category: string;
@@ -59,11 +62,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       await this.loadRouteData();
       console.log('Route data loaded successfully.');
 
+      // Load PanAm route data
+      await this.loadPanAm('assets/PanAm19840429.csv');
+      console.log('PanAm route data loaded successfully.');
 
-      // const csvData = await this.fileService.loadCsv('assets/PanAm19840429.csv');
-      // console.log('CSV data loaded successfully:', csvData);
-
-
+      DataModel.getInstance().setSelectedLayer("panam");
 
     } catch (error) {
       console.error('Error during initialization:', error);
@@ -137,7 +140,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
         // Log all layers in DataModel after adding routes
         console.log('DataModel layers after adding routes:', DataModel.getInstance().getLayers());
-        DataModel.getInstance().setSelectedLayer('routes');
+        //DataModel.getInstance().setSelectedLayer('routes');
       } else {
         console.error('Failed to create route layer. Route layer is null or undefined.');
       }
@@ -146,5 +149,102 @@ export class AppComponent implements OnInit, AfterViewInit {
       throw error;  // Rethrow to allow handling at a higher level
     }
   }
+
+  private async loadPanAm(filePath: string): Promise<void> {
+    console.log('Starting to load PanAm route data from:', filePath);
+
+    // Retrieve the airport data from DataModel
+    const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
+    //console.log('Retrieved airport data:', airports);
+
+    try {
+      // Load city pair data using Fetch API
+      const response = await fetch(filePath);
+      if (!response.ok) throw new Error('Failed to fetch PanAm route data');
+      const csvText = await response.text();
+      console.log('CSV file content loaded successfully:', csvText.slice(0, 200) + '...'); // Output a preview of the CSV content
+
+      // Parse CSV using PapaParse
+      const flightDataList: FlightData[] = Papa.parse<FlightData>(csvText, {
+        header: true,
+        skipEmptyLines: true,
+      }).data;
+      //console.log('Parsed flight schedule data:', flightDataList);
+
+      // Reduce flight data to unique city pairs
+      const uniqueCityPairs = new Map<string, { base: string; ref: string; al: string }>();
+
+      const cityPairs = Array.from(
+        flightDataList
+          // 1. Filter: Keep only flights that have both origin and destination defined.
+          .filter(flight => flight.origin && flight.destination)
+
+          // 2. Map: Transform each flight into a city-pair object, including:
+          // - A unique `key` (sorted combination of origin and destination to avoid duplicates).
+          // - The `base` (origin), `ref` (destination), and `al` (airline).
+          .map(flight => ({
+            key: [flight.origin, flight.destination].sort().join('-'), // Unique key to identify the city pair
+            base: flight.origin,
+            ref: flight.destination,
+            al: 'PA' // Assuming PanAm as the airline code
+          }))
+
+          // 3. Reduce: Iterate over all city-pair objects and add only unique pairs to a Map.
+          // The `key` helps avoid duplicates (e.g., both "A-B" and "B-A" would have the same key).
+          .reduce((acc, { key, base, ref, al }) => {
+            if (!acc.has(key)) {
+              acc.set(key, { base, ref, al });
+            }
+            return acc;
+          }, new Map())
+
+          // 4. Convert Map values to an array.
+          .values()
+      );
+      // flightDataList.forEach((flight, index) => {
+      //   //console.log(`Processing flight record #${index + 1}:`, flight);
+      //   if (flight.origin && flight.destination) {
+      //     const key = [flight.origin, flight.destination].sort().join('-');  // Use sorted key to avoid duplicate reverse pairs
+      //     //console.log('Generated unique key for city pair:', key);
+      //     if (!uniqueCityPairs.has(key)) {
+      //       uniqueCityPairs.set(key, {
+      //         base: flight.origin,
+      //         ref: flight.destination,
+      //         al: 'PA' // Assuming PanAm as the airline code
+      //       });
+      //       //console.log('City pair added:', key);
+      //     } else {
+      //       //console.log('City pair already exists, skipping:', key);
+      //     }
+      //   } else {
+      //     console.warn('Flight record missing origin or destination:', flight);
+      //   }
+      // });
+      //
+      //// Convert Map to Array for use in createRouteLayer
+      //const cityPairs = Array.from(uniqueCityPairs.values());
+      //console.log('Unique city pairs to be used for route layer:', cityPairs);
+
+      // Create route layer
+      const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5);
+      if (routeLayer) {
+        console.log('Route layer created successfully:', routeLayer);
+        DataModel.getInstance().addLayer('panam', routeLayer);
+        console.log('Routes layer added to DataModel.');
+
+        // Log all layers in DataModel after adding routes
+        console.log('DataModel layers after adding routes:', DataModel.getInstance().getLayers());
+        //DataModel.getInstance().setSelectedLayer('routes');
+        console.log('Selected layer set to routes.');
+      } else {
+        console.error('Failed to create route layer. Route layer is null or undefined.');
+      }
+    } catch (error) {
+      console.error('Error loading PanAm route data:', error);
+      throw error;  // Rethrow to allow handling at a higher level
+    }
+  }
+
+
 
 }

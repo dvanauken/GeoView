@@ -1,5 +1,19 @@
 @use '@angular/material' as mat;
 
+/* Angular Material Theme */
+@include mat.core();
+
+$primary: mat.define-palette(mat.$indigo-palette);
+$accent: mat.define-palette(mat.$pink-palette);
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary,
+    accent: $accent,
+  )
+));
+
+@include mat.all-component-themes($theme);
+
 /* CSS Reset */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -46,6 +60,7 @@ blockquote, q {
 }
 
 table {
+  user-select: none;
   border-collapse: collapse;
   border-spacing: 0;
 }
@@ -56,54 +71,59 @@ html, body {
   overflow: hidden;
 }
 
-/* Map features styling */
-.point {
-  fill: #ffbb00;
-  stroke: #0051ba;
-  stroke-width: 0.5px;
-  r: 5px;
-}
-
-.multipoint {
-  fill: #ffbb00;
-  stroke: #0051ba;
-  stroke-width: 1px;
-  r: 3px;
-}
-
-.sphere {
-  fill: #F5F5F5;
-  stroke: none;
-}
-
-.polygon,
-.multipolygon {
-  fill: #bbddff;
-  stroke: #003355;
-  stroke-width: 0.5px;
-}
-
-.linestring {
-  fill: none;
-  stroke: #0051ba;
-  stroke-width: 1px;
-
-  &.selected {
-    stroke: #ffbb00;
-    stroke-width: 1.5px;
+/* Map Container */
+.map-container {
+  /* Map features styling */
+  .point {
+    fill: #ffbb00;
+    stroke: #0051ba;
+    stroke-width: 0.5px;
+    r: 5px;
   }
+
+  .multipoint {
+    fill: #ffbb00;
+    stroke: #0051ba;
+    stroke-width: 1px;
+    r: 3px;
+  }
+
+  .sphere {
+    fill: #F5F5F5;
+    stroke: none;
+  }
+
+  .polygon,
+  .multipolygon {
+    fill: #bbddff;
+    stroke: #003355;
+    stroke-width: 0.5px;
+  }
+
+  .linestring route {
+    fill: none;
+    stroke: #0051ba;
+    stroke-width: 1px;
+
+    &.selected {
+      stroke: #ffbb00;
+      stroke-width: 10.5px !important;
+      stroke-opacity: 0.75;
+      z-index: 10;
+    }
+  }
+
+  .linestring panam {
+    fill: none;
+    stroke: #006;
+    stroke-width: 1px;
+
+    &.selected {
+      stroke: #005;
+      stroke-width: 10.5px !important;
+      stroke-opacity: 0.75;
+      z-index: 10;
+    }
+  }
+
 }
-
-/* Angular Material Theme */
-@include mat.core();
-
-$primary: mat.define-palette(mat.$indigo-palette);
-$accent: mat.define-palette(mat.$pink-palette);
-$theme: mat.define-light-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-  )
-));
-
-@include mat.all-component-themes($theme);

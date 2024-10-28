@@ -36,16 +36,10 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription: Subscription;
   private zoom: d3.ZoomBehavior<Element, unknown>;
   private projectionType: ProjectionType = ProjectionType.Orthographic;
-  statisticsData: StatisticsElement[] = [];
+  //statisticsData: StatisticsElement[] = [];
 
   // ... other properties
   private dragHandler: GlobeDragHandler;
-
-
-  // // Track rotation state
-  // private v0: [number, number, number]; // Mouse position at drag start
-  // private r0: [number, number, number]; // Projection rotation at drag start
-  // private q0: [number, number, number, number]; // Initial rotation quaternion
 
   constructor() {}
 
@@ -129,7 +123,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .scale(Math.min(width, height) / 2.5)
       .translate([width / 2, height / 2])
       .center([0, 0])
-      .rotate([0, 0, 0])
+      .rotate([74, -30, 0])
       .clipAngle(90);
 
     this.path = d3.geoPath().projection(this.projection);
@@ -167,7 +161,23 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
             .on('click', (event, feature) => this.selectFeature(event, feature))
             .style('cursor', 'pointer');
         }
+        else if (layerName === 'panam') {
+          console.log(`Adding routes layer with ${layer.features.length} features.`);
+          this.gRoutes.selectAll('path')
+            .data(layer.features)
+            .enter().append('path')
+            .attr('class', d => `${d.geometry.type.toLowerCase()} panam`)
+            .attr('d', this.path)
+            .style('stroke', '#0000ff')
+            .style('stroke-width', '1px')
+            .style('fill', 'none')
+            .style('opacity', '0.6')
+            .on('click', (event, feature) => this.selectFeature(event, feature))
+            .style('cursor', 'pointer');
       }
+
+
+    }
     });
   }
 
@@ -302,19 +312,18 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateMapSelection(features: Feature[] | null): void {
-    //console.log('Updating map selection with features:', features);
-    this.gRoutes.selectAll('.selected').classed('selected', false);
-    if (features) {
+    this.gRoutes.selectAll('.selected').classed('selected', false); // Clear previous selections
+    if (features && features.length) {
       features.forEach(feature => {
-        //console.log('Selecting route feature on map:', feature.id);
-        this.gRoutes.selectAll('path')
-          .filter((d: any) => d.id === feature.id)
-          .classed('selected', true)
-          .raise();
+        if (feature.id) {
+          this.gRoutes.selectAll('path')
+            .filter((d: any) => d.id === feature.id)
+            .classed('selected', true)
+            .raise(); // Bring selected paths to the front for better visibility
+        }
       });
     }
   }
-
 
   private applyZoom(): void {
     console.log('Applying zoom behavior to the map.');
@@ -337,11 +346,16 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Regular zoom behavior (without drag)
     this.zoom = d3.zoom()
-      .scaleExtent([1, 8])
+      .scaleExtent([1, 32])
       .on('zoom', (event) => {
         const { transform } = event;
-        // Only apply scale transform
-        const scaleTransformString = `scale(${transform.k})`;
+
+        // // Only apply scale transform
+        // const scaleTransformString = `scale(${transform.k})`;
+
+        // Apply full transform including translation
+        const scaleTransformString = `translate(${transform.x}, ${transform.y}) scale(${transform.k})`;
+
         this.gSphere.attr('transform', scaleTransformString);
         this.gGraticule.attr('transform', scaleTransformString);
         this.gCountries.attr('transform', scaleTransformString);

@@ -7,7 +7,7 @@ export class DataModel {
   private airports: Map<string, any> = new Map(); // Changed to store any airport data
   private layersMap: Map<string, Layer> = new Map();
   private selectedLayerName: string | null = null;
-  private selectedFeatures: BehaviorSubject<Feature[] | null> = new BehaviorSubject(null);
+  private selectedFeatures: BehaviorSubject<Feature[] | null> = new BehaviorSubject([]);
 
   private constructor() {}
 

@@ -29,7 +29,10 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadSelectedLayerData(); // Ensure data is loaded
+    // Set initial selection as empty
+    DataModel.getInstance().setSelectedFeatures([]);
+
+    this.initTable(); // Ensure data is loaded
     this.initializeNewEntry();
     this.subscription = DataModel.getInstance().getSelectedFeatures().subscribe(features => {
       this.updateTableSelection(features);
@@ -50,15 +53,15 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  private loadSelectedLayerData(): void {
-    console.log('loadSelectedLayerData called');
+  private initTable(): void {
+    console.log('initTable called');
     const selectedLayer = DataModel.getInstance().getSelectedLayer();
     if (selectedLayer && selectedLayer.features) {
       this.displayedColumns = Object.keys(selectedLayer.features[0].properties || {});
       this.dataSource = selectedLayer.features.map(feature => ({
         ...feature.properties,
         id: feature.id,
-        selected: false,  // Initialize selection state
+        selected: false,  // Ensure all rows are initialized as not selected
         isEditing: false  // Initialize editing state
       }));
     }
