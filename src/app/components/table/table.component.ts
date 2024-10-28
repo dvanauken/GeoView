@@ -53,19 +53,40 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
+  // private initTable(): void {
+  //   console.log('initTable called');
+  //   const selectedLayer = DataModel.getInstance().getSelectedLayer();
+  //   if (selectedLayer && selectedLayer.features) {
+  //     this.displayedColumns = Object.keys(selectedLayer.features[0].properties || {});
+  //     this.dataSource = selectedLayer.features.map(feature => ({
+  //       ...feature.properties,
+  //       id: feature.id,
+  //       selected: false,  // Ensure all rows are initialized as not selected
+  //       isEditing: false  // Initialize editing state
+  //     }));
+  //   }
+  // }
+
   private initTable(): void {
     console.log('initTable called');
     const selectedLayer = DataModel.getInstance().getSelectedLayer();
-    if (selectedLayer && selectedLayer.features) {
-      this.displayedColumns = Object.keys(selectedLayer.features[0].properties || {});
-      this.dataSource = selectedLayer.features.map(feature => ({
-        ...feature.properties,
-        id: feature.id,
-        selected: false,  // Ensure all rows are initialized as not selected
-        isEditing: false  // Initialize editing state
-      }));
+    if (selectedLayer && selectedLayer.features && selectedLayer.features.length > 0) {
+      if (selectedLayer.features[0].properties) {
+        this.displayedColumns = Object.keys(selectedLayer.features[0].properties);
+        this.dataSource = selectedLayer.features.map(feature => ({
+          ...feature.properties,
+          id: feature.id,
+          selected: false,  // Ensure all rows are initialized as not selected
+          isEditing: false  // Initialize editing state
+        }));
+      } else {
+        console.error('Feature properties are undefined for the selected layer.');
+      }
+    } else {
+      console.error('Selected layer or features are undefined or empty.');
     }
   }
+
 
   resizeTable(): void {
     if (this.tableContainer) {

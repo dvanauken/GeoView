@@ -100,10 +100,11 @@ html, body {
     stroke-width: 0.5px;
   }
 
-  .linestring route {
+  .linestring.routex {
     fill: none;
-    stroke: #0051ba;
-    stroke-width: 1px;
+    stroke: #ff0000;
+    stroke-width: 2px;
+    stroke-opacity: 0.25;
 
     &.selected {
       stroke: #ffbb00;
@@ -113,13 +114,13 @@ html, body {
     }
   }
 
-  .linestring panam {
+  .linestring.panam {
     fill: none;
-    stroke: #006;
+    stroke: #0000ff;
     stroke-width: 1px;
 
     &.selected {
-      stroke: #005;
+      stroke: #ffbb00;
       stroke-width: 10.5px !important;
       stroke-opacity: 0.75;
       z-index: 10;

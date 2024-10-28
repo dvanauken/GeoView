@@ -104,8 +104,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('class', 'graticule')
       .attr('d', this.path)
       .style('fill', 'none')
-      .style('stroke', '#eee')
-      .style('stroke-width', '0.3px');
+      .style('stroke', '#f0f')
+      .style('stroke-width', '1.3px');
 
     // Now add other layers
     this.addLayers();
@@ -147,36 +147,16 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
             .style('fill', '#cccccc')
             .style('stroke', '#666666')
             .style('stroke-width', '0.5px');
-        } else if (layerName === 'routes') {
-          console.log(`Adding routes layer with ${layer.features.length} features.`);
+        } else if (layerName === 'routexx' || layerName === 'panam') {
+          console.log(`Adding ${layerName}, features.size: ${layer.features.length}`);
           this.gRoutes.selectAll('path')
             .data(layer.features)
             .enter().append('path')
-            .attr('class', d => `${d.geometry.type.toLowerCase()} route`)
+            .attr('class', d => `${d.geometry.type.toLowerCase()} ${layerName}`)
             .attr('d', this.path)
-            .style('stroke', '#ff0000')
-            .style('stroke-width', '1px')
-            .style('fill', 'none')
-            .style('opacity', '0.6')
             .on('click', (event, feature) => this.selectFeature(event, feature))
             .style('cursor', 'pointer');
         }
-        else if (layerName === 'panam') {
-          console.log(`Adding routes layer with ${layer.features.length} features.`);
-          this.gRoutes.selectAll('path')
-            .data(layer.features)
-            .enter().append('path')
-            .attr('class', d => `${d.geometry.type.toLowerCase()} panam`)
-            .attr('d', this.path)
-            .style('stroke', '#0000ff')
-            .style('stroke-width', '1px')
-            .style('fill', 'none')
-            .style('opacity', '0.6')
-            .on('click', (event, feature) => this.selectFeature(event, feature))
-            .style('cursor', 'pointer');
-      }
-
-
     }
     });
   }
@@ -367,77 +347,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.svg.call(this.zoom);
   }
-
-  // private applyZoom(): void {
-  //   console.log('Applying zoom behavior to the map.');
-  //
-  //   // Separate drag behavior for rotation
-  //   const dragBehavior = d3.drag()
-  //     .on('start', this.dragStarted.bind(this))
-  //     .on('drag', this.dragged.bind(this))
-  //     .on('end', this.dragEnded.bind(this));
-  //
-  //   // Apply drag behavior only to the sphere background
-  //   this.gSphere.select('.sphere-background').call(dragBehavior);
-  //
-  //   // Regular zoom behavior (without drag)
-  //   this.zoom = d3.zoom()
-  //     .scaleExtent([1, 8])
-  //     .on('zoom', (event) => {
-  //       const { transform } = event;
-  //       // Only apply scale transform
-  //       const scaleTransformString = `scale(${transform.k})`;
-  //       this.gSphere.attr('transform', scaleTransformString);
-  //       this.gGraticule.attr('transform', scaleTransformString);
-  //       this.gCountries.attr('transform', scaleTransformString);
-  //       this.gRoutes.attr('transform', scaleTransformString);
-  //       this.gAirports.attr('transform', scaleTransformString);
-  //       this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke');
-  //       this.updateAirportPositions();
-  //     });
-  //   this.svg.call(this.zoom);
-  // }
-
-  // private dragStarted(event: any): void {
-  //   this.v0 = [event.x, event.y, 0];
-  //   this.r0 = this.projection.rotate();
-  // }
-
-  // private readonly throttledUpdate = throttle(() => {
-  //   // Update all paths
-  //   this.gSphere.selectAll('path').attr('d', this.path);
-  //   this.gGraticule.selectAll('path').attr('d', this.path);
-  //   this.gCountries.selectAll('path').attr('d', this.path);
-  //   this.gRoutes.selectAll('path').attr('d', this.path);
-  //   this.updateAirportPositions();
-  // }, 16); // ~60fps (1000ms/60 ≈ 16ms)
-
-  // private dragged(event: any): void {
-  //   if (!this.v0) return;
-  //
-  //   const sensitivity = 0.25;
-  //   const xChange = (event.x - this.v0[0]) * sensitivity;
-  //   const yChange = (event.y - this.v0[1]) * sensitivity;
-  //
-  //   // Update projection rotation
-  //   this.projection.rotate([
-  //     this.r0[0] + xChange,
-  //     this.r0[1] - yChange,
-  //     this.r0[2]
-  //   ]);
-  //
-  //   // Use throttled update instead of direct updates
-  //   this.throttledUpdate();
-  // }
-
-  // private dragEnded(): void {
-  //   this.v0 = undefined;
-  //   this.r0 = undefined;
-  //   this.q0 = undefined;
-  //
-  //   // Force a final update to ensure we render the final position
-  //   this.throttledUpdate.flush();
-  // }
 
   // Make sure to clean up in ngOnDestroy
   ngOnDestroy(): void {

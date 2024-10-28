@@ -2,25 +2,33 @@ import { Injectable } from '@angular/core';
 import { geoInterpolate, geoDistance } from 'd3-geo';
 import { Layer } from '../models/layer-model';  // Adjust the path according to your project structure
 import { Feature, GeometryObject } from 'geojson';
+import {DataModel} from "../models/data-model";
 
 @Injectable({
   providedIn: 'root'
 })
 export class RouteLayerService {
 
-  constructor() {}
+  private static airports: any[];
+
+  constructor() {
+    if (!RouteLayerService.airports) {
+      // Assuming getAirports() returns all airport data
+      RouteLayerService.airports = DataModel.getInstance().getAirports();
+    }
+  }
 
   // Function to generate great circle route features with dynamic point density
-  createRouteLayer(airports: any[], cityPairs: any[], pointsPerUnit = 0.2): Layer {
+  createRouteLayer(cityPairs: any[], pointsPerUnit = 1.0): Layer {
     console.log('Creating route layer...');
-    const features = this.createFeatures(cityPairs, airports, pointsPerUnit);
+    const features = this.createFeatures(cityPairs, pointsPerUnit);
     console.log(`Route layer created with ${features.length} features.`);
     return new Layer(features);
   }
 
-  private createFeatures(cityPairs: any[], airports: any[], pointsPerUnit: number): Feature<GeometryObject>[] {
+  private createFeatures(cityPairs: any[], pointsPerUnit: number): Feature<GeometryObject>[] {
     console.log('Creating features for route layer...');
-    const airportMap = this.mapAirportsByCode(airports);
+    const airportMap = this.mapAirportsByCode(RouteLayerService.airports);
     const features: Feature<GeometryObject>[] = [];
     const unmappableCodes = new Set<string>();
 

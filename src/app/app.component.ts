@@ -51,8 +51,14 @@ export class AppComponent implements OnInit, AfterViewInit {
     try {
       // Load airport data and update the application's data model
       const airports = await this.airportService.loadAirportData();
+      if (!airports || airports.length === 0) {
+        throw new Error('No airport data found, cannot proceed.');
+      }
+      DataModel.getInstance().setAirports(airports);
+      console.log('Airports set successfully:', DataModel.getInstance().getAirports());
+
       this.airportData = new MatTableDataSource(airports);
-      console.log('Airport data loaded successfully.');
+      //console.log('Airport data loaded successfully.');
 
       // Load countries GeoJSON
       await this.loadGeoJSONFile('countries.geojson');
@@ -121,8 +127,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   private async loadRouteData(): Promise<void> {
     console.log('Starting to load route data...');
 
-    // Retrieve the airport data from DataModel
-    const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
+    // // Retrieve the airport data from DataModel
+    // const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
 
     try {
       // Load city pair data using Fetch API
@@ -132,7 +138,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       //console.log('City pairs data loaded:', cityPairs);
 
       // Create route layer
-      const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5);
+      const routeLayer = this.routeLayerService.createRouteLayer(cityPairs, 5);
       if (routeLayer) {
         console.log('Route layer created successfully:', routeLayer);
         DataModel.getInstance().addLayer('routes', routeLayer);
@@ -140,7 +146,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
         // Log all layers in DataModel after adding routes
         console.log('DataModel layers after adding routes:', DataModel.getInstance().getLayers());
-        //DataModel.getInstance().setSelectedLayer('routes');
+        DataModel.getInstance().setSelectedLayer('routes');
       } else {
         console.error('Failed to create route layer. Route layer is null or undefined.');
       }
@@ -153,9 +159,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   private async loadPanAm(filePath: string): Promise<void> {
     console.log('Starting to load PanAm route data from:', filePath);
 
-    // Retrieve the airport data from DataModel
-    const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
-    //console.log('Retrieved airport data:', airports);
+    // // Retrieve the airport data from DataModel
+    // const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
+    // //console.log('Retrieved airport data:', airports);
 
     try {
       // Load city pair data using Fetch API
@@ -200,33 +206,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 
           // 4. Convert Map values to an array.
           .values()
-      );
-      // flightDataList.forEach((flight, index) => {
-      //   //console.log(`Processing flight record #${index + 1}:`, flight);
-      //   if (flight.origin && flight.destination) {
-      //     const key = [flight.origin, flight.destination].sort().join('-');  // Use sorted key to avoid duplicate reverse pairs
-      //     //console.log('Generated unique key for city pair:', key);
-      //     if (!uniqueCityPairs.has(key)) {
-      //       uniqueCityPairs.set(key, {
-      //         base: flight.origin,
-      //         ref: flight.destination,
-      //         al: 'PA' // Assuming PanAm as the airline code
-      //       });
-      //       //console.log('City pair added:', key);
-      //     } else {
-      //       //console.log('City pair already exists, skipping:', key);
-      //     }
-      //   } else {
-      //     console.warn('Flight record missing origin or destination:', flight);
-      //   }
-      // });
-      //
-      //// Convert Map to Array for use in createRouteLayer
-      //const cityPairs = Array.from(uniqueCityPairs.values());
-      //console.log('Unique city pairs to be used for route layer:', cityPairs);
+      ).sort((a, b) => a.base.localeCompare(b.base) || a.ref.localeCompare(b.ref));
 
       // Create route layer
-      const routeLayer = this.routeLayerService.createRouteLayer(airports, cityPairs, 5);
+      const routeLayer = this.routeLayerService.createRouteLayer(cityPairs, 5);
       if (routeLayer) {
         console.log('Route layer created successfully:', routeLayer);
         DataModel.getInstance().addLayer('panam', routeLayer);

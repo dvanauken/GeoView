@@ -63,25 +63,15 @@ export class DataModel {
     return this.selectedFeatures;
   }
 
-  public getAllFeatures(): Feature[] {
-    const allFeatures = [];
-    const layers = DataModel.getInstance().getLayers();
-    layers.forEach(layer => {
-      if (layer && layer.features) {
-        allFeatures.push(...layer.features);
-      }
-    });
-    return allFeatures;
-  }
-
-
-
-  // // Method to load airport data dynamically
-  // public loadAirports(airports: { code: string; lon: number; lat: number }[]): void {
-  //   airports.forEach(airport => {
-  //     this.airports.set(airport.code, airport);
+  // public getAllFeatures(): Feature[] {
+  //   const allFeatures = [];
+  //   const layers = DataModel.getInstance().getLayers();
+  //   layers.forEach(layer => {
+  //     if (layer && layer.features) {
+  //       allFeatures.push(...layer.features);
+  //     }
   //   });
-  //   console.log('Airports data updated in DataModel');
+  //   return allFeatures;
   // }
 
   public getAirports(): any[] {
