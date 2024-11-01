@@ -1,29 +1,15 @@
-import {AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { FileService } from './services/file.service';
-import { DataModel } from './models/data-model';
-import { Layer } from './models/layer-model';
-import { RouteLayerService } from './services/route-layer-service';
-import { AirportService } from './services/airport.service';
-import {MatTableDataSource} from "@angular/material/table";
-import {FlightData} from "./interfaces/flight-data.interface"; // Correct import for AirportService
+import { MatTableDataSource } from "@angular/material/table";
+import { DataService } from './services/data.service';
+import { Feature, LineString, FeatureCollection } from 'geojson';
+import { Layer } from './models/layer';
+import { AirportService } from './services/airport.service'; // Import AirportService
+import { Resources } from './services/resources'; // Import AirportService
+import { AirportData } from './interfaces/airport-data.interface';
+import { Observable } from 'rxjs';
 import * as Papa from 'papaparse';
-
-
-interface StatisticsElement {
-  category: string;
-  value: string | number;
-}
-
-interface AirportData {
-  code: string;
-  region: number;
-  name: string;
-  city: string;
-  country: string;
-  lat: number;
-  lon: number;
-}
+//import { LoadResult, ErrorResult, LoadConfig, LayerService } from './services/layer.service';
 
 @Component({
   selector: 'app-root',
@@ -31,59 +17,141 @@ interface AirportData {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, AfterViewInit {
+  title = 'Airport and Route Manager';
   isLoading = true;  // Show the spinner initially
   displayedColumns: string[] = ['code', 'region', 'name', 'city', 'country', 'lat', 'lon'];
   airportData = new MatTableDataSource<AirportData>([]);
-
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
+  countries: Layer | null = null;
+  routes: Layer | null = null;
+  airports: Layer | null = null;
+  selectedFeatures$: Observable<Feature[]>;
+  layers: Layer[] = [];
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private fileService: FileService,
-    private routeLayerService: RouteLayerService,
-    private airportService: AirportService  // Inject the AirportService
+    private dataService: DataService,
+    //private layerService: LayerService,
+    private airportService: AirportService, // Inject AirportService
   ) {
-    this.airportData = new MatTableDataSource<AirportData>([]);
+    this.selectedFeatures$ = this.dataService.getSelectedFeatures();
+    //this.airportData = new MatTableDataSource<AirportData>([]);
   }
 
+  ngOnInit(): void {
+    (async () => {
+      try {
+        const airports = await Resources.load(["assets/Airport.json"]);
+        console.log('airports.loaded:', airports[0].data);
+        this.dataService.setAirports(airports[0].data);
+        const files = await Resources.load(['assets/110m/countries.geojson', 'assets/routes.json', 'assets/pa.csv']);
+        files.forEach(({ data, path }) => {
+          if (path.endsWith('countries.geojson')) {
+            this.dataService.addLayer('countries', new Layer('FeatureCollection', data.features || data));
+            console.log("countries.geojson:path=" + path + ", data=" + data.features);
+          } else if (path.endsWith('routes.json')) {
+            // Ensure `airports[0].data` contains airport data for lookups
+            const airportData = airports[0].data;
 
-  async ngOnInit(): Promise<void> {
-    try {
-      // Load airport data and update the application's data model
-      const airports = await this.airportService.loadAirportData();
-      if (!airports || airports.length === 0) {
-        throw new Error('No airport data found, cannot proceed.');
+            // Create GeoJSON features for routes based on base and ref lookups using map and filter
+            const features = data
+              .filter((route: { al: string }) => route.al === 'F9') // Filter for routes with `al: F9`
+              .map((route: { base: string; ref: string }) => {
+                // Find the base and ref coordinates from airportData
+                const baseAirport = airportData.find((airport: any) => airport.code === route.base);
+                const refAirport = airportData.find((airport: any) => airport.code === route.ref);
+
+                // Return a feature if both airports are found; otherwise, return null
+                return (baseAirport && refAirport) ? {
+                  type: 'Feature',
+                  properties: { base: route.base, ref: route.ref },
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: [
+                      [baseAirport.lon, baseAirport.lat],
+                      [refAirport.lon, refAirport.lat]
+                    ]
+                  }
+                } : null;
+              })
+              .filter(feature => feature !== null) as GeoJSON.Feature[]; // Filter out null values
+
+//             // Reduce features array into a GeoJSON FeatureCollection
+//             const layer = features.reduce((collection, feature) => {
+//               collection.features.push(feature);
+//               return collection;
+//             }, { type: 'FeatureCollection', features: [] });
+
+            // Add the new layer to the data service
+            this.dataService.addLayer('routes', new Layer("routes", features));
+
+            console.log("routes.json:path=" + path + ", data loaded and structured as GeoJSON FeatureCollection");
+            console.log("routes.json:path=" + path + ", data=" + data)
+          }
+          else if (path.endsWith('pa.csv')) {
+            console.log("pa.csv:path=" + path + ", data=" + data);
+
+            // Create an airport lookup map
+            const airportMap = new Map(
+              airports[0].data.map(airport => [
+                airport.code,
+                [airport.lon, airport.lat]
+              ])
+            );
+
+            console.log('Sample of airportMap:', Array.from(airportMap.entries()).slice(0, 3));
+            console.log('Filtered data sample:', data.filter(row => row['origin'] && row['destination']).slice(0, 3));
+
+            // Transform data to features
+            const features = data
+              .filter(row => row['origin'] && row['destination'])
+              .map(row => {
+                const origin = airportMap.get(row['origin']);
+                const destination = airportMap.get(row['destination']);
+
+                if (!origin || !destination) {
+                  return null;
+                }
+
+                return {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: [origin, destination]
+                  },
+                  properties: {
+                    airline: 'pa',
+                    base: row['origin'],
+                    ref: row['destination'],
+                    originCoords: origin,
+                    destinationCoords: destination
+                  }
+                };
+              })
+              .filter(feature => feature !== null);
+
+//               const layer = features.reduce((collection, feature) => {
+//                 collection.features.push(feature);
+//                 return collection;
+//               }, { type: 'FeatureCollection', features: [] });
+
+              // Add the new layer to the data service
+              this.dataService.addLayer('pa', new Layer("pa", features));
+
+            console.log('First 3 transformed features:', features.slice(0, 3));
+            return features;
+          }
+        });
+        console.log('All resource loading completed.');
+        this.isLoading = false;
+      } catch (err) {
+        console.error('An error occurred during loading:', err);
+        this.isLoading = false;
       }
-      DataModel.getInstance().setAirports(airports);
-      console.log('Airports set successfully:', DataModel.getInstance().getAirports());
-
-      this.airportData = new MatTableDataSource(airports);
-      //console.log('Airport data loaded successfully.');
-
-      // Load countries GeoJSON
-      await this.loadGeoJSONFile('countries.geojson');
-      console.log('Countries GeoJSON loaded successfully.');
-
-      // Load route data
-      await this.loadRouteData();
-      console.log('Route data loaded successfully.');
-
-      // Load PanAm route data
-      await this.loadPanAm('assets/PanAm19840429.csv');
-      console.log('PanAm route data loaded successfully.');
-
-      DataModel.getInstance().setSelectedLayer("panam");
-
-    } catch (error) {
-      console.error('Error during initialization:', error);
-    } finally {
-      this.isLoading = false; // Hide the spinner after all data is loaded or an error occurs
-      console.log('Initialization complete');
-    }
+    })();
   }
 
-  ngAfterViewInit() {
-    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+  ngAfterViewInit(): void {
     setTimeout(() => {
       if (this.paginator) {
         this.airportData.paginator = this.paginator;
@@ -95,8 +163,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // Add tab change handler
-  onTabChange(event: any) {
+  onTabChange(event: any): void {
     if (event.index === 1) { // Airport tab index
       setTimeout(() => {
         if (this.paginator) {
@@ -107,127 +174,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   }
 
-
-  private loadGeoJSONFile(fileName: string): Promise<void> {
-    const filePath = `assets/110m/${fileName}`;
-    return this.fileService.loadGeoJSON(filePath).then(geoData => {
-      if (geoData && geoData.features) {
-        const layerName = fileName.split('.')[0];
-        console.log(`Successfully loaded ${fileName}, adding to DataModel as ${layerName}`);
-        DataModel.getInstance().addLayer(layerName, new Layer(geoData.features));
-      } else {
-        console.error('GeoJSON data is invalid:', geoData);
-      }
-    }).catch(error => {
-      console.error(`Failed to load GeoJSON data from ${fileName}`, error);
-      throw error; // Ensure errors are propagated
-    });
+  onLayerSelect(layerName: string): void {
+    this.dataService.setSelectedLayer(layerName);
   }
-
-  private async loadRouteData(): Promise<void> {
-    console.log('Starting to load route data...');
-
-    // // Retrieve the airport data from DataModel
-    // const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
-
-    try {
-      // Load city pair data using Fetch API
-      const response = await fetch('assets/citypair.20240823.json');
-      if (!response.ok) throw new Error('Failed to fetch city pair data');
-      const cityPairs = await response.json();
-      //console.log('City pairs data loaded:', cityPairs);
-
-      // Create route layer
-      const routeLayer = this.routeLayerService.createRouteLayer(cityPairs, 5);
-      if (routeLayer) {
-        console.log('Route layer created successfully:', routeLayer);
-        DataModel.getInstance().addLayer('routes', routeLayer);
-        console.log('Routes layer added to DataModel.');
-
-        // Log all layers in DataModel after adding routes
-        console.log('DataModel layers after adding routes:', DataModel.getInstance().getLayers());
-        DataModel.getInstance().setSelectedLayer('routes');
-      } else {
-        console.error('Failed to create route layer. Route layer is null or undefined.');
-      }
-    } catch (error) {
-      console.error('Error loading route data:', error);
-      throw error;  // Rethrow to allow handling at a higher level
-    }
-  }
-
-  private async loadPanAm(filePath: string): Promise<void> {
-    console.log('Starting to load PanAm route data from:', filePath);
-
-    // // Retrieve the airport data from DataModel
-    // const airports = DataModel.getInstance().getAirports();  // Assuming getAirports() returns all airport data
-    // //console.log('Retrieved airport data:', airports);
-
-    try {
-      // Load city pair data using Fetch API
-      const response = await fetch(filePath);
-      if (!response.ok) throw new Error('Failed to fetch PanAm route data');
-      const csvText = await response.text();
-      console.log('CSV file content loaded successfully:', csvText.slice(0, 200) + '...'); // Output a preview of the CSV content
-
-      // Parse CSV using PapaParse
-      const flightDataList: FlightData[] = Papa.parse<FlightData>(csvText, {
-        header: true,
-        skipEmptyLines: true,
-      }).data;
-      //console.log('Parsed flight schedule data:', flightDataList);
-
-      // Reduce flight data to unique city pairs
-      const uniqueCityPairs = new Map<string, { base: string; ref: string; al: string }>();
-
-      const cityPairs = Array.from(
-        flightDataList
-          // 1. Filter: Keep only flights that have both origin and destination defined.
-          .filter(flight => flight.origin && flight.destination)
-
-          // 2. Map: Transform each flight into a city-pair object, including:
-          // - A unique `key` (sorted combination of origin and destination to avoid duplicates).
-          // - The `base` (origin), `ref` (destination), and `al` (airline).
-          .map(flight => ({
-            key: [flight.origin, flight.destination].sort().join('-'), // Unique key to identify the city pair
-            base: flight.origin,
-            ref: flight.destination,
-            al: 'PA' // Assuming PanAm as the airline code
-          }))
-
-          // 3. Reduce: Iterate over all city-pair objects and add only unique pairs to a Map.
-          // The `key` helps avoid duplicates (e.g., both "A-B" and "B-A" would have the same key).
-          .reduce((acc, { key, base, ref, al }) => {
-            if (!acc.has(key)) {
-              acc.set(key, { base, ref, al });
-            }
-            return acc;
-          }, new Map())
-
-          // 4. Convert Map values to an array.
-          .values()
-      ).sort((a, b) => a.base.localeCompare(b.base) || a.ref.localeCompare(b.ref));
-
-      // Create route layer
-      const routeLayer = this.routeLayerService.createRouteLayer(cityPairs, 5);
-      if (routeLayer) {
-        console.log('Route layer created successfully:', routeLayer);
-        DataModel.getInstance().addLayer('panam', routeLayer);
-        console.log('Routes layer added to DataModel.');
-
-        // Log all layers in DataModel after adding routes
-        console.log('DataModel layers after adding routes:', DataModel.getInstance().getLayers());
-        //DataModel.getInstance().setSelectedLayer('routes');
-        console.log('Selected layer set to routes.');
-      } else {
-        console.error('Failed to create route layer. Route layer is null or undefined.');
-      }
-    } catch (error) {
-      console.error('Error loading PanAm route data:', error);
-      throw error;  // Rethrow to allow handling at a higher level
-    }
-  }
-
-
-
 }

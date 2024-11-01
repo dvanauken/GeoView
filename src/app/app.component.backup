@@ -1,0 +1,190 @@
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from "@angular/material/table";
+import { DataService } from './services/data.service';
+import { Feature, LineString, FeatureCollection } from 'geojson';
+import { Layer } from './models/layer-model';
+import { AirportService } from './services/airport.service'; // Import AirportService
+import { AirportData } from './interfaces/airport-data.interface';
+import { Observable } from 'rxjs';
+import * as Papa from 'papaparse';
+import { LoadResult, ErrorResult, LoadConfig, LayerService } from './services/layer.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit, AfterViewInit {
+  title = 'Airport and Route Manager';
+  isLoading = true;  // Show the spinner initially
+  displayedColumns: string[] = ['code', 'region', 'name', 'city', 'country', 'lat', 'lon'];
+  airportData = new MatTableDataSource<AirportData>([]);
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
+  countries: Layer | null = null;
+  routes: Layer | null = null;
+  airports: Layer | null = null;
+  selectedFeatures$: Observable<Feature[]>;
+  layers: Layer[] = [];
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private dataService: DataService,
+    private layerService: LayerService,
+    private airportService: AirportService, // Inject AirportService
+  ) {
+    this.selectedFeatures$ = this.dataService.getSelectedFeatures();
+    //this.airportData = new MatTableDataSource<AirportData>([]);
+  }
+
+  ngOnInit(): void {
+
+
+    this.airportService.loadAirportData().subscribe({
+      next: (airports: AirportData[]) => {
+        this.dataService.setAirports(airports); // Store in dataService.airports
+        this.airportData.data = airports; // Optional: Set MatTable data if needed
+      },
+      error: (err) => {
+        console.error('Error loading airport data:', err);
+      }
+    });
+
+
+
+    const configs: LoadConfig[] = [
+      {
+        src: 'assets/110m/countries.geojson',
+        target: 'countries'
+      },
+      {
+        src: 'assets/routes.json',
+        target: 'routes'
+      },
+      {
+        src: {
+          'assets/pa.csv': (data: any[], context?: any) => {
+            // Debug: Log just first 3 rows of raw CSV data
+            console.log('First 3 rows of CSV data:', data.slice(0, 3));
+
+            // Access airports data
+            const airports = context?.dataService?.airports || [];
+
+            // Create airport lookup map
+            const airportMap = new Map(
+              airports.map(airport => [
+                airport.code,
+                [airport.lon, airport.lat]
+              ])
+            );
+
+            // Show sample of coordinate mapping
+            const sampleAirports = Array.from(airportMap.entries()).slice(0, 3);
+            console.log('Sample of 3 airport coordinates:',
+              sampleAirports.map(([code, coords]) => ({
+                code,
+                coordinates: coords
+              }))
+            );
+
+            // Transform to features
+            const features = data
+              .filter(row => row['origin'] && row['destination'])
+              .map(row => {
+                const origin = airportMap.get(row['origin']);
+                const destination = airportMap.get(row['destination']);
+
+                if (!origin || !destination) {
+                  return null;
+                }
+
+                return {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: [origin, destination]
+                  },
+                  properties: {
+                    airline: 'PA',
+                    origin: row['origin'],
+                    destination: row['destination'],
+                    originCoords: origin,
+                    destinationCoords: destination
+                  }
+                };
+              })
+              .filter(feature => feature !== null);
+
+            // Debug first 3 features only
+            console.log('First 3 transformed features:', features.slice(0, 3));
+            return features;
+          }
+        },
+        target: 'pa'
+      }
+    ];
+
+    // Add this debugging section in ngOnInit before calling layerService.load
+    console.log('Current DataService airports:', this.dataService.getAirports().slice(0, 3));
+    console.log('LoadConfig being passed to service:', configs);
+
+    this.layerService.load(configs).subscribe({
+      next: (results: LoadResult[]) => {
+        results.forEach((result) => {
+          console.log('startvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+          console.log('>>target=' + result.target);
+          console.log('LoadResult for target:', result.target);
+          console.log('Layer data structure:', result.layer);
+          console.log('end^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+          if (result.target === 'countries') {
+            //this.countries = result.layer;
+            this.dataService.addLayer('countries', result.layer);
+          } else if (result.target === 'routes') {
+            //this.routes = result.layer;
+            this.dataService.addLayer('routes', result.layer);
+          } else if (result.target === 'pa') {
+            //this.routes = result.layer;
+            debugger;
+            console.log('--->features=' + result.target);
+            this.dataService.addLayer('pa', result.layer);
+          }
+        });
+        this.isLoading = false;
+      },
+      error: (error: ErrorResult) => {
+        this.isLoading = false;
+
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      if (this.paginator) {
+        this.airportData.paginator = this.paginator;
+        this.cdr.detectChanges();
+        console.log("Paginator linked successfully");
+      } else {
+        console.warn("Paginator not found");
+      }
+    });
+  }
+
+  onTabChange(event: any): void {
+    if (event.index === 1) { // Airport tab index
+      setTimeout(() => {
+        if (this.paginator) {
+          this.airportData.paginator = this.paginator;
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  onLayerSelect(layerName: string): void {
+    this.dataService.setSelectedLayer(layerName);
+  }
+}

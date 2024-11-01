@@ -7,6 +7,19 @@ https://en.wikipedia.org/wiki/Agenda_47
 npx prettier --write src/
 npx prettier --write src/app/app.component.ts
 
+## Testing
+ng test --browsers ChromeHeadless --watch=false
+ng test --browsers ChromeHeadless --watch=false --include=**/layer.service.spec.ts
+
+# Regular development testing
+npm test
+
+# CI pipeline testing
+npm run test:ci
+
+# Local coverage checking
+npm run test:coverage
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.

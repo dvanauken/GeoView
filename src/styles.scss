@@ -100,27 +100,27 @@ html, body {
     stroke-width: 0.5px;
   }
 
-  .linestring.routex {
+  .linestring.routes {
     fill: none;
-    stroke: #ff0000;
-    stroke-width: 2px;
+    stroke: #080;
+    stroke-width: 3px;
     stroke-opacity: 0.25;
 
     &.selected {
-      stroke: #ffbb00;
+      stroke: #800080;
       stroke-width: 10.5px !important;
       stroke-opacity: 0.75;
       z-index: 10;
     }
   }
 
-  .linestring.panam {
+  .linestring.pa {
     fill: none;
     stroke: #0000ff;
     stroke-width: 1px;
 
     &.selected {
-      stroke: #ffbb00;
+      stroke: #0000ff;
       stroke-width: 10.5px !important;
       stroke-opacity: 0.75;
       z-index: 10;

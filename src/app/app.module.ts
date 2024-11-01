@@ -12,10 +12,11 @@ import { MatSortModule } from '@angular/material/sort';
 import { MapComponent } from './components/map/map.component';
 import { TableComponent } from './components/table/table.component';
 
-import { AirportService } from './services/airport.service';
-import { AirlineService } from './services/airline.service';
-import { PaneModule } from './components/pane/pane.module';
+//import { AirportService } from './services/airport.service';
+import { DataService } from './services/data.service';
+//import { RouteService } from './services/route.service';
 
+import { PaneModule } from './components/pane/pane.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 
@@ -40,14 +41,9 @@ import { MatTableModule } from '@angular/material/table';
     BrowserAnimationsModule // Needed for animations
   ],
   providers: [
-    // AirportService,
-    // AirlineService,
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: preloadData,
-    //   deps: [AirportService, AirlineService],
-    //   multi: true,
-    // },
+    //AirportService,
+    DataService
+    //RouteService
   ],
 
   bootstrap: [AppComponent],

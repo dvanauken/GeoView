@@ -1,19 +1,17 @@
 import { Injectable } from '@angular/core';
-import {DataModel} from "../models/data-model";
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { AirportData } from '../interfaces/airport-data.interface';  // Update the path as necessary
 
 @Injectable({
   providedIn: 'root'
 })
 export class AirportService {
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
-  async loadAirportData(): Promise<any[]> {
-    const response = await fetch('assets/Airport.json');
-    if (!response.ok) throw new Error('Failed to fetch airport data');
-    const data = await response.json();
-    DataModel.getInstance().setAirports(data); // Assuming setAirports method is implemented in DataModel
-    console.log('Airport data loaded and stored in DataModel');
-    return data;
+  loadAirportData(): Observable<AirportData[]> {
+    return this.http.get<AirportData[]>('assets/Airport.json');
   }
 }

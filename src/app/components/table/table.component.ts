@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { FeatureCollection, Feature } from 'geojson';
-import { DataModel } from "../../models/data-model";
+import { DataService } from '../../services/data.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -18,40 +18,37 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription: Subscription;
   selectedRows = new Set();
   lastClickedRowIndex: number | null = null;
-
-  // State for new data entry
   newEntry: any = {};
-  // Track if a row is being edited
   editingRowIndex: number | null = null;
 
-  constructor(private cdr: ChangeDetectorRef) {
+  constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {
     console.log('TableComponent constructor called');
   }
 
-  ngOnInit(): void {
-    // Set initial selection as empty
-    DataModel.getInstance().setSelectedFeatures([]);
+   ngOnInit(): void {
+     // Set initial selection as empty
+     this.dataService.setSelectedFeatures([]);
 
-    this.initTable(); // Ensure data is loaded
-    this.initializeNewEntry();
-    this.subscription = DataModel.getInstance().getSelectedFeatures().subscribe(features => {
-      this.updateTableSelection(features);
-    });
-  }
+     this.initTable(); // Ensure data is loaded
+     this.initializeNewEntry();
+     this.subscription = this.dataService.getSelectedFeatures().subscribe(features => {
+       this.updateTableSelection(features);
+     });
+   }
 
-  ngAfterViewInit(): void {
-    this.resizeObserver = new ResizeObserver(() => {
-      this.resizeTable();
-    });
-    this.resizeObserver.observe(this.tableContainer.nativeElement);
-  }
+   ngAfterViewInit(): void {
+     this.resizeObserver = new ResizeObserver(() => {
+       this.resizeTable();
+     });
+     this.resizeObserver.observe(this.tableContainer.nativeElement);
+   }
 
-  ngOnDestroy(): void {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-    this.subscription.unsubscribe();
-  }
+   ngOnDestroy(): void {
+     if (this.resizeObserver) {
+       this.resizeObserver.disconnect();
+     }
+     this.subscription.unsubscribe();
+   }
 
   // private initTable(): void {
   //   console.log('initTable called');
@@ -69,11 +66,11 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private initTable(): void {
     console.log('initTable called');
-    const selectedLayer = DataModel.getInstance().getSelectedLayer();
-    if (selectedLayer && selectedLayer.features && selectedLayer.features.length > 0) {
-      if (selectedLayer.features[0].properties) {
-        this.displayedColumns = Object.keys(selectedLayer.features[0].properties);
-        this.dataSource = selectedLayer.features.map(feature => ({
+    const selectedLayer = this.dataService.getSelectedLayer();
+    if (selectedLayer && selectedLayer.getFeatures() && selectedLayer.getFeatures().length > 0) {
+      if (selectedLayer.getFeatures()[0].properties) {
+        this.displayedColumns = Object.keys(selectedLayer.getFeatures()[0].properties);
+        this.dataSource = selectedLayer.getFeatures().map(feature => ({
           ...feature.properties,
           id: feature.id,
           selected: false,  // Ensure all rows are initialized as not selected
@@ -108,7 +105,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       const end = Math.max(index, this.lastClickedRowIndex);
       newSelection = this.dataSource.slice(start, end + 1);
     } else if (event.ctrlKey || event.metaKey) {
-      newSelection = [...DataModel.getInstance().getSelectedFeatures().value || []];
+      newSelection = [...this.dataService.getSelectedFeatures().value || []];
       const idx = newSelection.findIndex(item => item.id === row.id);
       if (idx > -1) {
         newSelection.splice(idx, 1);  // Deselect if already selected
@@ -119,7 +116,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       newSelection = [row];  // Normal click, select only this row
     }
 
-    DataModel.getInstance().setSelectedFeatures(newSelection);
+    this.dataService.setSelectedFeatures(newSelection);
   }
 
   updateTableSelection(features: Feature[] | null): void {
@@ -180,7 +177,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     return !readOnlyColumns.includes(column);
   }
 
-  onNewEntrySave(): void {
+   onNewEntrySave(): void {
     // Validate the entry
     if (this.isNewEntryValid()) {
       // Generate a unique ID or use your ID generation logic
@@ -200,7 +197,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       console.error('New entry validation failed');
     }
-  }
+   }
 
   isNewEntryValid(): boolean {
     const requiredFields = this.displayedColumns.filter(column =>

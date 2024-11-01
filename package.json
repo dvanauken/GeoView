@@ -6,7 +6,11 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:ci": "ng test --browsers ChromeHeadless --watch=false --code-coverage",
+    "test:coverage": "ng test --browsers ChromeHeadless --code-coverage",
+    "test:1": "ng test --include src/app/path-to-your-layer-service/layer.service.spec.ts --browsers ChromeHeadless --watch=false\n",
+    "test:2": "ng test --include src/app/services/layer.service.spec.ts --browsers ChromeHeadless --watch=true"
   },
   "prettier": {
     "semi": true,

@@ -1,21 +1,13 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
-import { Feature, FeatureCollection, GeometryObject } from 'geojson';
-import { DataModel } from '../../models/data-model';
+import { Feature, FeatureCollection, Geometry, GeometryObject } from 'geojson';
 import { Subscription } from 'rxjs';
 import { ProjectionType } from '../../enums/projection-type.enum';
 import { MatTableDataSource } from '@angular/material/table';
-import { Versor } from './versor';
+import { DataService } from '../../services/data.service';
 import { throttle } from 'lodash';
-import {GlobeDragHandler} from "./globe-drag-handler";
-
-
-
-interface StatisticsElement {
-  airportCode: string;
-  count: number;
-}
+import { GlobeDragHandler } from "./globe-drag-handler";
 
 @Component({
   selector: 'app-map',
@@ -36,27 +28,24 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription: Subscription;
   private zoom: d3.ZoomBehavior<Element, unknown>;
   private projectionType: ProjectionType = ProjectionType.Orthographic;
-  //statisticsData: StatisticsElement[] = [];
-
-  // ... other properties
   private dragHandler: GlobeDragHandler;
 
-  constructor() {}
+  constructor(private dataService: DataService) {}
 
-  ngOnInit(): void {
+   ngOnInit(): void {
     console.log('MapComponent ngOnInit called.');
     this.initMap();
-    this.subscription = DataModel.getInstance().getSelectedFeatures().subscribe(features => {
+    this.subscription = this.dataService.getSelectedFeatures().subscribe(features => {
       //console.log('MapComponent received updated features:', features);
       this.updateMapSelection(features);
     });
-  }
+   }
 
-  ngAfterViewInit(): void {
+   ngAfterViewInit(): void {
     console.log('MapComponent ngAfterViewInit called. Ready for interaction.');
     this.resizeObserver = new ResizeObserver(() => this.resizeMap());
     this.resizeObserver.observe(this.mapContainer.nativeElement);
-  }
+   }
 
   private setupSVG(): void {
     console.log('Setting up SVG elements.');
@@ -131,49 +120,55 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private addLayers(): void {
     console.log('Adding layers to the map.');
-    const layerNames = DataModel.getInstance().getLayerNames();
-
+    const layerNames = this.dataService.getLayerNames();
     layerNames.forEach(layerName => {
       console.log(`Processing layer: ${layerName}`);
-      const layer = DataModel.getInstance().getLayer(layerName);
-      if (layer && layer.features) {
+      const layer = this.dataService.getLayer(layerName);
+      if (layer && layer.getFeatures()) {
         if (layerName === 'countries') {
-          console.log(`Adding countries layer with ${layer.features.length} features.`);
+          console.log(`Adding countries layer with ${layer.getFeatures().length} features.`);
           this.gCountries.selectAll('path')
-            .data(layer.features)
-            .enter().append('path')
-            .attr('class', d => `${d.geometry.type.toLowerCase()} country`)
-            .attr('d', this.path)
+            .data(layer.getFeatures())
+            .enter()
+            .append('path')
+            .attr('class', (d: Feature) => `${d.geometry.type.toLowerCase()} country`)
+            .attr('d', this.path) // Make sure this is chained properly
             .style('fill', '#cccccc')
             .style('stroke', '#666666')
             .style('stroke-width', '0.5px');
-        } else if (layerName === 'routexx' || layerName === 'panam') {
-          console.log(`Adding ${layerName}, features.size: ${layer.features.length}`);
+        } else if (layerName === 'routes' || layerName === 'pa') {
+          console.log(`Adding ${layerName}, features.size: ${layer.getFeatures().length}`);
           this.gRoutes.selectAll('path')
-            .data(layer.features)
-            .enter().append('path')
-            .attr('class', d => `${d.geometry.type.toLowerCase()} ${layerName}`)
-            .attr('d', this.path)
-            .on('click', (event, feature) => this.selectFeature(event, feature))
+            .data(layer.getFeatures())
+            .enter()
+            .append('path')
+            .attr('class', (d: Feature) => `${d.geometry.type.toLowerCase()} ${layerName}`)
+            .attr('d', this.path) // Ensure this is properly part of the chain
+            //.on('click', (event, feature) => this.selectFeature(event, feature))
+            .on('click', (event: MouseEvent, feature: Feature<Geometry, { [name: string]: any }>) =>
+              this.selectFeature(event, feature)
+            )
             .style('cursor', 'pointer');
         }
-    }
+      }
     });
   }
 
   private addAirports(): void {
-    const layerNames = DataModel.getInstance().getLayerNames();
+    const layerNames = this.dataService.getLayerNames();
     const uniqueAirports = new Set<string>();
     const routeFeatures = new Set<Feature>();
 
     // Collect all route features and airport codes
     layerNames.forEach(layerName => {
-      const layer = DataModel.getInstance().getLayer(layerName);
-      if (layer && layer.features && layerName === 'routes') {
-        layer.features.forEach((feature: any) => {
-          if (feature.properties && feature.properties.Base && feature.properties.Ref) {
-            uniqueAirports.add(feature.properties.Base);
-            uniqueAirports.add(feature.properties.Ref);
+      const layer = this.dataService.getLayer(layerName);
+      console.log(`${layer}`);
+      //if (layer && layer.getFeatures() && layerName === 'pa') {
+      if (layer && layer.getFeatures()) {
+        layer.getFeatures().forEach((feature: any) => {
+          if (feature.properties && feature.properties.base && feature.properties.ref) {
+            uniqueAirports.add(feature.properties.base);
+            uniqueAirports.add(feature.properties.ref);
             routeFeatures.add(feature);
           }
         });
@@ -182,7 +177,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Create airport circles and labels
     uniqueAirports.forEach((airportCode: string) => {
-      const airport = DataModel.getInstance().getAirport(airportCode);
+      const airport = this.dataService.getAirport(airportCode);
       if (airport) {
         const lon = Number(airport.lon);
         const lat = Number(airport.lat);
@@ -228,7 +223,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.gAirports.selectAll('.airport-circle, .airport-label').each((d: any, i, nodes) => {
       const element = d3.select(nodes[i]);
       const airportCode = element.attr('data-airport');
-      const airport = DataModel.getInstance().getAirport(airportCode);
+      const airport = this.dataService.getAirport(airportCode);
 
       if (airport) {
         const coords: [number, number] = [Number(airport.lon), Number(airport.lat)];
@@ -257,7 +252,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  public resizeMap(): void {
+   public resizeMap(): void {
     console.log('Resizing map.');
     if (this.mapContainer && this.svg) {
       const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
@@ -279,12 +274,12 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.gRoutes.selectAll('path').attr('d', this.path);
       this.updateAirportPositions();
     }
-  }
+   }
 
   private selectFeature(event: MouseEvent, feature: Feature): void {
     console.log('Selecting feature:', feature);
     if (feature.id) {
-      DataModel.getInstance().setSelectedFeatures([feature]);
+      this.dataService.setSelectedFeatures([feature]);
       console.log('Selected feature set in DataModel:', feature.id);
     } else {
       console.error('Feature ID is undefined, cannot select');
@@ -348,12 +343,11 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.svg.call(this.zoom);
   }
 
-  // Make sure to clean up in ngOnDestroy
-  ngOnDestroy(): void {
+   // Make sure to clean up in ngOnDestroy
+   ngOnDestroy(): void {
     if (this.resizeObserver) this.resizeObserver.disconnect();
     if (this.subscription) this.subscription.unsubscribe();
     //this.throttledUpdate.cancel(); // Cancel any pending updates
     if (this.dragHandler) this.dragHandler.destroy();
-  }
-
+   }
 }
