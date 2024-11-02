@@ -1,13 +1,13 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import {Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild} from '@angular/core';
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
-import { Feature, FeatureCollection, Geometry, GeometryObject } from 'geojson';
-import { Subscription } from 'rxjs';
-import { ProjectionType } from '../../enums/projection-type.enum';
-import { MatTableDataSource } from '@angular/material/table';
-import { DataService } from '../../services/data.service';
-import { throttle } from 'lodash';
-import { GlobeDragHandler } from "./globe-drag-handler";
+import {Feature, FeatureCollection, Geometry, GeometryObject} from 'geojson';
+import {Subscription} from 'rxjs';
+import {ProjectionType} from '../../enums/projection-type.enum';
+import {MatTableDataSource} from '@angular/material/table';
+import {DataService} from '../../services/data.service';
+import {throttle} from 'lodash';
+import {GlobeDragHandler} from "./globe-drag-handler";
 
 @Component({
   selector: 'app-map',
@@ -15,7 +15,7 @@ import { GlobeDragHandler } from "./globe-drag-handler";
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('mapContainer', { static: true }) mapContainer: ElementRef;
+  @ViewChild('mapContainer', {static: true}) mapContainer: ElementRef;
   private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
   private gSphere: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gGraticule: d3.Selection<SVGGElement, unknown, null, undefined>;
@@ -29,23 +29,26 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private zoom: d3.ZoomBehavior<Element, unknown>;
   private projectionType: ProjectionType = ProjectionType.Orthographic;
   private dragHandler: GlobeDragHandler;
+  private currentZoomScale: number = 1; // Initial scale factor set to 1
 
-  constructor(private dataService: DataService) {}
 
-   ngOnInit(): void {
+  constructor(private dataService: DataService) {
+  }
+
+  ngOnInit(): void {
     console.log('MapComponent ngOnInit called.');
     this.initMap();
     this.subscription = this.dataService.getSelectedFeatures().subscribe(features => {
       //console.log('MapComponent received updated features:', features);
       this.updateMapSelection(features);
     });
-   }
+  }
 
-   ngAfterViewInit(): void {
+  ngAfterViewInit(): void {
     console.log('MapComponent ngAfterViewInit called. Ready for interaction.');
     this.resizeObserver = new ResizeObserver(() => this.resizeMap());
     this.resizeObserver.observe(this.mapContainer.nativeElement);
-   }
+  }
 
   private setupSVG(): void {
     console.log('Setting up SVG elements.');
@@ -79,7 +82,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Add the base sphere with subtle color
     this.gSphere.append('path')
-      .datum({ type: 'Sphere' })
+      .datum({type: 'Sphere'})
       .attr('class', 'sphere-background')
       .attr('d', this.path)
       .style('fill', '#f8f9fa')
@@ -138,7 +141,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
             .style('stroke-width', '0.5px');
         } else if (layerName === 'routes' || layerName === 'pa') {
           console.log(`Adding ${layerName}, features.size: ${layer.getFeatures().length}`);
-          this.gRoutes.selectAll('path')
+          this.gRoutes.selectAll(`path.${layerName}`)
             .data(layer.getFeatures())
             .enter()
             .append('path')
@@ -184,43 +187,78 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
         if (!isNaN(lon) && !isNaN(lat)) {
           const coords: [number, number] = [lon, lat];
-          if (d3.geoDistance(coords, [-this.projection.rotate()[0], -this.projection.rotate()[1]] as [number, number]) < Math.PI / 2) {
-            const projectedCoords = this.projection(coords as [number, number]);
+          //if (d3.geoDistance(coords, [-this.projection.rotate()[0], -this.projection.rotate()[1]] as [number, number]) < Math.PI / 2) {
+          const projectedCoords = this.projection(coords as [number, number]);
 
-            if (projectedCoords && !isNaN(projectedCoords[0]) && !isNaN(projectedCoords[1])) {
-              // Add airport circle
-              this.gAirports.append('circle')
-                .attr('class', 'airport-circle')
-                .attr('cx', projectedCoords[0])
-                .attr('cy', projectedCoords[1])
-                .attr('r', 3)
-                .style('fill', 'blue')
-                .style('stroke', 'white')
-                .style('stroke-width', '1px')
-                .attr('data-airport', airportCode);
+          if (projectedCoords && !isNaN(projectedCoords[0]) && !isNaN(projectedCoords[1])) {
+            // Add airport circle
+            this.gAirports.append('circle')
+              .attr('class', 'airport-circle')
+              .attr('cx', projectedCoords[0])
+              .attr('cy', projectedCoords[1])
+              .attr('r', 3)
+              .style('fill', 'blue')
+              .style('stroke', 'white')
+              .style('stroke-width', '1px')
+              .attr('data-airport', airportCode);
 
-              // Add airport label
-              this.gAirports.append('text')
-                .attr('class', 'airport-label')
-                .attr('x', projectedCoords[0] + 7)
-                .attr('y', projectedCoords[1] + 3)
-                .text(airportCode)
-                .style('font-size', '10px')
-                .style('fill', 'black')
-                .style('font-weight', 'bold')
-                .style('paint-order', 'stroke')
-                .style('stroke', 'white')
-                .style('stroke-width', '2px')
-                .attr('data-airport', airportCode);
-            }
+            // Add airport label
+            this.gAirports.append('text')
+              .attr('class', 'airport-label')
+              .attr('x', projectedCoords[0] + 7)
+              .attr('y', projectedCoords[1] + 3)
+              .text(airportCode)
+              .style('font-size', '10px')
+              .style('fill', 'black')
+              .style('font-weight', 'bold')
+              .style('paint-order', 'stroke')
+              .style('stroke', 'white')
+              .style('stroke-width', '2px')
+              .attr('data-airport', airportCode);
           }
+          //}
         }
       }
     });
   }
 
+  // private updateAirportPositions(): void {
+  //   this.gAirports.selectAll('.airport-circle, .airport-label').each((d: any, i, nodes) => {
+  //     const element = d3.select(nodes[i]);
+  //     const airportCode = element.attr('data-airport');
+  //     const airport = this.dataService.getAirport(airportCode);
+  //
+  //     if (airport) {
+  //       const coords: [number, number] = [Number(airport.lon), Number(airport.lat)];
+  //       const visible = d3.geoDistance(coords, [-this.projection.rotate()[0], -this.projection.rotate()[1]] as [number, number]) < Math.PI / 2;
+  //
+  //       if (visible) {
+  //         const projectedCoords = this.projection(coords as [number, number]);
+  //
+  //         if (projectedCoords && !isNaN(projectedCoords[0]) && !isNaN(projectedCoords[1])) {
+  //           if (element.classed('airport-circle')) {
+  //             element
+  //               .attr('cx', projectedCoords[0])
+  //               .attr('cy', projectedCoords[1])
+  //               .style('display', 'block');
+  //           } else {
+  //             element
+  //               .attr('x', projectedCoords[0] + 7)
+  //               .attr('y', projectedCoords[1] + 3)
+  //               .style('display', 'block');
+  //           }
+  //         }
+  //       } else {
+  //         element.style('display', 'none');
+  //       }
+  //     }
+  //   });
+  // }
+
   private updateAirportPositions(): void {
-    this.gAirports.selectAll('.airport-circle, .airport-label').each((d: any, i, nodes) => {
+    const zoomScale = this.currentZoomScale ? 1 / this.currentZoomScale : 1; // Use `k` directly
+
+    this.gAirports.selectAll('.airport-circle, .airport-label, .airport-geometry').each((d: any, i, nodes) => {
       const element = d3.select(nodes[i]);
       const airportCode = element.attr('data-airport');
       const airport = this.dataService.getAirport(airportCode);
@@ -237,11 +275,13 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
               element
                 .attr('cx', projectedCoords[0])
                 .attr('cy', projectedCoords[1])
+                .attr('r', 5 * zoomScale) // Adjust radius to scale inversely
                 .style('display', 'block');
             } else {
               element
-                .attr('x', projectedCoords[0] + 7)
-                .attr('y', projectedCoords[1] + 3)
+                .attr('x', projectedCoords[0] + 7 * zoomScale) // Adjust offset for zoom
+                .attr('y', projectedCoords[1] + 3 * zoomScale) // Adjust offset for zoom
+                .style('font-size', `${12 * zoomScale}px`) // Adjust font size for zoom
                 .style('display', 'block');
             }
           }
@@ -250,9 +290,12 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });
+
+    // Apply non-scaling stroke to surrounding geometry
+    this.svg.selectAll('.airport-geometry').attr('vector-effect', 'non-scaling-stroke');
   }
 
-   public resizeMap(): void {
+  public resizeMap(): void {
     console.log('Resizing map.');
     if (this.mapContainer && this.svg) {
       const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
@@ -274,7 +317,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.gRoutes.selectAll('path').attr('d', this.path);
       this.updateAirportPositions();
     }
-   }
+  }
 
   private selectFeature(event: MouseEvent, feature: Feature): void {
     console.log('Selecting feature:', feature);
@@ -323,7 +366,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.zoom = d3.zoom()
       .scaleExtent([1, 32])
       .on('zoom', (event) => {
-        const { transform } = event;
+        const {transform} = event;
 
         // // Only apply scale transform
         // const scaleTransformString = `scale(${transform.k})`;
@@ -337,17 +380,18 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
         this.gRoutes.attr('transform', scaleTransformString);
         this.gAirports.attr('transform', scaleTransformString);
         this.svg.selectAll('path').attr('vector-effect', 'non-scaling-stroke');
+        this.currentZoomScale = event.transform.k; // Capture the current zoom scale
         this.updateAirportPositions();
       });
 
     this.svg.call(this.zoom);
   }
 
-   // Make sure to clean up in ngOnDestroy
-   ngOnDestroy(): void {
+  // Make sure to clean up in ngOnDestroy
+  ngOnDestroy(): void {
     if (this.resizeObserver) this.resizeObserver.disconnect();
     if (this.subscription) this.subscription.unsubscribe();
     //this.throttledUpdate.cancel(); // Cancel any pending updates
     if (this.dragHandler) this.dragHandler.destroy();
-   }
+  }
 }
