@@ -196,25 +196,56 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
               .attr('class', 'airport-circle')
               .attr('cx', projectedCoords[0])
               .attr('cy', projectedCoords[1])
-              .attr('r', 3)
-              .style('fill', 'blue')
-              .style('stroke', 'white')
-              .style('stroke-width', '1px')
-              .attr('data-airport', airportCode);
-
-            // Add airport label
-            this.gAirports.append('text')
-              .attr('class', 'airport-label')
-              .attr('x', projectedCoords[0] + 7)
-              .attr('y', projectedCoords[1] + 3)
-              .text(airportCode)
-              .style('font-size', '10px')
-              .style('fill', 'black')
-              .style('font-weight', 'bold')
-              .style('paint-order', 'stroke')
-              .style('stroke', 'white')
+              .attr('r', 1)
+              .style('fill', '#add8e6')
+              .style('stroke', 'blue')
               .style('stroke-width', '2px')
-              .attr('data-airport', airportCode);
+              .attr('data-airport', airportCode)
+              .attr('vector-effect', 'non-scaling-stroke');  // Add this line
+
+            // // Add airport label
+            // this.gAirports.append('text')
+            //   .attr('class', 'airport-label')
+            //   .attr('x', projectedCoords[0] + 7)
+            //   .attr('y', projectedCoords[1] + 3)
+            //   .text(airportCode)
+            //   .style('font-size', '10px')
+            //   .style('fill', 'black')
+            //   .style('font-weight', 'bold')
+            //   //.style('paint-order', 'stroke')
+            //   .style('stroke', 'red')
+            //   .style('stroke-width', '0.2px')
+            //   .attr('data-airport', airportCode)
+            //   .attr('vector-effect', 'non-scaling-stroke');  // Add this line
+
+// Add background text (acts as outline)
+this.gAirports.append('text')
+  .attr('class', 'airport-label')
+  .attr('x', projectedCoords[0] + 9)
+  .attr('y', projectedCoords[1] + 5)
+  .text(airportCode)
+  .style('paint-order', 'stroke')
+    .style('font-size', '16px')
+  .style('fill', 'white')  // Or any background color
+  .style('stroke', 'none')
+  //.style('stroke-width', '2px')
+  .attr('data-airport', airportCode)
+  .attr('vector-effect', 'non-scaling-stroke');
+
+// Add foreground text
+this.gAirports.append('text')
+  .attr('class', 'airport-label')
+  .attr('x', projectedCoords[0] + 7)
+  .attr('y', projectedCoords[1] + 3)
+  .text(airportCode)
+  .style('paint-order', 'stroke')
+  .style('font-size', '24px')
+  .style('fill', 'blue')
+  .style('stroke', 'none')
+  .style('font-weight', 'bold')
+  .attr('data-airport', airportCode);
+
+
           }
           //}
         }

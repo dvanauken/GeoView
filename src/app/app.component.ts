@@ -76,16 +76,9 @@ export class AppComponent implements OnInit, AfterViewInit {
               })
               .filter(feature => feature !== null) as GeoJSON.Feature[]; // Filter out null values
 
-//             // Reduce features array into a GeoJSON FeatureCollection
-//             const layer = features.reduce((collection, feature) => {
-//               collection.features.push(feature);
-//               return collection;
-//             }, { type: 'FeatureCollection', features: [] });
 
-            // Add the new layer to the data service
             this.dataService.addLayer('routes', new Layer("routes", features));
 
-            console.log("routes.json:path=" + path + ", data loaded and structured as GeoJSON FeatureCollection");
             console.log("routes.json:path=" + path + ", data=" + data)
           }
           else if (path.endsWith('pa.csv')) {
@@ -102,44 +95,55 @@ export class AppComponent implements OnInit, AfterViewInit {
             console.log('Sample of airportMap:', Array.from(airportMap.entries()).slice(0, 3));
             console.log('Filtered data sample:', data.filter(row => row['origin'] && row['destination']).slice(0, 3));
 
-            // Transform data to features
+            const cityPairSet = new Set();
             const features = data
               .filter(row => row['origin'] && row['destination'])
               .map(row => {
-                const origin = airportMap.get(row['origin']);
-                const destination = airportMap.get(row['destination']);
+                const base = (row['origin'] < row['destination']) ? row['origin'] : row['destination'];
+                const ref = (row['origin'] < row['destination']) ? row['destination'] : row['origin'];
+                // Ensure base and ref are not the same
+                if (base === ref) {
+                  return null;
+                }
+                // Create a unique key for the city pair
+                const pairKey = `${base}-${ref}-PA`;  // Include airline in uppercase in the key
+                if (cityPairSet.has(pairKey)) {
+                  return null; // Skip if the pair already exists
+                }
+                cityPairSet.add(pairKey);
+                const originCoords = airportMap.get(base);
+                const destinationCoords = airportMap.get(ref);
 
-                if (!origin || !destination) {
+                // Ensure both coordinates are valid
+                if (!originCoords || !destinationCoords) {
                   return null;
                 }
 
                 return {
                   type: 'Feature',
+                  id: pairKey,  // Assign the unique pair key with the airline as the id
                   geometry: {
                     type: 'LineString',
-                    coordinates: [origin, destination]
+                    coordinates: [originCoords, destinationCoords]
                   },
                   properties: {
                     airline: 'pa',
-                    base: row['origin'],
-                    ref: row['destination'],
-                    originCoords: origin,
-                    destinationCoords: destination
+                    base: base,
+                    ref: ref,
+                    originCoords: originCoords,
+                    destinationCoords: destinationCoords
                   }
                 };
               })
-              .filter(feature => feature !== null);
+              .filter(feature => feature !== null)
 
-//               const layer = features.reduce((collection, feature) => {
-//                 collection.features.push(feature);
-//                 return collection;
-//               }, { type: 'FeatureCollection', features: [] });
+              .sort((a, b) => a.id.localeCompare(b.id));  // Sort features by id in alphabetical order
+            // Print the sorted features for verification
+            console.log('Sorted Features:', features);  // Pretty print the features
 
-              // Add the new layer to the data service
               this.dataService.addLayer('pa', new Layer("pa", features));
+            this.dataService.setSelectedLayer("pa");
 
-            console.log('First 3 transformed features:', features.slice(0, 3));
-            return features;
           }
         });
         console.log('All resource loading completed.');
