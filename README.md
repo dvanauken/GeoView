@@ -58,3 +58,26 @@ _____________.geo-view-container_________________
 ||_________| |__________________________________| |
 |_________________________________________________|
 |<-100px->| |<-- remaining horizontal space -->|
+
+
+TODO:
+  //Todo
+  //-rotation[yaw, pitch, roll];
+  //--yaw = rotation[0];
+  //--pitch = rotation[1];
+  //--roll = rotation[2];
+  //-Export -> svg?, PDF
+  //-Extent
+  //-Labels (codes)
+  //-Table editing
+  //-Table
+  //--sorting
+  //--filtering
+  //-Widgets
+  //--Roll, pitch, yaw widget
+  //--Layer widget
+  //-Level of Detail
+
+Complete
+//-Script tagging.
+//-Strokes should remain 1px for every zoom level

@@ -139,7 +139,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
             .style('fill', '#cccccc')
             .style('stroke', '#666666')
             .style('stroke-width', '0.5px');
-        } else if (layerName === 'routes' || layerName === 'pa') {
+        } else if (layerName === 'routes' || layerName.toUpperCase() === 'PA') {
           console.log(`Adding ${layerName}, features.size: ${layer.getFeatures().length}`);
           this.gRoutes.selectAll(`path.${layerName}`)
             .data(layer.getFeatures())
@@ -166,7 +166,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     layerNames.forEach(layerName => {
       const layer = this.dataService.getLayer(layerName);
       console.log(`${layer}`);
-      //if (layer && layer.getFeatures() && layerName === 'pa') {
+      //if (layer && layer.getFeatures() && layerName?.toUpperCase() === 'PA') {
       if (layer && layer.getFeatures()) {
         layer.getFeatures().forEach((feature: any) => {
           if (feature.properties && feature.properties.base && feature.properties.ref) {

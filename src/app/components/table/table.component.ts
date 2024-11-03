@@ -20,6 +20,8 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   lastClickedRowIndex: number | null = null;
   newEntry: any = {};
   editingRowIndex: number | null = null;
+  formatCoord = (coord: number) => coord.toFixed(1);
+
 
   constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {
     console.log('TableComponent constructor called');
@@ -147,7 +149,12 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   onSave(row: any, index: number): void {
     row.isEditing = false;
     this.editingRowIndex = null;
-    // Implement your saving logic here (e.g., call an API)
+  
+    // Ensure data formatting for 'Coords 1' and 'Coords 2'
+    row['Coords 1'] = [this.formatCoord(row['Coords 1'][0]), this.formatCoord(row['Coords 1'][1])];
+    row['Coords 2'] = [this.formatCoord(row['Coords 2'][0]), this.formatCoord(row['Coords 2'][1])];
+  
+    // Implement any additional logic for saving (e.g., API calls)
     console.log('Saved data:', row);
   }
 
@@ -159,46 +166,48 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
   initializeNewEntry(): any {
     const defaultEntry: any = {
-      id: 'NEW', // Read-only
-      base: '(0.0, 0.0)', // Read-only
-      ref: '(0.0, 0.0)', // Read-only
-      Airline: 'X',
-      Base: 'X',
-      Ref: 'X',
-      'City 1': 'X',
-      'City 2': 'X'
+      id: 'NEW', // Auto-generated or placeholder for new entries
+      Airline: 'PA',
+      base: '',
+      ref: '',
+      Base: '',
+      Ref: '',
+      'City 1': '',
+      'City 2': '',
+      'Coords 1': '(0.000, 0.000)', // Placeholder coordinate format
+      'Coords 2': '(0.000, 0.000)'  // Placeholder coordinate format
     };
-
     return defaultEntry;
   }
 
   isEditableCell(column: string, row: any): boolean {
-    const readOnlyColumns = ['id', 'base', 'ref'];
+    const readOnlyColumns = ['id'];
     return !readOnlyColumns.includes(column);
   }
 
-   onNewEntrySave(): void {
-    // Validate the entry
+  onNewEntrySave(): void {
     if (this.isNewEntryValid()) {
-      // Generate a unique ID or use your ID generation logic
+      // Generate a unique ID for the new entry
       const newId = `NEW_${Date.now()}`;
       const newData = {
         ...this.newEntry,
         id: newId,
         isEditing: false,
-        selected: false
+        selected: false,
+        'Coords 1': [this.formatCoord(parseFloat(this.newEntry['Coords 1'][0])), this.formatCoord(parseFloat(this.newEntry['Coords 1'][1]))],
+        'Coords 2': [this.formatCoord(parseFloat(this.newEntry['Coords 2'][0])), this.formatCoord(parseFloat(this.newEntry['Coords 2'][1]))]
       };
-
+  
       this.dataSource = [...this.dataSource, newData];
       this.newEntry = this.initializeNewEntry();
-
+  
       // Optionally notify a service or perform additional operations
       console.log('New entry saved:', newData);
     } else {
       console.error('New entry validation failed');
     }
-   }
-
+  }
+  
   isNewEntryValid(): boolean {
     const requiredFields = this.displayedColumns.filter(column =>
       !['id', 'base', 'ref'].includes(column)
