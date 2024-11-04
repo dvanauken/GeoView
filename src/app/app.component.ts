@@ -166,7 +166,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             console.log('Sorted Features:', features);
           
             // Optional: Add the features to DataService as a new layer
-            this.dataService.addLayer('PA', new Layer("PA", features));
+            //this.dataService.addLayer('PA', new Layer("PA", features));
           }
         });
         console.log('All resource loading completed.');

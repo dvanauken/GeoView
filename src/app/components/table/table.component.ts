@@ -14,69 +14,51 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns: string[] = [];
   dataSource: any[] = [];
   private resizeObserver!: ResizeObserver;
-  private selectedLayerName: string = '';
   private subscription: Subscription;
   selectedRows = new Set();
   lastClickedRowIndex: number | null = null;
-  newEntry: any = {};
+  newEntry: any = this.initializeNewEntry();
   editingRowIndex: number | null = null;
-  formatCoord = (coord: number) => coord.toFixed(1);
-
+  formatCoord = (coord: number) => coord.toFixed(3);
 
   constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {
     console.log('TableComponent constructor called');
   }
 
-   ngOnInit(): void {
-     // Set initial selection as empty
-     this.dataService.setSelectedFeatures([]);
+  ngOnInit(): void {
+    this.dataService.setSelectedFeatures([]);
+    this.initTable();
+    this.subscription = this.dataService.getSelectedFeatures().subscribe(features => {
+      this.updateTableSelection(features);
+    });
+  }
 
-     this.initTable(); // Ensure data is loaded
-     this.initializeNewEntry();
-     this.subscription = this.dataService.getSelectedFeatures().subscribe(features => {
-       this.updateTableSelection(features);
-     });
-   }
+  ngAfterViewInit(): void {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.resizeTable();
+    });
+    this.resizeObserver.observe(this.tableContainer.nativeElement);
+  }
 
-   ngAfterViewInit(): void {
-     this.resizeObserver = new ResizeObserver(() => {
-       this.resizeTable();
-     });
-     this.resizeObserver.observe(this.tableContainer.nativeElement);
-   }
-
-   ngOnDestroy(): void {
-     if (this.resizeObserver) {
-       this.resizeObserver.disconnect();
-     }
-     this.subscription.unsubscribe();
-   }
-
-  // private initTable(): void {
-  //   console.log('initTable called');
-  //   const selectedLayer = DataModel.getInstance().getSelectedLayer();
-  //   if (selectedLayer && selectedLayer.features) {
-  //     this.displayedColumns = Object.keys(selectedLayer.features[0].properties || {});
-  //     this.dataSource = selectedLayer.features.map(feature => ({
-  //       ...feature.properties,
-  //       id: feature.id,
-  //       selected: false,  // Ensure all rows are initialized as not selected
-  //       isEditing: false  // Initialize editing state
-  //     }));
-  //   }
-  // }
+  ngOnDestroy(): void {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+    this.subscription.unsubscribe();
+  }
 
   private initTable(): void {
     console.log('initTable called');
     const selectedLayer = this.dataService.getSelectedLayer();
-    if (selectedLayer && selectedLayer.getFeatures() && selectedLayer.getFeatures().length > 0) {
-      if (selectedLayer.getFeatures()[0].properties) {
-        this.displayedColumns = Object.keys(selectedLayer.getFeatures()[0].properties);
-        this.dataSource = selectedLayer.getFeatures().map(feature => ({
+    if (selectedLayer?.getFeatures()?.length > 0) {
+      const features = selectedLayer.getFeatures();
+      if (features[0].properties) {
+        this.displayedColumns = Object.keys(features[0].properties);
+        this.dataSource = features.map(feature => ({
           ...feature.properties,
           id: feature.id,
-          selected: false,  // Ensure all rows are initialized as not selected
-          isEditing: false  // Initialize editing state
+          selected: false,
+          isEditing: false
         }));
       } else {
         console.error('Feature properties are undefined for the selected layer.');
@@ -86,6 +68,83 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  initializeNewEntry(): any {
+    return {
+      id: 'NEW',
+      Airline: 'DL',
+      base: '',
+      ref: '',
+      'City 1': '',
+      'City 2': '',
+      'Coords 1': '(0.000, 0.000)',
+      'Coords 2': '(0.000, 0.000)'
+    };
+  }
+
+  isEditableCell(column: string, row: any): boolean {
+    const editableColumns = ['base', 'ref', 'City 1', 'City 2', 'Coords 1', 'Coords 2'];
+    return editableColumns.includes(column);
+  }
+
+  onBaseChange(): void {
+    if (this.newEntry.base && this.newEntry.base.length === 3) {
+      const baseAirport = this.dataService.getAirport(this.newEntry.base);
+      if (baseAirport) {
+        this.newEntry['City 1'] = baseAirport.city;
+        this.newEntry['Coords 1'] = `(${this.formatCoord(baseAirport.lon)}, ${this.formatCoord(baseAirport.lat)})`;
+        this.updateId();
+      } else {
+        alert('Base airport not found');
+      }
+    }
+  }
+
+  onRefChange(): void {
+    if (this.newEntry.ref && this.newEntry.ref.length === 3) {
+      const refAirport = this.dataService.getAirport(this.newEntry.ref);
+      if (refAirport) {
+        this.newEntry['City 2'] = refAirport.city;
+        this.newEntry['Coords 2'] = `(${this.formatCoord(refAirport.lon)}, ${this.formatCoord(refAirport.lat)})`;
+        this.updateId();
+      } else {
+        alert('Ref airport not found');
+      }
+    }
+  }
+
+  updateId(): void {
+    if (this.newEntry.base && this.newEntry.ref) {
+      const newId = `${this.newEntry.base}-${this.newEntry.ref}-DL`;
+      const idExists = this.dataSource.some(row => row.id === newId);
+
+      if (idExists) {
+        alert('Route with this ID already exists');
+        this.newEntry.id = 'NEW';
+      } else {
+        this.newEntry.id = newId;
+      }
+    }
+  }
+
+  // onNewEntrySave(): void {
+  //   if (this.newEntry.id !== 'NEW') {
+  //     const newData = {
+  //       ...this.newEntry,
+  //       isEditing: false,
+  //       selected: false
+  //     };
+
+  //     this.dataSource = [...this.dataSource, newData];
+  //     this.newEntry = this.initializeNewEntry();
+  //     console.log('New entry saved:', newData);
+  //   } else {
+  //     alert('Please enter a valid route before saving.');
+  //   }
+  // }
+
+  isNewEntryValid(): boolean {
+    return this.newEntry.base?.length === 3 && this.newEntry.ref?.length === 3 && this.newEntry.id !== 'NEW';
+  }
 
   resizeTable(): void {
     if (this.tableContainer) {
@@ -97,10 +156,9 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onRowClick(row: any, index: number, event: MouseEvent): void {
     if (this.editingRowIndex !== null && this.editingRowIndex !== index) {
-      // Prevent row selection if another row is being edited
       return;
     }
-    this.lastClickedRowIndex = index;  // Update the last clicked index for shift-click logic
+    this.lastClickedRowIndex = index;
     let newSelection;
     if (event.shiftKey && this.lastClickedRowIndex !== null) {
       const start = Math.min(index, this.lastClickedRowIndex);
@@ -110,12 +168,12 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       newSelection = [...this.dataService.getSelectedFeatures().value || []];
       const idx = newSelection.findIndex(item => item.id === row.id);
       if (idx > -1) {
-        newSelection.splice(idx, 1);  // Deselect if already selected
+        newSelection.splice(idx, 1);
       } else {
-        newSelection.push(row);  // Select if not already selected
+        newSelection.push(row);
       }
     } else {
-      newSelection = [row];  // Normal click, select only this row
+      newSelection = [row];
     }
 
     this.dataService.setSelectedFeatures(newSelection);
@@ -131,17 +189,16 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       const isSelected = features.some(feature => feature && feature.id === row.id);
       if (isSelected !== row.selected) {
         row.selected = isSelected;
-        //console.log(`Row with ID ${row.id} selection updated to ${isSelected}`);
       }
     });
   }
 
   onEdit(row: any, index: number, event: Event): void {
-    event.stopPropagation(); // Prevent row click event
+    event.stopPropagation();
     if (this.editingRowIndex !== null && this.editingRowIndex !== index) {
-      return; // Don't allow editing another row if one is already being edited
+      return;
     }
-    row.originalData = { ...row }; // Store original data for potential cancel
+    row.originalData = { ...row };
     row.isEditing = true;
     this.editingRowIndex = index;
   }
@@ -149,12 +206,8 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   onSave(row: any, index: number): void {
     row.isEditing = false;
     this.editingRowIndex = null;
-  
-    // Ensure data formatting for 'Coords 1' and 'Coords 2'
     row['Coords 1'] = [this.formatCoord(row['Coords 1'][0]), this.formatCoord(row['Coords 1'][1])];
     row['Coords 2'] = [this.formatCoord(row['Coords 2'][0]), this.formatCoord(row['Coords 2'][1])];
-  
-    // Implement any additional logic for saving (e.g., API calls)
     console.log('Saved data:', row);
   }
 
@@ -164,57 +217,75 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editingRowIndex = null;
   }
 
-  initializeNewEntry(): any {
-    const defaultEntry: any = {
-      id: 'NEW', // Auto-generated or placeholder for new entries
-      Airline: 'PA',
-      base: '',
-      ref: '',
-      Base: '',
-      Ref: '',
-      'City 1': '',
-      'City 2': '',
-      'Coords 1': '(0.000, 0.000)', // Placeholder coordinate format
-      'Coords 2': '(0.000, 0.000)'  // Placeholder coordinate format
-    };
-    return defaultEntry;
-  }
+  private createFeatureFromEntry(entry: any): Feature {
+    // Parse coordinates from strings like "(lon, lat)"
+    // Get precise coordinates from AirportData using the city names
+    
+    debugger;
+    const city1 = this.dataService.getAirport(entry.base);
+    const city2 = this.dataService.getAirport(entry.ref);
+    const coords1 = [city1.lon, city1.lat];
+    const coords2 = [city2.lon, city2.lat];
 
-  isEditableCell(column: string, row: any): boolean {
-    const readOnlyColumns = ['id'];
-    return !readOnlyColumns.includes(column);
+    return {
+      type: 'Feature',
+      id: entry.id,
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          coords1, 
+          coords2
+        ]
+      },
+      properties: {
+        Airline: entry.Airline,
+        base: entry.base,
+        ref: entry.ref,
+        'City 1': entry['City 1'],
+        'City 2': entry['City 2'],
+        'Coords 1': entry['Coords 1'],
+        'Coords 2': entry['Coords 2']
+      },
+    };
   }
 
   onNewEntrySave(): void {
-    if (this.isNewEntryValid()) {
-      // Generate a unique ID for the new entry
-      const newId = `NEW_${Date.now()}`;
+    if (this.newEntry.id !== 'NEW') {
       const newData = {
         ...this.newEntry,
-        id: newId,
         isEditing: false,
-        selected: false,
-        'Coords 1': [this.formatCoord(parseFloat(this.newEntry['Coords 1'][0])), this.formatCoord(parseFloat(this.newEntry['Coords 1'][1]))],
-        'Coords 2': [this.formatCoord(parseFloat(this.newEntry['Coords 2'][0])), this.formatCoord(parseFloat(this.newEntry['Coords 2'][1]))]
+        selected: false
       };
-  
-      this.dataSource = [...this.dataSource, newData];
-      this.newEntry = this.initializeNewEntry();
-  
-      // Optionally notify a service or perform additional operations
-      console.log('New entry saved:', newData);
-    } else {
-      console.error('New entry validation failed');
-    }
-  }
-  
-  isNewEntryValid(): boolean {
-    const requiredFields = this.displayedColumns.filter(column =>
-      !['id', 'base', 'ref'].includes(column)
-    );
 
-    return requiredFields.every(field =>
-      this.newEntry[field] && this.newEntry[field].trim() !== ''
-    );
+      // Create a new feature from the entry
+      const newFeature = this.createFeatureFromEntry(newData);
+
+      // Get the currently selected layer
+      const selectedLayer = this.dataService.getSelectedLayer();
+      
+      if (selectedLayer) {
+        // Add the new feature to the layer
+        selectedLayer.addFeature(newFeature);
+
+        this.dataService.addLayer('routes', selectedLayer);
+        
+        // Update the table's dataSource
+        this.dataSource = [...this.dataSource, newData];
+
+        console.log(selectedLayer);
+        
+        // // Update the selected features in the DataService to trigger map update
+        // const updatedFeatures = selectedLayer.getFeatures();
+        // this.dataService.setSelectedFeatures(updatedFeatures);
+        
+        // Reset the new entry form
+        this.newEntry = this.initializeNewEntry();
+        console.log('New entry saved:', newData);
+      } else {
+        alert('No layer selected. Please select a layer before adding new routes.');
+      }
+    } else {
+      alert('Please enter a valid route before saving.');
+    }
   }
 }

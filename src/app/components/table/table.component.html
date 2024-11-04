@@ -2,51 +2,62 @@
   <div class="table-content">
     <table>
       <thead>
-      <tr>
-        <th *ngFor="let column of displayedColumns">{{ column }}</th>
-        <th>Actions</th>
-      </tr>
+        <tr>
+          <th *ngFor="let column of displayedColumns">{{ column }}</th>
+          <th>Actions</th>
+        </tr>
       </thead>
       <tbody>
-      <!-- Existing data rows -->
-      <tr *ngFor="let row of dataSource; let i = index"
-          [class.selected]="row.selected"
-          (click)="onRowClick(row, i, $event)">
-        <td *ngFor="let column of displayedColumns">
-          <ng-container *ngIf="!row.isEditing">
-            {{ row[column] }}
-          </ng-container>
-          <ng-container *ngIf="row.isEditing">
-            <input *ngIf="isEditableCell(column, row)"
-                   [(ngModel)]="row[column]"
-                   [readonly]="!isEditableCell(column, row)">
-            <span *ngIf="!isEditableCell(column, row)">{{ row[column] }}</span>
-          </ng-container>
-        </td>
-        <td>
-          <button *ngIf="!row.isEditing" (click)="onEdit(row, i, $event)">Edit</button>
-          <ng-container *ngIf="row.isEditing">
-            <button (click)="onSave(row, i)">Save</button>
-            <button (click)="onCancel(row, i)">Cancel</button>
-          </ng-container>
-        </td>
-      </tr>
-      <!-- New entry row -->
-      <tr class="new-entry-row">
-        <td *ngFor="let column of displayedColumns">
-          <ng-container [ngSwitch]="column">
-            <span *ngSwitchCase="'id'">{{ newEntry.id }}</span>
-            <span *ngSwitchCase="'base'">{{ newEntry.base }}</span>
-            <span *ngSwitchCase="'ref'">{{ newEntry.ref }}</span>
-            <input *ngSwitchDefault
-                   [(ngModel)]="newEntry[column]"
-                   [placeholder]="'Enter ' + column">
-          </ng-container>
-        </td>
-        <td>
-          <button (click)="onNewEntrySave()">Save</button>
-        </td>
-      </tr>
+        <!-- Existing data rows -->
+        <tr *ngFor="let row of dataSource; let i = index"
+            [class.selected]="row.selected"
+            (click)="onRowClick(row, i, $event)">
+          <td *ngFor="let column of displayedColumns">
+            <ng-container *ngIf="!row.isEditing">
+              {{ row[column] }}
+            </ng-container>
+            <ng-container *ngIf="row.isEditing">
+              <input *ngIf="isEditableCell(column, row)"
+                     [(ngModel)]="row[column]"
+                     [readonly]="!isEditableCell(column, row)">
+              <span *ngIf="!isEditableCell(column, row)">{{ row[column] }}</span>
+            </ng-container>
+          </td>
+          <td>
+            <button *ngIf="!row.isEditing" (click)="onEdit(row, i, $event)">Edit</button>
+            <ng-container *ngIf="row.isEditing">
+              <button (click)="onSave(row, i)">Save</button>
+              <button (click)="onCancel(row, i)">Cancel</button>
+            </ng-container>
+          </td>
+        </tr>
+        <!-- New entry row -->
+
+        <tr class="new-entry-row">
+          <td *ngFor="let column of displayedColumns">
+            <ng-container [ngSwitch]="column">
+              <input *ngSwitchCase="'base'"
+                     [(ngModel)]="newEntry.base"
+                     (ngModelChange)="onBaseChange()"
+                     placeholder="Enter Base"
+                     maxlength="3">
+              <input *ngSwitchCase="'ref'"
+                     [(ngModel)]="newEntry.ref"
+                     (ngModelChange)="onRefChange()"
+                     placeholder="Enter Ref"
+                     maxlength="3">
+              <span *ngSwitchCase="'Airline'">{{ newEntry.Airline }}</span>
+              <span *ngSwitchDefault>{{ newEntry[column] }}</span>
+            </ng-container>
+          </td>
+          <td>
+            <button [disabled]="!isNewEntryValid()" (click)="onNewEntrySave()">Save</button>
+          </td>
+        </tr>
+
+
+
+
       </tbody>
     </table>
   </div>
