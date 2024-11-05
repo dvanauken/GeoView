@@ -39,11 +39,13 @@
               <input *ngSwitchCase="'base'"
                      [(ngModel)]="newEntry.base"
                      (ngModelChange)="onBaseChange()"
+                     (input)="sanitizeBaseRefInput($event, 'base')"
                      placeholder="Enter Base"
                      maxlength="3">
               <input *ngSwitchCase="'ref'"
                      [(ngModel)]="newEntry.ref"
                      (ngModelChange)="onRefChange()"
+                     (input)="sanitizeBaseRefInput($event, 'ref')"
                      placeholder="Enter Ref"
                      maxlength="3">
               <span *ngSwitchCase="'Airline'">{{ newEntry.Airline }}</span>

@@ -220,8 +220,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   private createFeatureFromEntry(entry: any): Feature {
     // Parse coordinates from strings like "(lon, lat)"
     // Get precise coordinates from AirportData using the city names
-    
-    debugger;
+
     const city1 = this.dataService.getAirport(entry.base);
     const city2 = this.dataService.getAirport(entry.ref);
     const coords1 = [city1.lon, city1.lat];
@@ -233,7 +232,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       geometry: {
         type: 'LineString',
         coordinates: [
-          coords1, 
+          coords1,
           coords2
         ]
       },
@@ -249,6 +248,47 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+//   onNewEntrySave(): void {
+//     if (this.newEntry.id !== 'NEW') {
+//       const newData = {
+//         ...this.newEntry,
+//         isEditing: false,
+//         selected: false
+//       };
+//
+//       // Create a new feature from the entry
+//       const newFeature = this.createFeatureFromEntry(newData);
+//
+//       // Get the currently selected layer
+//       const selectedLayer = this.dataService.getSelectedLayer();
+//
+//       if (selectedLayer) {
+//         // Add the new feature to the layer
+//         selectedLayer.addFeature(newFeature);
+//
+//         this.dataService.addLayer('routes', selectedLayer);
+//
+//         // Update the table's dataSource
+//         this.dataSource = [...this.dataSource, newData];
+//
+//         console.log(selectedLayer);
+//
+//         //// Update the selected features in the DataService to trigger map update
+//         const updatedFeatures = selectedLayer.getFeatures();
+//         this.dataService.setSelectedFeatures(updatedFeatures);
+//
+//         // Reset the new entry form
+//         this.newEntry = this.initializeNewEntry();
+//         console.log('New entry saved:', newData);
+//       } else {
+//         alert('No layer selected. Please select a layer before adding new routes.');
+//       }
+//     } else {
+//       alert('Please enter a valid route before saving.');
+//     }
+//  }
+
+
   onNewEntrySave(): void {
     if (this.newEntry.id !== 'NEW') {
       const newData = {
@@ -262,22 +302,21 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Get the currently selected layer
       const selectedLayer = this.dataService.getSelectedLayer();
-      
+
       if (selectedLayer) {
         // Add the new feature to the layer
         selectedLayer.addFeature(newFeature);
 
+        // Update the layer in the data service
         this.dataService.addLayer('routes', selectedLayer);
-        
+
         // Update the table's dataSource
         this.dataSource = [...this.dataSource, newData];
 
-        console.log(selectedLayer);
-        
-        // // Update the selected features in the DataService to trigger map update
-        // const updatedFeatures = selectedLayer.getFeatures();
-        // this.dataService.setSelectedFeatures(updatedFeatures);
-        
+        // Keep currently selected features and notify subscribers of the layer update
+        const currentlySelectedFeatures = this.dataService.getSelectedFeatures().value || [];
+        this.dataService.setSelectedFeatures([...currentlySelectedFeatures]);
+
         // Reset the new entry form
         this.newEntry = this.initializeNewEntry();
         console.log('New entry saved:', newData);
@@ -288,4 +327,17 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       alert('Please enter a valid route before saving.');
     }
   }
+
+  sanitizeBaseRefInput(event: Event, field: string): void {
+    const input = event.target as HTMLInputElement;
+    const sanitizedValue = input.value.toUpperCase().replace(/[^A-Z1-9]/g, '');
+
+    if (field === 'base') {
+      this.newEntry.base = sanitizedValue;
+    } else if (field === 'ref') {
+      this.newEntry.ref = sanitizedValue;
+    }
+  }
+
+
 }
