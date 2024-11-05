@@ -86,31 +86,45 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
     return editableColumns.includes(column);
   }
 
-  onBaseChange(): void {
-    if (this.newEntry.base && this.newEntry.base.length === 3) {
-      const baseAirport = this.dataService.getAirport(this.newEntry.base);
-      if (baseAirport) {
-        this.newEntry['City 1'] = baseAirport.city;
-        this.newEntry['Coords 1'] = `(${this.formatCoord(baseAirport.lon)}, ${this.formatCoord(baseAirport.lat)})`;
-        this.updateId();
-      } else {
-        alert('Base airport not found');
-      }
+// Modify onBaseChange to handle returning focus
+onBaseChange(): void {
+  if (this.newEntry.base && this.newEntry.base.length === 3) {
+    const baseAirport = this.dataService.getAirport(this.newEntry.base);
+    if (baseAirport) {
+      this.newEntry['City 1'] = baseAirport.city;
+      this.newEntry['Coords 1'] = `(${this.formatCoord(baseAirport.lon)}, ${this.formatCoord(baseAirport.lat)})`;
+      this.updateId();
+    } else {
+      alert('Base airport not found');
+      setTimeout(() => {
+        const baseInput = document.querySelector('input[ng-reflect-name="base"]') as HTMLInputElement;
+        if (baseInput) {
+          baseInput.focus();
+        }
+      });
     }
   }
+}
 
-  onRefChange(): void {
-    if (this.newEntry.ref && this.newEntry.ref.length === 3) {
-      const refAirport = this.dataService.getAirport(this.newEntry.ref);
-      if (refAirport) {
-        this.newEntry['City 2'] = refAirport.city;
-        this.newEntry['Coords 2'] = `(${this.formatCoord(refAirport.lon)}, ${this.formatCoord(refAirport.lat)})`;
-        this.updateId();
-      } else {
-        alert('Ref airport not found');
-      }
+// Modify onRefChange to handle returning focus
+onRefChange(): void {
+  if (this.newEntry.ref && this.newEntry.ref.length === 3) {
+    const refAirport = this.dataService.getAirport(this.newEntry.ref);
+    if (refAirport) {
+      this.newEntry['City 2'] = refAirport.city;
+      this.newEntry['Coords 2'] = `(${this.formatCoord(refAirport.lon)}, ${this.formatCoord(refAirport.lat)})`;
+      this.updateId();
+    } else {
+      alert('Ref airport not found');
+      setTimeout(() => {
+        const refInput = document.querySelector('input[ng-reflect-name="ref"]') as HTMLInputElement;
+        if (refInput) {
+          refInput.focus();
+        }
+      });
     }
   }
+}
 
   updateId(): void {
     if (this.newEntry.base && this.newEntry.ref) {
@@ -327,6 +341,9 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       alert('Please enter a valid route before saving.');
     }
   }
+
+
+
 
   sanitizeBaseRefInput(event: Event, field: string): void {
     const input = event.target as HTMLInputElement;

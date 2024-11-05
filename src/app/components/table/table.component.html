@@ -38,14 +38,14 @@
             <ng-container [ngSwitch]="column">
               <input *ngSwitchCase="'base'"
                      [(ngModel)]="newEntry.base"
-                     (ngModelChange)="onBaseChange()"
                      (input)="sanitizeBaseRefInput($event, 'base')"
+                     (blur)="onBaseChange()"
                      placeholder="Enter Base"
                      maxlength="3">
               <input *ngSwitchCase="'ref'"
                      [(ngModel)]="newEntry.ref"
-                     (ngModelChange)="onRefChange()"
                      (input)="sanitizeBaseRefInput($event, 'ref')"
+                     (blur)="onRefChange()"
                      placeholder="Enter Ref"
                      maxlength="3">
               <span *ngSwitchCase="'Airline'">{{ newEntry.Airline }}</span>
