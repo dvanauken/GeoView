@@ -19,14 +19,17 @@ import { DataService } from './services/data.service';
 import { PaneModule } from './components/pane/pane.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
 import { AirportTableComponent } from './components/airport-table/airport-table.component';
+import { StyleEditorComponent } from './components/style-editor/style-editor.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MapComponent,
     TableComponent,
-    AirportTableComponent
+    AirportTableComponent,
+    StyleEditorComponent
   ],
   imports: [
     BrowserModule,
@@ -40,6 +43,7 @@ import { AirportTableComponent } from './components/airport-table/airport-table.
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
+    MatIconModule,
     BrowserAnimationsModule // Needed for animations
   ],
   providers: [

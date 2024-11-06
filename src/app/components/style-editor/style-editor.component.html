@@ -1,0 +1,100 @@
+<div>
+  <button mat-icon-button (click)="addRow()" aria-label="Add row">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+
+
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+  <ng-container matColumnDef="al">
+    <th mat-header-cell *matHeaderCellDef> AL </th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.isEditing; else readAl">
+        <input matInput [(ngModel)]="row.al" />
+      </ng-container>
+      <ng-template #readAl>{{ row.al }}</ng-template>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="base">
+    <th mat-header-cell *matHeaderCellDef> Base </th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.isEditing; else readBase">
+        <input matInput [(ngModel)]="row.base" />
+      </ng-container>
+      <ng-template #readBase>{{ row.base }}</ng-template>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="ref">
+    <th mat-header-cell *matHeaderCellDef> Ref </th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.isEditing; else readRef">
+        <input matInput [(ngModel)]="row.ref" />
+      </ng-container>
+      <ng-template #readRef>{{ row.ref }}</ng-template>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="strokeColor">
+    <th mat-header-cell *matHeaderCellDef> Stroke Color </th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.isEditing; else readStrokeColor">
+        <input matInput type="color" [(ngModel)]="row.strokeColor" />
+      </ng-container>
+      <ng-template #readStrokeColor>
+        <div [style.background]="row.strokeColor" class="color-preview"></div>
+      </ng-template>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="fillColor">
+    <th mat-header-cell *matHeaderCellDef> Fill Color </th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.isEditing; else readFillColor">
+        <input matInput type="color" [(ngModel)]="row.fillColor" />
+      </ng-container>
+      <ng-template #readFillColor>
+        <div [style.background]="row.fillColor" class="color-preview"></div>
+      </ng-template>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="style">
+    <th mat-header-cell *matHeaderCellDef> Style </th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.isEditing; else readStyle">
+        <mat-select [(value)]="row.style">
+          <mat-option *ngFor="let s of styles" [value]="s">{{ s }}</mat-option>
+        </mat-select>
+      </ng-container>
+      <ng-template #readStyle>{{ row.style }}</ng-template>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef> Actions </th>
+    <td mat-cell *matCellDef="let row">
+      <ng-container *ngIf="row.isEditing">
+        <!-- Save Icon -->
+        <button mat-icon-button (click)="saveRow(row)" aria-label="Save row">
+          <mat-icon>check</mat-icon>
+        </button>
+        <!-- Cancel Icon -->
+        <button mat-icon-button (click)="cancelEdit(row)" aria-label="Cancel edit">
+          <mat-icon>close</mat-icon>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="!row.isEditing">
+        <!-- Edit Icon -->
+        <button mat-icon-button (click)="editRow(row)" aria-label="Edit row">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>

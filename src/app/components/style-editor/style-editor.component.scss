@@ -1,0 +1,31 @@
+.color-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+/* Make icons flat and apply royal blue color */
+.mat-icon-button.flat {
+  background: none;
+  color: royalblue;
+  border: none;
+  box-shadow: none;
+}
+
+.mat-icon-button.flat:hover {
+  background: rgba(65, 105, 225, 0.1); /* Adds a subtle hover effect */
+}
+
+.mat-icon-button.flat:active {
+  background: rgba(65, 105, 225, 0.2); /* Slightly darker hover on click */
+}
+
+
+.icon-blue {
+  color: blue;
+}
+
+.new-entry-row {
+  background-color: #f2f2f2;
+}
