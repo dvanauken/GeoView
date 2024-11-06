@@ -73,58 +73,64 @@ html, body {
 
 /* Map Container */
 .map-container {
+  background: #999;
+
   /* Map features styling */
   .point {
-    fill: #ffbb00;
-    stroke: #0051ba;
+    fill: #6c5ce7; /* Soft purple */
+    stroke: #2d3436; /* Dark charcoal */
     stroke-width: 0.5px;
     r: 5px;
   }
 
   .multipoint {
-    fill: #ffbb00;
-    stroke: #0051ba;
+    fill: #6c5ce7; /* Soft purple */
+    stroke: #2d3436; /* Dark charcoal */
     stroke-width: 1px;
     r: 3px;
   }
 
   .sphere {
-    fill: #F5F5F5;
+    fill: #eee; /* Light ash gray */
     stroke: none;
+  }
+
+  .graticule{
+    fill: none;
+    stroke: #bbb;
   }
 
   .polygon,
   .multipolygon {
-    fill: #bbddff;
-    stroke: #003355;
+    fill: #00cec9; /* Fresh teal */
+    stroke: #0984e3; /* Bright blue */
     stroke-width: 0.5px;
   }
 
   .linestring.routes {
     fill: none;
-    stroke: #080;
-    stroke-width: 3px;
-    stroke-opacity: 0.25;
+    stroke: #090; /* Soft pink */
+    stroke-width: 2px;
+    stroke-opacity: 0.5;
 
     &.selected {
-      stroke: #800080;
+      stroke: #d63031; /* Vivid red */
       stroke-width: 10.5px !important;
-      stroke-opacity: 0.75;
+      stroke-opacity: 0.8;
       z-index: 10;
     }
   }
 
   .linestring.PA {
     fill: none;
-    stroke: #0000ff;
+    stroke: blue; /* Slate gray */
     stroke-width: 1px;
 
     &.selected {
-      stroke: #0000ff;
+      stroke: #2d3436; /* Dark charcoal */
       stroke-width: 10.5px !important;
-      stroke-opacity: 0.75;
+      stroke-opacity: 0.8;
       z-index: 10;
     }
   }
-
 }

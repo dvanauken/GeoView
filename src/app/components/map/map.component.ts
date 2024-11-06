@@ -1,13 +1,15 @@
-import {Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild} from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
-import {Feature, FeatureCollection, Geometry, GeometryObject} from 'geojson';
-import {Subscription} from 'rxjs';
-import {ProjectionType} from '../../enums/projection-type.enum';
-import {MatTableDataSource} from '@angular/material/table';
-import {DataService} from '../../services/data.service';
-import {throttle} from 'lodash';
-import {GlobeDragHandler} from "./globe-drag-handler";
+import { Feature, FeatureCollection, Geometry, GeometryObject } from 'geojson';
+import { Subscription } from 'rxjs';
+import { ProjectionType } from '../../enums/projection-type.enum';
+import { MatTableDataSource } from '@angular/material/table';
+import { DataService } from '../../services/data.service';
+import { throttle } from 'lodash';
+import { GlobeDragHandler } from "./globe-drag-handler";
+import { GlobeKeyboardHandler } from './globe-keyboard-handler';
+
 
 @Component({
   selector: 'app-map',
@@ -31,6 +33,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private dragHandler: GlobeDragHandler;
   private currentZoomScale: number = 1;
   private renderedAirports: Set<string> = new Set();
+  private keyboardHandler: GlobeKeyboardHandler; // Add this line
 
   constructor(private dataService: DataService) {
   }
@@ -43,12 +46,32 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateMapSelection(features);
       this.updateLayers();
     });
+//     this.keyboardHandler = new GlobeKeyboardHandler(
+//       this.projection,
+//       () => this.updateMap(),
+//       (zoomFactor) => this.applyZoomChange(zoomFactor)
+//     ); // Assign to the property
   }
 
   ngAfterViewInit(): void {
     console.log('MapComponent ngAfterViewInit called. Ready for interaction.');
     this.resizeObserver = new ResizeObserver(() => this.resizeMap());
     this.resizeObserver.observe(this.mapContainer.nativeElement);
+  }
+
+  // Add a method to handle zoom changes
+  private applyZoomChange(zoomFactor: number): void {
+    this.zoom.scaleBy(this.svg, zoomFactor);
+  }
+
+  private updateMap(): void {
+    console.log('Updating the map based on new rotations or changes.');
+    // Re-render or refresh any D3 map layers as necessary
+    this.gSphere.selectAll('path').attr('d', this.path);
+    this.gGraticule.selectAll('path').attr('d', this.path);
+    this.gCountries.selectAll('path').attr('d', this.path);
+    this.gRoutes.selectAll('path').attr('d', this.path);
+    this.updateAirportPositions();
   }
 
   private setupSVG(): void {
@@ -83,11 +106,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     // Add the base sphere with subtle color
     this.gSphere.append('path')
       .datum({type: 'Sphere'})
-      .attr('class', 'sphere-background')
-      .attr('d', this.path)
-      .style('fill', '#f8f9fa')
-      .style('stroke', '#ddd')
-      .style('stroke-width', '0.5px');
+      .attr('class', 'sphere')
+      .attr('d', this.path);
 
     // Add graticule
     const graticule = d3.geoGraticule();
@@ -95,9 +115,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .datum(graticule)
       .attr('class', 'graticule')
       .attr('d', this.path)
-      .style('fill', 'none')
-      .style('stroke', '#f0f')
-      .style('stroke-width', '1.3px');
 
     // Now add other layers
     this.updateLayers();
@@ -226,60 +243,7 @@ private addAirport(airportCode: string): void {
         .style('stroke', 'none')
         .attr('data-airport', airportCode)
         .attr('vector-effect', 'non-scaling-stroke');
-}
-
-//   private addAirport(airportCode: string): void {
-//     const airport = this.dataService.getAirport(airportCode);
-//     if (!airport) return;
-//
-//     const lon = Number(airport.lon);
-//     const lat = Number(airport.lat);
-//
-//     if (isNaN(lon) || isNaN(lat)) return;
-//
-//     const coords: [number, number] = [lon, lat];
-//     const projectedCoords = this.projection(coords as [number, number]);
-//
-//     if (!projectedCoords || isNaN(projectedCoords[0]) || isNaN(projectedCoords[1])) return;
-//
-//     // Add airport circle
-//     this.gAirports.append('circle')
-//       .attr('class', 'airport-circle')
-//       .attr('cx', projectedCoords[0])
-//       .attr('cy', projectedCoords[1])
-//       .attr('r', 1)
-//       .style('fill', '#add8e6')
-//       .style('stroke', 'blue')
-//       .style('stroke-width', '2px')
-//       .attr('data-airport', airportCode)
-//       .attr('vector-effect', 'non-scaling-stroke');
-//
-//     // Add background text
-//     this.gAirports.append('text')
-//       .attr('class', 'airport-label')
-//       .attr('x', projectedCoords[0] + 9)
-//       .attr('y', projectedCoords[1] + 5)
-//       .text(airportCode)
-//       .style('paint-order', 'stroke')
-//       .style('font-size', '16px')
-//       .style('fill', 'white')
-//       .style('stroke', 'none')
-//       .attr('data-airport', airportCode)
-//       .attr('vector-effect', 'non-scaling-stroke');
-//
-//     // Add foreground text
-//     this.gAirports.append('text')
-//       .attr('class', 'airport-label')
-//       .attr('x', projectedCoords[0] + 7)
-//       .attr('y', projectedCoords[1] + 3)
-//       .text(airportCode)
-//       .style('paint-order', 'stroke')
-//       .style('font-size', '24px')
-//       .style('fill', 'blue')
-//       .style('stroke', 'none')
-//       .style('font-weight', 'bold')
-//       .attr('data-airport', airportCode);
-//   }
+  }
 
   private updateAirportPositions(): void {
     const zoomScale = this.currentZoomScale ? 1 / this.currentZoomScale : 1;
@@ -382,15 +346,14 @@ private addAirport(airportCode: string): void {
       }
     );
 
-    this.dragHandler.attachDragBehavior(this.gSphere.select('.sphere-background'));
+    this.dragHandler.attachDragBehavior(this.gSphere.select('.sphere'));
+    //this.dragHandler.attachDragBehavior(this.gSphere.select('*'));
 
-this.zoom = d3.zoom()
+    this.zoom = d3.zoom()
       .scaleExtent([1, 32])
       .on('zoom', (event) => {
         const {transform} = event;
-
         const scaleTransformString = `translate(${transform.x}, ${transform.y}) scale(${transform.k})`;
-
         this.gSphere.attr('transform', scaleTransformString);
         this.gGraticule.attr('transform', scaleTransformString);
         this.gCountries.attr('transform', scaleTransformString);
@@ -400,13 +363,13 @@ this.zoom = d3.zoom()
         this.currentZoomScale = event.transform.k;
         this.updateAirportPositions();
       });
-
-    this.svg.call(this.zoom);
+      this.svg.call(this.zoom);
   }
 
   ngOnDestroy(): void {
     if (this.resizeObserver) this.resizeObserver.disconnect();
     if (this.subscription) this.subscription.unsubscribe();
     if (this.dragHandler) this.dragHandler.destroy();
+    if (this.keyboardHandler) this.keyboardHandler.removeEventListener(); // Access property here
   }
 }

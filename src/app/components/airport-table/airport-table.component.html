@@ -1,0 +1,76 @@
+<!-- airport-table.component.html -->
+<div class="table-container">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+    <!-- Column definitions -->
+
+    <ng-container matColumnDef="code">
+      <th mat-header-cell *matHeaderCellDef> Code </th>
+      <td mat-cell *matCellDef="let element"> {{element?.code}} </td>
+      <td mat-footer-cell *matFooterCellDef>
+        <input matInput placeholder="Code" [(ngModel)]="newEntry.code">
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="region">
+      <th mat-header-cell *matHeaderCellDef> Region </th>
+      <td mat-cell *matCellDef="let element"> {{element?.region}} </td>
+      <td mat-footer-cell *matFooterCellDef>
+        <input matInput placeholder="Region" [(ngModel)]="newEntry.region">
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef> Name </th>
+      <td mat-cell *matCellDef="let element"> {{element?.name}} </td>
+      <td mat-footer-cell *matFooterCellDef>
+        <input matInput placeholder="Name" [(ngModel)]="newEntry.name">
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="city">
+      <th mat-header-cell *matHeaderCellDef> City </th>
+      <td mat-cell *matCellDef="let element"> {{element?.city}} </td>
+      <td mat-footer-cell *matFooterCellDef>
+        <input matInput placeholder="City" [(ngModel)]="newEntry.city">
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="country">
+      <th mat-header-cell *matHeaderCellDef> Country </th>
+      <td mat-cell *matCellDef="let element"> {{element?.country}} </td>
+      <td mat-footer-cell *matFooterCellDef>
+        <input matInput placeholder="Country" [(ngModel)]="newEntry.country">
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="lat">
+      <th mat-header-cell *matHeaderCellDef> Latitude </th>
+      <td mat-cell *matCellDef="let element"> {{element?.lat}} </td>
+      <td mat-footer-cell *matFooterCellDef>
+        <input matInput placeholder="Latitude" [(ngModel)]="newEntry.lat" type="number">
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="lon">
+      <th mat-header-cell *matHeaderCellDef> Longitude </th>
+      <td mat-cell *matCellDef="let element"> {{element?.lon}} </td>
+      <td mat-footer-cell *matFooterCellDef>
+        <input matInput placeholder="Longitude" [(ngModel)]="newEntry.lon" type="number">
+      </td>
+    </ng-container>
+
+    <!-- Header and data rows -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    <!-- Footer row for adding new entries -->
+    <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+  </table>
+  <button mat-raised-button color="primary" (click)="addInlineEntry()">Save Entry</button>
+
+  <mat-paginator #paginator
+                 [pageSize]="25"
+                 [pageSizeOptions]="[5, 10, 25, 100]"
+                 [length]="dataSource?.data.length || 0"
+                 showFirstLastButtons>
+  </mat-paginator>
+</div>

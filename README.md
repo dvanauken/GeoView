@@ -62,12 +62,9 @@ _____________.geo-view-container_________________
 
 TODO:
   //Todo
-  //-rotation[yaw, pitch, roll];
-  //--yaw = rotation[0];
-  //--pitch = rotation[1];
-  //--roll = rotation[2];
+  //-rotation[yaw, pitch, roll], add <-, ->, and shift 
   //-Export -> svg?, PDF
-  //-Extent
+  //-Extent / Level of Detail
   //-Labels (codes)
   //-Table editing
   //-Table
@@ -76,8 +73,57 @@ TODO:
   //-Widgets
   //--Roll, pitch, yaw widget
   //--Layer widget
-  //-Level of Detail
+  //-Table
+  //--Filter
+  //--Sort
+  //--Delete existing
+  //--Edit existing
+  //-Drag-n-drop import
+  //-Table for color scheming
+  //-Easier route selection
+  //-Implement as library
+  //-Layer selection
+  //-City Editor
+  //--C reate
+  //--R 
+  //--U update / edit
+  //--D elete
+  //- Dashbaord
+  //--Components
+  //----tabs
+  //----tree
+  //--Layer manipulation
+  //--JWT
+  //--etc.
+  //-Security
+  //--Authentication
+  //----Login
+  //----Registration
+  //----Forgot
+  //--Authorization
+  //----Access
+  //----Subscription/payment/monetization
+  //-Login/Register/Pay/
+  //-Versor -- needs improvment
+  //-LCC
+  //--Test improve parallels
+
+
 
 Complete
 //-Script tagging.
 //-Strokes should remain 1px for every zoom level
+
+## Keyboard Shortcuts for Map Interaction
+
+The following keyboard shortcuts can be used to control the rotation of the map:
+
+- **W**: Increment pitch (tilt up)
+- **S**: Decrement pitch (tilt down)
+- **A**: Decrement yaw (rotate left)
+- **D**: Increment yaw (rotate right)
+- **Q**: Decrement roll (rotate counterclockwise)
+- **E**: Increment roll (rotate clockwise)
+- **R**: Reset rotation to default (0, 0, 0)
+- **+**: Zoom In
+- **-**: Zoom Out

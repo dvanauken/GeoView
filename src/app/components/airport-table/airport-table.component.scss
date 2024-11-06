@@ -1,0 +1,74 @@
+.table-container {
+  padding: 1.25rem;
+  background-color: #f9f9f9;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    th,
+    td {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.875rem;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 600;
+      background-color: #f0f0f0;
+    }
+
+    td {
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .code-column {
+      width: 4rem;
+      text-align: center;
+    }
+
+    .region-column {
+      width: 6rem;
+      text-align: center;
+    }
+
+    .name-column {
+      width: 12rem;
+      text-align: left;
+    }
+
+    .city-column {
+      width: 8rem;
+      text-align: left;
+    }
+
+    .country-column {
+      width: 8rem;
+      text-align: left;
+    }
+
+    .lat-column {
+      width: 7rem;
+      text-align: right;
+    }
+
+    .lon-column {
+      width: 7rem;
+      text-align: right;
+    }
+  }
+
+  button {
+    margin-top: 0.9375rem;
+  }
+
+  mat-paginator {
+    margin-top: 1.25rem;
+  }
+}

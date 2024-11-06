@@ -19,12 +19,14 @@ import { DataService } from './services/data.service';
 import { PaneModule } from './components/pane/pane.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
+import { AirportTableComponent } from './components/airport-table/airport-table.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MapComponent,
-    TableComponent
+    TableComponent,
+    AirportTableComponent
   ],
   imports: [
     BrowserModule,

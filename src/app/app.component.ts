@@ -19,7 +19,7 @@ import * as Papa from 'papaparse';
 export class AppComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   title = 'Airport and Route Manager';
-  isLoading = true;  // Show the spinner initially
+  isLoading = true;
   displayedColumns: string[] = ['code', 'region', 'name', 'city', 'country', 'lat', 'lon'];
   airportData = new MatTableDataSource<AirportData>([]);
   countries: Layer | null = null;
@@ -32,11 +32,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   constructor(
     private cdr: ChangeDetectorRef,
     private dataService: DataService
-    //private layerService: LayerService,
-    //private airportService: AirportService, // Inject AirportService
   ) {
     this.selectedFeatures$ = this.dataService.getSelectedFeatures();
-    //this.airportData = new MatTableDataSource<AirportData>([]);
   }
 
   ngOnInit(): void {
@@ -52,8 +49,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
         this.airportData = new MatTableDataSource<AirportData>(this.dataService.getAirports());
         console.log('Loaded airport data for display:', this.airportData.data);
-
-
 
         const files = await Resources.load(['assets/110m/countries.geojson', 'assets/routes.json', 'assets/pa.csv']);
         files.forEach(({ data, path }) => {
