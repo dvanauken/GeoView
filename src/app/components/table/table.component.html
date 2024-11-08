@@ -1,65 +1,65 @@
+<div class="table-controls">
+  <button (click)="onAddNewRow()">
+    <mat-icon>add_circle</mat-icon>
+  </button>
+  <button (click)="onSaveAll()">
+    <mat-icon>save</mat-icon>
+  </button>
+</div>
+
 <div class="table-container" #tableContainer>
   <div class="table-content">
     <table>
       <thead>
-        <tr>
-          <th *ngFor="let column of displayedColumns">{{ column }}</th>
-          <th>Actions</th>
-        </tr>
+      <tr>
+        <th *ngFor="let column of displayedColumns">{{ column }}</th>
+        <th>Actions</th>
+      </tr>
       </thead>
       <tbody>
-        <!-- Existing data rows -->
-        <tr *ngFor="let row of dataSource; let i = index"
-            [class.selected]="row.selected"
-            (click)="onRowClick(row, i, $event)">
-          <td *ngFor="let column of displayedColumns">
-            <ng-container *ngIf="!row.isEditing">
+      <tr *ngFor="let row of dataSource; let i = index"
+          [class.selected]="row.selected"
+          (click)="onRowClick(row, i, $event)">
+        <td *ngFor="let column of displayedColumns">
+          <!-- Special handling for base and ref fields -->
+          <ng-container *ngIf="column === 'base' || column === 'ref'; else otherFields">
+            <ng-container *ngIf="row.isEditing || row.isNew; else displayValue">
+              <input [(ngModel)]="row[column]"
+                     (ngModelChange)="onFieldChange($event, column, row, i)"
+                     maxlength="3"
+                     (click)="$event.stopPropagation()"
+                     [placeholder]="column === 'base' ? 'Base airport' : 'Reference airport'">
+            </ng-container>
+            <ng-template #displayValue>
               {{ row[column] }}
-            </ng-container>
-            <ng-container *ngIf="row.isEditing">
-              <input *ngIf="isEditableCell(column, row)"
-                     [(ngModel)]="row[column]"
-                     [readonly]="!isEditableCell(column, row)">
-              <span *ngIf="!isEditableCell(column, row)">{{ row[column] }}</span>
-            </ng-container>
-          </td>
-          <td>
-            <button *ngIf="!row.isEditing" (click)="onEdit(row, i, $event)">Edit</button>
-            <ng-container *ngIf="row.isEditing">
-              <button (click)="onSave(row, i)">Save</button>
-              <button (click)="onCancel(row, i)">Cancel</button>
-            </ng-container>
-          </td>
-        </tr>
-        <!-- New entry row -->
+            </ng-template>
+          </ng-container>
 
-        <tr class="new-entry-row">
-          <td *ngFor="let column of displayedColumns">
-            <ng-container [ngSwitch]="column">
-              <input *ngSwitchCase="'base'"
-                     [(ngModel)]="newEntry.base"
-                     (input)="sanitizeBaseRefInput($event, 'base')"
-                     (blur)="onBaseChange()"
-                     placeholder="Enter Base"
-                     maxlength="3">
-              <input *ngSwitchCase="'ref'"
-                     [(ngModel)]="newEntry.ref"
-                     (input)="sanitizeBaseRefInput($event, 'ref')"
-                     (blur)="onRefChange()"
-                     placeholder="Enter Ref"
-                     maxlength="3">
-              <span *ngSwitchCase="'Airline'">{{ newEntry.Airline }}</span>
-              <span *ngSwitchDefault>{{ newEntry[column] }}</span>
-            </ng-container>
-          </td>
-          <td>
-            <button [disabled]="!isNewEntryValid()" (click)="onNewEntrySave()">Save</button>
-          </td>
-        </tr>
+          <!-- Template for non-editable fields -->
+          <ng-template #otherFields>
+            {{ row[column] }}
+          </ng-template>
+        </td>
 
-
-
-
+        <td class="actions-cell">
+          <ng-container *ngIf="row.isEditing || row.isNew; else standardActions">
+            <button (click)="onSave(row, i); $event.stopPropagation()">
+              <mat-icon>save</mat-icon>
+            </button>
+            <button (click)="onCancel(row, i); $event.stopPropagation()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
+          <ng-template #standardActions>
+            <button (click)="onEdit(row, i, $event)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button class="delete-button" (click)="onDelete(row, i, $event)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </ng-template>
+        </td>
+      </tr>
       </tbody>
     </table>
   </div>

@@ -84,4 +84,35 @@ export class DataService {
       console.error('Invalid airport data provided');
     }
   }
+
+
+  // New methods for feature management
+  updateFeature(feature: Feature) {
+    if (this.getSelectedLayer()) {
+      const features = this.getSelectedLayer().getFeatures();
+      const index = features.findIndex((f: Feature) => f.id === feature.id);
+      if (index !== -1) {
+        features[index] = feature;
+        //this.getSelectedLayer().setFeatures(features);
+      }
+    }
+  }
+
+  removeFeature(featureId: string) {
+    if (this.getSelectedLayer()) {
+      const features = this.getSelectedLayer().getFeatures();
+      const filteredFeatures = features.filter((f: Feature) => f.id !== featureId);
+      //this.getSelectedLayer().setFeatures(filteredFeatures);
+    }
+  }
+
+  addFeature(feature: Feature) {
+    if (this.getSelectedLayer()) {
+      const features = this.getSelectedLayer().getFeatures();
+      features.push(feature);
+      //this.getSelectedLayer().setFeatures(features);
+    }
+  }
+
+
 }

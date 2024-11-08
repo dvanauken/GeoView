@@ -17,13 +17,10 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription: Subscription;
   selectedRows = new Set();
   lastClickedRowIndex: number | null = null;
-  newEntry: any = this.initializeNewEntry();
-  editingRowIndex: number | null = null;
+  editingRows = new Set<number>();
   formatCoord = (coord: number) => coord.toFixed(3);
 
-  constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {
-    console.log('TableComponent constructor called');
-  }
+  constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.dataService.setSelectedFeatures([]);
@@ -48,7 +45,6 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initTable(): void {
-    console.log('initTable called');
     const selectedLayer = this.dataService.getSelectedLayer();
     if (selectedLayer?.getFeatures()?.length > 0) {
       const features = selectedLayer.getFeatures();
@@ -60,11 +56,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
           selected: false,
           isEditing: false
         }));
-      } else {
-        console.error('Feature properties are undefined for the selected layer.');
       }
-    } else {
-      console.error('Selected layer or features are undefined or empty.');
     }
   }
 
@@ -77,87 +69,61 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       'City 1': '',
       'City 2': '',
       'Coords 1': '(0.000, 0.000)',
-      'Coords 2': '(0.000, 0.000)'
+      'Coords 2': '(0.000, 0.000)',
+      isEditing: true,
+      isNew: true
     };
   }
 
-  isEditableCell(column: string, row: any): boolean {
-    const editableColumns = ['base', 'ref', 'City 1', 'City 2', 'Coords 1', 'Coords 2'];
-    return editableColumns.includes(column);
+  onAddNewRow(): void {
+    const newEntry = this.initializeNewEntry();
+    this.dataSource.unshift(newEntry);
   }
 
-// Modify onBaseChange to handle returning focus
-onBaseChange(): void {
-  if (this.newEntry.base && this.newEntry.base.length === 3) {
-    const baseAirport = this.dataService.getAirport(this.newEntry.base);
-    if (baseAirport) {
-      this.newEntry['City 1'] = baseAirport.city;
-      this.newEntry['Coords 1'] = `(${this.formatCoord(baseAirport.lon)}, ${this.formatCoord(baseAirport.lat)})`;
-      this.updateId();
-    } else {
-      alert('Base airport not found');
-      setTimeout(() => {
-        const baseInput = document.querySelector('input[ng-reflect-name="base"]') as HTMLInputElement;
-        if (baseInput) {
-          baseInput.focus();
+  onFieldChange(value: string, field: string, row: any, index: number): void {
+    // Sanitize the input
+    const sanitizedValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    // Update the specific row's field
+    row[field] = sanitizedValue;
+
+    // Only trigger the airport lookup if we have a complete code
+    if (sanitizedValue.length === 3) {
+      if (field === 'base') {
+        const baseAirport = this.dataService.getAirport(sanitizedValue);
+        if (baseAirport) {
+          row['City 1'] = baseAirport.city;
+          row['Coords 1'] = `(${this.formatCoord(baseAirport.lon)}, ${this.formatCoord(baseAirport.lat)})`;
+          this.updateId(row);
+        } else {
+          alert('Base airport not found');
+          row.base = '';
         }
-      });
-    }
-  }
-}
-
-// Modify onRefChange to handle returning focus
-onRefChange(): void {
-  if (this.newEntry.ref && this.newEntry.ref.length === 3) {
-    const refAirport = this.dataService.getAirport(this.newEntry.ref);
-    if (refAirport) {
-      this.newEntry['City 2'] = refAirport.city;
-      this.newEntry['Coords 2'] = `(${this.formatCoord(refAirport.lon)}, ${this.formatCoord(refAirport.lat)})`;
-      this.updateId();
-    } else {
-      alert('Ref airport not found');
-      setTimeout(() => {
-        const refInput = document.querySelector('input[ng-reflect-name="ref"]') as HTMLInputElement;
-        if (refInput) {
-          refInput.focus();
+      } else if (field === 'ref') {
+        const refAirport = this.dataService.getAirport(sanitizedValue);
+        if (refAirport) {
+          row['City 2'] = refAirport.city;
+          row['Coords 2'] = `(${this.formatCoord(refAirport.lon)}, ${this.formatCoord(refAirport.lat)})`;
+          this.updateId(row);
+        } else {
+          alert('Ref airport not found');
+          row.ref = '';
         }
-      });
-    }
-  }
-}
-
-  updateId(): void {
-    if (this.newEntry.base && this.newEntry.ref) {
-      const newId = `${this.newEntry.base}-${this.newEntry.ref}-DL`;
-      const idExists = this.dataSource.some(row => row.id === newId);
-
-      if (idExists) {
-        alert('Route with this ID already exists');
-        this.newEntry.id = 'NEW';
-      } else {
-        this.newEntry.id = newId;
       }
     }
   }
 
-  // onNewEntrySave(): void {
-  //   if (this.newEntry.id !== 'NEW') {
-  //     const newData = {
-  //       ...this.newEntry,
-  //       isEditing: false,
-  //       selected: false
-  //     };
-
-  //     this.dataSource = [...this.dataSource, newData];
-  //     this.newEntry = this.initializeNewEntry();
-  //     console.log('New entry saved:', newData);
-  //   } else {
-  //     alert('Please enter a valid route before saving.');
-  //   }
-  // }
-
-  isNewEntryValid(): boolean {
-    return this.newEntry.base?.length === 3 && this.newEntry.ref?.length === 3 && this.newEntry.id !== 'NEW';
+  updateId(row: any): void {
+    if (row.base && row.ref) {
+      const newId = `${row.base}-${row.ref}-DL`;
+      const idExists = this.dataSource.some(r => r.id === newId && r !== row);
+      if (idExists) {
+        alert('Route with this ID already exists');
+        row.id = row.isNew ? 'NEW' : row.originalData.id;
+      } else {
+        row.id = newId;
+      }
+    }
   }
 
   resizeTable(): void {
@@ -169,8 +135,8 @@ onRefChange(): void {
   }
 
   onRowClick(row: any, index: number, event: MouseEvent): void {
-    if (this.editingRowIndex !== null && this.editingRowIndex !== index) {
-      return;
+    if (this.editingRows.size > 0) {
+      return; // Prevent selection while editing
     }
     this.lastClickedRowIndex = index;
     let newSelection;
@@ -209,32 +175,97 @@ onRefChange(): void {
 
   onEdit(row: any, index: number, event: Event): void {
     event.stopPropagation();
-    if (this.editingRowIndex !== null && this.editingRowIndex !== index) {
-      return;
-    }
     row.originalData = { ...row };
     row.isEditing = true;
-    this.editingRowIndex = index;
+    this.editingRows.add(index);
   }
 
   onSave(row: any, index: number): void {
-    row.isEditing = false;
-    this.editingRowIndex = null;
-    row['Coords 1'] = [this.formatCoord(row['Coords 1'][0]), this.formatCoord(row['Coords 1'][1])];
-    row['Coords 2'] = [this.formatCoord(row['Coords 2'][0]), this.formatCoord(row['Coords 2'][1])];
-    console.log('Saved data:', row);
+    if (row.id === 'NEW' || !row.base || !row.ref) {
+      alert('Please complete all required fields before saving');
+      return;
+    }
+
+    const feature = this.createFeatureFromEntry(row);
+    const selectedLayer = this.dataService.getSelectedLayer();
+
+    if (selectedLayer) {
+      if (row.isNew) {
+        this.dataService.addFeature(feature);
+      } else {
+        this.dataService.updateFeature(feature);
+      }
+
+      this.dataService.addLayer('routes', selectedLayer);
+
+      row.isEditing = false;
+      row.isNew = false;
+      delete row.originalData;
+      this.editingRows.delete(index);
+
+      const currentlySelectedFeatures = this.dataService.getSelectedFeatures().value || [];
+      this.dataService.setSelectedFeatures([...currentlySelectedFeatures]);
+    }
   }
 
   onCancel(row: any, index: number): void {
-    Object.assign(row, row.originalData);
-    row.isEditing = false;
-    this.editingRowIndex = null;
+    if (row.isNew) {
+      this.dataSource = this.dataSource.filter((_, i) => i !== index);
+    } else {
+      Object.assign(row, row.originalData);
+      row.isEditing = false;
+      delete row.originalData;
+    }
+    this.editingRows.delete(index);
+  }
+
+  onDelete(row: any, index: number, event: Event): void {
+    event.stopPropagation();
+    if (confirm('Are you sure you want to delete this row?')) {
+      const selectedLayer = this.dataService.getSelectedLayer();
+      if (selectedLayer && !row.isNew) {
+        this.dataService.removeFeature(row.id);
+        this.dataService.addLayer('routes', selectedLayer);
+      }
+      this.dataSource = this.dataSource.filter((_, i) => i !== index);
+    }
+  }
+
+  onSaveAll(): void {
+    const selectedLayer = this.dataService.getSelectedLayer();
+    if (!selectedLayer) {
+      alert('No layer selected');
+      return;
+    }
+
+    for (const row of this.dataSource) {
+      if (row.isNew || row.isEditing) {
+        if (row.id === 'NEW' || !row.base || !row.ref) {
+          alert('Please complete all required fields before saving');
+          return;
+        }
+
+        const feature = this.createFeatureFromEntry(row);
+        if (row.isNew) {
+          this.dataService.addFeature(feature);
+        } else {
+          this.dataService.updateFeature(feature);
+        }
+
+        row.isEditing = false;
+        row.isNew = false;
+        delete row.originalData;
+      }
+    }
+
+    this.editingRows.clear();
+    this.dataService.addLayer('routes', selectedLayer);
+
+    const currentlySelectedFeatures = this.dataService.getSelectedFeatures().value || [];
+    this.dataService.setSelectedFeatures([...currentlySelectedFeatures]);
   }
 
   private createFeatureFromEntry(entry: any): Feature {
-    // Parse coordinates from strings like "(lon, lat)"
-    // Get precise coordinates from AirportData using the city names
-
     const city1 = this.dataService.getAirport(entry.base);
     const city2 = this.dataService.getAirport(entry.ref);
     const coords1 = [city1.lon, city1.lat];
@@ -261,100 +292,4 @@ onRefChange(): void {
       },
     };
   }
-
-//   onNewEntrySave(): void {
-//     if (this.newEntry.id !== 'NEW') {
-//       const newData = {
-//         ...this.newEntry,
-//         isEditing: false,
-//         selected: false
-//       };
-//
-//       // Create a new feature from the entry
-//       const newFeature = this.createFeatureFromEntry(newData);
-//
-//       // Get the currently selected layer
-//       const selectedLayer = this.dataService.getSelectedLayer();
-//
-//       if (selectedLayer) {
-//         // Add the new feature to the layer
-//         selectedLayer.addFeature(newFeature);
-//
-//         this.dataService.addLayer('routes', selectedLayer);
-//
-//         // Update the table's dataSource
-//         this.dataSource = [...this.dataSource, newData];
-//
-//         console.log(selectedLayer);
-//
-//         //// Update the selected features in the DataService to trigger map update
-//         const updatedFeatures = selectedLayer.getFeatures();
-//         this.dataService.setSelectedFeatures(updatedFeatures);
-//
-//         // Reset the new entry form
-//         this.newEntry = this.initializeNewEntry();
-//         console.log('New entry saved:', newData);
-//       } else {
-//         alert('No layer selected. Please select a layer before adding new routes.');
-//       }
-//     } else {
-//       alert('Please enter a valid route before saving.');
-//     }
-//  }
-
-
-  onNewEntrySave(): void {
-    if (this.newEntry.id !== 'NEW') {
-      const newData = {
-        ...this.newEntry,
-        isEditing: false,
-        selected: false
-      };
-
-      // Create a new feature from the entry
-      const newFeature = this.createFeatureFromEntry(newData);
-
-      // Get the currently selected layer
-      const selectedLayer = this.dataService.getSelectedLayer();
-
-      if (selectedLayer) {
-        // Add the new feature to the layer
-        selectedLayer.addFeature(newFeature);
-
-        // Update the layer in the data service
-        this.dataService.addLayer('routes', selectedLayer);
-
-        // Update the table's dataSource
-        this.dataSource = [...this.dataSource, newData];
-
-        // Keep currently selected features and notify subscribers of the layer update
-        const currentlySelectedFeatures = this.dataService.getSelectedFeatures().value || [];
-        this.dataService.setSelectedFeatures([...currentlySelectedFeatures]);
-
-        // Reset the new entry form
-        this.newEntry = this.initializeNewEntry();
-        console.log('New entry saved:', newData);
-      } else {
-        alert('No layer selected. Please select a layer before adding new routes.');
-      }
-    } else {
-      alert('Please enter a valid route before saving.');
-    }
-  }
-
-
-
-
-  sanitizeBaseRefInput(event: Event, field: string): void {
-    const input = event.target as HTMLInputElement;
-    const sanitizedValue = input.value.toUpperCase().replace(/[^A-Z1-9]/g, '');
-
-    if (field === 'base') {
-      this.newEntry.base = sanitizedValue;
-    } else if (field === 'ref') {
-      this.newEntry.ref = sanitizedValue;
-    }
-  }
-
-
 }

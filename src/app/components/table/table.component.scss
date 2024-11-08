@@ -1,99 +1,121 @@
+// table.component.scss
+.table-controls {
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #1976d2;
+
+    &:hover {
+      color: #1565c0;
+    }
+  }
+}
+
 .table-container {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  font-family: 'Helvetica Neue', Arial, sans-serif; // Consistent sans-serif font
+  font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 .table-content {
-  overflow: auto; // Allows for scrolling when table overflows
-  position: relative; // Needed for sticky positioning context
+  overflow: auto;
+  position: relative;
 
   table {
-    width: 95%; // Adjusting width for table within the container
-    margin: 10px auto; // Centers the table with reduced vertical margin
-    border-collapse: collapse; // Neat borders between cells
-    table-layout: fixed; // Forces consistent column widths
+    width: 95%;
+    margin: 10px auto;
+    border-collapse: collapse;
+    table-layout: fixed;
+
     thead th {
       position: sticky;
-      top: 0; // Stick to the top of the scrollable area
-      z-index: 10; // Ensures the header is above other content
-      background-color: #e6e6ff; // Soft lavender for a noticeable pop
-      box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4); // Adds subtle shadow under header
+      top: 0;
+      z-index: 10;
+      background-color: #e6e6ff;
+      box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4);
     }
   }
 
   th, td {
-    padding: 2px; // Optimal padding for content
-    text-align: left; // Left-aligns text
-    border-bottom: 1px solid #e0e0e0; // Light gray border for separation
-    font-size: 12px; // Smaller font size for a more compact look
-    color: #333; // Dark gray text for contrast on light background
-    overflow: hidden; // Prevents overflow content
-    text-overflow: ellipsis; // Adds ellipsis if content is too long
-    white-space: nowrap; // Prevents text from wrapping
-    max-width: 150px; // Set a maximum width for columns to avoid them being too wide
+    padding: 2px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 12px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+  }
+
+  .actions-cell {
+    min-width: 100px;
+    text-align: right;  // Changed from left to right
   }
 
   th {
-    color: #333; // Dark gray text in headers for readability
+    color: #333;
   }
 
   tr:nth-child(even) {
-    background-color: #ffffff; // White for even rows
+    background-color: #ffffff;
   }
 
   tr:nth-child(odd) {
-    background-color: #f7f7f7; // Light gray for odd rows
+    background-color: #f7f7f7;
   }
 
   tr:hover {
-    background-color: #f0f0f0; // Darker gray on hover for interaction
+    background-color: #f0f0f0;
   }
 
   tr.selected {
-    background-color: #add8e6; // Light blue background for selected rows
-    font-weight: bold; // Optional: makes the text bold
+    background-color: #add8e6;
+    font-weight: bold;
   }
 
+  input {
+    width: 90%;
+    padding: 4px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 12px;
 
-    .new-entry-row {
-      background-color: #f8f9fa;
+    &:focus {
+      outline: none;
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+  }
 
-      input {
-        width: 90%;
-        padding: 4px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-size: 12px;
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #1976d2;
+    margin: 0 4px;
 
-        &:focus {
-          outline: none;
-          border-color: #80bdff;
-          box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-        }
-      }
-
-      span {
-        color: #6c757d;
-        font-style: italic;
-      }
+    &.delete-button {
+      color: #f44336;
     }
 
-    button {
-      padding: 4px 8px;
-      margin: 0 2px;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      background-color: #fff;
-      cursor: pointer;
-      font-size: 12px;
+    &:hover {
+      color: #1565c0;
 
-      &:hover {
-        background-color: #e9ecef;
+      &.delete-button {
+        color: #d32f2f;
       }
     }
-
-
+  }
 }
+
