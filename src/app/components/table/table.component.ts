@@ -3,11 +3,39 @@ import { ChangeDetectorRef } from '@angular/core';
 import { FeatureCollection, Feature } from 'geojson';
 import { DataService } from '../../services/data.service';
 import { Subscription } from 'rxjs';
+import { trigger, state, style, transition, animate } from '@angular/animations';
+
+
+interface PaginationConfig {
+  pageSize: number;
+  currentPage: number;
+  totalItems: number;
+  pageSizeOptions: number[];
+}
 
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.scss']
+  styleUrls: ['./table.component.scss'],
+    animations: [
+      trigger('filterAnimation', [
+        state('hidden', style({
+          opacity: 0,
+          height: '0px',
+          minHeight: '0',
+          padding: '0',
+          overflow: 'hidden'
+        })),
+        state('visible', style({
+          opacity: 1,
+          height: '*',
+          minHeight: '48px'
+        })),
+        transition('hidden <=> visible', [
+          animate('200ms cubic-bezier(0.4, 0.0, 0.2, 1)')
+        ])
+      ])
+    ]
 })
 export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('tableContainer', { static: true }) tableContainer: ElementRef;
@@ -19,6 +47,17 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
   lastClickedRowIndex: number | null = null;
   editingRows = new Set<number>();
   formatCoord = (coord: number) => coord.toFixed(3);
+  showFilters = false;
+
+    paginatedData: any[] = [];  // Add this line
+
+    pagination: PaginationConfig = {
+      pageSize: 10,
+      currentPage: 1,
+      totalItems: 0,
+      pageSizeOptions: [10, 25, 50, 100, -1]  // -1 represents 'All'
+    };
+
 
   constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {}
 
@@ -56,6 +95,8 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
           selected: false,
           isEditing: false
         }));
+        this.pagination.totalItems = this.dataSource.length;
+        this.updatePaginatedData();
       }
     }
   }
@@ -292,4 +333,87 @@ export class TableComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     };
   }
+
+  // Pagination Methods
+  updatePaginatedData(): void {
+    if (this.pagination.pageSize === -1) {
+      // Show all data
+      this.paginatedData = [...this.dataSource];
+      return;
+    }
+
+    const startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    const endIndex = startIndex + this.pagination.pageSize;
+    this.paginatedData = this.dataSource.slice(startIndex, endIndex);
+  }
+
+  get totalPages(): number {
+    if (this.pagination.pageSize === -1) return 1;
+    return Math.ceil(this.pagination.totalItems / this.pagination.pageSize);
+  }
+
+  get visiblePages(): number[] {
+    const totalPages = this.totalPages;
+    const current = this.pagination.currentPage;
+    const pages: number[] = [];
+
+    if (totalPages <= 7) {
+      // Show all pages if total is 7 or less
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      // Always show first page
+      pages.push(1);
+
+      if (current > 3) pages.push(-1); // Add ellipsis
+
+      // Show pages around current page
+      for (let i = Math.max(2, current - 1); i <= Math.min(totalPages - 1, current + 1); i++) {
+        pages.push(i);
+      }
+
+      if (current < totalPages - 2) pages.push(-1); // Add ellipsis
+
+      // Always show last page
+      pages.push(totalPages);
+    }
+
+    return pages;
+  }
+
+  onPageSizeChange(newSize: number): void {
+    this.pagination.pageSize = newSize;
+    this.pagination.currentPage = 1; // Reset to first page
+    this.updatePaginatedData();
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.pagination.currentPage = page;
+    this.updatePaginatedData();
+  }
+
+  // Navigation methods
+  goToFirstPage(): void {
+    this.onPageChange(1);
+  }
+
+  goToLastPage(): void {
+    this.onPageChange(this.totalPages);
+  }
+
+  goToPreviousPage(): void {
+    this.onPageChange(this.pagination.currentPage - 1);
+  }
+
+  goToNextPage(): void {
+    this.onPageChange(this.pagination.currentPage + 1);
+  }
+
+  toggleFilters(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showFilters = !this.showFilters;
+  }
+
 }

@@ -1,66 +1,164 @@
-<div class="table-controls">
-  <button (click)="onAddNewRow()">
-    <mat-icon>add_circle</mat-icon>
-  </button>
-  <button (click)="onSaveAll()">
-    <mat-icon>save</mat-icon>
-  </button>
-</div>
-
 <div class="table-container" #tableContainer>
   <div class="table-content">
     <table>
+      <caption>
+        <div class="table-controls">
+          <button (click)="onAddNewRow()">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+          <button (click)="onSaveAll()">
+            <mat-icon>save</mat-icon>
+          </button>
+        </div>
+      </caption>
       <thead>
-      <tr>
-        <th *ngFor="let column of displayedColumns">{{ column }}</th>
-        <th>Actions</th>
+
+      <!-- Column Headers with Sort/Filter Icons -->
+      <tr class="header-row">
+        <th *ngFor="let column of displayedColumns" class="column-header">
+          <div class="header-content">
+            <div class="header-title">
+              {{column}}
+            </div>
+            <div class="header-actions">
+              <button class="icon-button sort-button" matTooltip="Sort">
+                <mat-icon class="small-icon">unfold_more</mat-icon>
+              </button>
+              <button class="icon-button filter-button"
+                      matTooltip="Toggle Filters"
+                      (click)="toggleFilters()"
+                      [class.active]="showFilters">
+                <mat-icon class="small-icon" [class.active]="showFilters">filter_list</mat-icon>
+              </button>
+            </div>
+          </div>
+        </th>
+        <th class="actions-cell column-header">
+          <div class="header-content">
+            <div class="header-title">Actions</div>
+            <div class="header-actions">
+              <button class="icon-button filter-toggle"
+                      matTooltip="Toggle All Filters"
+                      (click)="toggleFilters()"
+                      [class.active]="showFilters">
+                <mat-icon class="small-icon" [class.active]="showFilters">filter_list</mat-icon>
+              </button>
+            </div>
+          </div>
+        </th>
       </tr>
+
+      <!-- Filter Inputs Row - Now with animation classes -->
+      <tr class="filter-row" [@filterAnimation]="showFilters ? 'visible' : 'hidden'">
+        <th *ngFor="let column of displayedColumns">
+          <input type="text"
+                 class="filter-input"
+                 [placeholder]="'Filter ' + column"
+                 matTooltip="Enter filter criteria">
+        </th>
+        <th class="actions-cell">
+          <button class="clear-filters" matTooltip="Clear all filters">
+            <mat-icon class="small-icon">clear</mat-icon>
+          </button>
+        </th>
+      </tr>
+
+
+
+
+
       </thead>
       <tbody>
-      <tr *ngFor="let row of dataSource; let i = index"
+      <tr *ngFor="let row of paginatedData; let i = index"
           [class.selected]="row.selected"
           (click)="onRowClick(row, i, $event)">
         <td *ngFor="let column of displayedColumns">
-          <!-- Special handling for base and ref fields -->
-          <ng-container *ngIf="column === 'base' || column === 'ref'; else otherFields">
-            <ng-container *ngIf="row.isEditing || row.isNew; else displayValue">
-              <input [(ngModel)]="row[column]"
-                     (ngModelChange)="onFieldChange($event, column, row, i)"
-                     maxlength="3"
-                     (click)="$event.stopPropagation()"
-                     [placeholder]="column === 'base' ? 'Base airport' : 'Reference airport'">
-            </ng-container>
-            <ng-template #displayValue>
-              {{ row[column] }}
-            </ng-template>
+          <ng-container *ngIf="!row.isEditing">
+            {{row[column]}}
           </ng-container>
-
-          <!-- Template for non-editable fields -->
-          <ng-template #otherFields>
-            {{ row[column] }}
-          </ng-template>
+          <ng-container *ngIf="row.isEditing">
+            <input *ngIf="column === 'base' || column === 'ref'"
+                   [value]="row[column]"
+                   (input)="onFieldChange($event.target.value, column, row, i)"
+                   (click)="$event.stopPropagation()">
+            <span *ngIf="column !== 'base' && column !== 'ref'">{{row[column]}}</span>
+          </ng-container>
         </td>
-
         <td class="actions-cell">
-          <ng-container *ngIf="row.isEditing || row.isNew; else standardActions">
-            <button (click)="onSave(row, i); $event.stopPropagation()">
-              <mat-icon>save</mat-icon>
-            </button>
-            <button (click)="onCancel(row, i); $event.stopPropagation()">
-              <mat-icon>close</mat-icon>
-            </button>
-          </ng-container>
-          <ng-template #standardActions>
+          <ng-container *ngIf="!row.isEditing">
             <button (click)="onEdit(row, i, $event)">
               <mat-icon>edit</mat-icon>
             </button>
             <button class="delete-button" (click)="onDelete(row, i, $event)">
               <mat-icon>delete</mat-icon>
             </button>
-          </ng-template>
+          </ng-container>
+          <ng-container *ngIf="row.isEditing">
+            <button (click)="onSave(row, i)">
+              <mat-icon>save</mat-icon>
+            </button>
+            <button (click)="onCancel(row, i)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
         </td>
       </tr>
       </tbody>
+      <tfoot>
+      <tr>
+        <td [attr.colspan]="displayedColumns.length + 1">
+          <div class="pagination-container">
+            <div class="pagination-controls">
+              <button class="pagination-button"
+                      (click)="goToFirstPage()"
+                      [disabled]="pagination.currentPage === 1">
+                <mat-icon>first_page</mat-icon>
+              </button>
+
+              <button class="pagination-button"
+                      (click)="goToPreviousPage()"
+                      [disabled]="pagination.currentPage === 1">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+
+              <div class="pagination-pages">
+                <button *ngFor="let page of visiblePages"
+                        class="pagination-button"
+                        [class.active]="page === pagination.currentPage"
+                        [class.ellipsis]="page === -1"
+                        [disabled]="page === -1"
+                        (click)="onPageChange(page)">
+                  {{page === -1 ? '...' : page}}
+                </button>
+              </div>
+
+              <button class="pagination-button"
+                      (click)="goToNextPage()"
+                      [disabled]="pagination.currentPage === totalPages">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+
+              <button class="pagination-button"
+                      (click)="goToLastPage()"
+                      [disabled]="pagination.currentPage === totalPages">
+                <mat-icon>last_page</mat-icon>
+              </button>
+            </div>
+
+            <div class="page-size-selector">
+              <select (change)="onPageSizeChange($event.target.value)">
+                <option *ngFor="let size of pagination.pageSizeOptions"
+                        [value]="size"
+                        [selected]="size === pagination.pageSize">
+                  {{size === -1 ? 'All' : size}}
+                </option>
+              </select>
+              <span class="page-size-label">items per page</span>
+            </div>
+          </div>
+        </td>
+      </tr>
+      </tfoot>
     </table>
   </div>
 </div>

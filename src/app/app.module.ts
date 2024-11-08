@@ -11,6 +11,7 @@ import { MatSortModule } from '@angular/material/sort';
 // GeoView Components
 import { MapComponent } from './components/map/map.component';
 import { TableComponent } from './components/table/table.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 //import { AirportService } from './services/airport.service';
 import { DataService } from './services/data.service';
@@ -44,6 +45,7 @@ import { StyleEditorComponent } from './components/style-editor/style-editor.com
     MatPaginatorModule,
     MatSortModule,
     MatIconModule,
+    MatTooltipModule,
     BrowserAnimationsModule // Needed for animations
   ],
   providers: [
