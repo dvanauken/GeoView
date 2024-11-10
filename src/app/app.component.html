@@ -14,7 +14,12 @@
           <app-table></app-table>
         </mat-tab>
         <mat-tab label="Airports">
-          <app-airport-table [airportData]="airportData.data"></app-airport-table>
+
+          <ixt-table 
+            [data]="airportData" 
+            [config]="tableConfig">
+          </ixt-table>
+
         </mat-tab>
         <mat-tab label="Style Editor">
           <app-style-editor></app-style-editor>

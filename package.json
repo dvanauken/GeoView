@@ -1,6 +1,6 @@
 {
   "name": "geo-view",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -10,7 +10,8 @@
     "test:ci": "ng test --browsers ChromeHeadless --watch=false --code-coverage",
     "test:coverage": "ng test --browsers ChromeHeadless --code-coverage",
     "test:1": "ng test --include src/app/path-to-your-layer-service/layer.service.spec.ts --browsers ChromeHeadless --watch=false\n",
-    "test:2": "ng test --include src/app/services/layer.service.spec.ts --browsers ChromeHeadless --watch=true"
+    "test:2": "ng test --include src/app/services/layer.service.spec.ts --browsers ChromeHeadless --watch=true",
+    "release": "npm version patch && git push && git push origin --tags && npm publish dist/ixtlan"
   },
   "prettier": {
     "semi": true,
@@ -29,6 +30,7 @@
     "@angular/platform-browser": "^16.2.0",
     "@angular/platform-browser-dynamic": "^16.2.0",
     "@angular/router": "^16.2.0",
+    "@dvanauken/ixtlan": "~0.1.13-alpha",
     "d3": "^7.9.0",
     "d3-geo": "^3.1.0",
     "lodash": "^4.17.21",

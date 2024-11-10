@@ -12,6 +12,10 @@ import { AirportData } from './interfaces/airport-data.interface';
 import { Observable } from 'rxjs';
 import * as Papa from 'papaparse';
 //import { LoadResult, ErrorResult, LoadConfig, LayerService } from './services/layer.service';
+import { IxtTableComponent } from 'ixtlan';
+import { TableConfig, TableColumnDef } from 'ixtlan';  // adjust import path if needed
+
+
 
 @Component({
   selector: 'app-root',
@@ -23,13 +27,31 @@ export class AppComponent implements OnInit, AfterViewInit {
   title = 'Airport and Route Manager';
   isLoading = true;
   displayedColumns: string[] = ['code', 'region', 'name', 'city', 'country', 'lat', 'lon'];
-  airportData = new MatTableDataSource<AirportData>([]);
+  //airportData = new MatTableDataSource<AirportData>([]);
+  airportData: AirportData[] = [];
   countries: Layer | null = null;
   routes: Layer | null = null;
   airports: Layer | null = null;
   selectedFeatures$: Observable<Feature[]>;
   layers: Layer[] = [];
   formatCoord = (coord: number) => coord.toFixed(1);
+
+    // Add the table config here, after the other properties
+    tableConfig: TableConfig<AirportData> = {
+      columns: [
+        { key: 'code', header: 'Code' },
+        { key: 'region', header: 'Region' },
+        { key: 'name', header: 'Name' },
+        { key: 'city', header: 'City' },
+        { key: 'country', header: 'Country' },
+        { key: 'lat', header: 'Latitude' },
+        { key: 'lon', header: 'Longitude' }
+      ],
+      selectionMode: 'single'
+      //showFilters: true,
+      //editable: false
+    };
+  
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -49,8 +71,14 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.dataService.setAirports(loadedData[0].data);
         console.log('Airports loaded and set in DataService.');
 
-        this.airportData = new MatTableDataSource<AirportData>(this.dataService.getAirports());
-        console.log('Loaded airport data for display:', this.airportData.data);
+        this.airportData = this.dataService.getAirports();
+
+        //this.airportData = new MatTableDataSource<AirportData>(this.dataService.getAirports());
+        //console.log('Loaded airport data for display:', this.airportData.data);
+
+
+
+
 
         const files = await Resources.load(['assets/110m/countries.geojson', 'assets/routes.json', 'assets/pa.csv']);
         files.forEach(({ data, path }) => {
@@ -180,7 +208,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     setTimeout(() => {
       if (this.paginator) {
-        this.airportData.paginator = this.paginator;
+        //this.airportData.paginator = this.paginator;
         this.cdr.detectChanges();
         console.log("Paginator linked successfully");
       } else {
@@ -193,7 +221,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (event.index === 1) { // Airport tab index
       setTimeout(() => {
         if (this.paginator) {
-          this.airportData.paginator = this.paginator;
+          //this.airportData.paginator = this.paginator;
           this.cdr.detectChanges();
         }
       });
