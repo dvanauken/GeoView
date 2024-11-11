@@ -11,10 +11,7 @@ import { Resources } from './services/resources'; // Import AirportService
 import { AirportData } from './interfaces/airport-data.interface';
 import { Observable } from 'rxjs';
 import * as Papa from 'papaparse';
-//import { LoadResult, ErrorResult, LoadConfig, LayerService } from './services/layer.service';
-import { IxtTableComponent } from 'ixtlan';
-import { TableConfig, TableColumnDef } from 'ixtlan';  // adjust import path if needed
-
+import { TableConfig } from '@dvanauken/ixtlan';
 
 
 @Component({
@@ -36,22 +33,21 @@ export class AppComponent implements OnInit, AfterViewInit {
   layers: Layer[] = [];
   formatCoord = (coord: number) => coord.toFixed(1);
 
-    // Add the table config here, after the other properties
-    tableConfig: TableConfig<AirportData> = {
-      columns: [
-        { key: 'code', header: 'Code' },
-        { key: 'region', header: 'Region' },
-        { key: 'name', header: 'Name' },
-        { key: 'city', header: 'City' },
-        { key: 'country', header: 'Country' },
-        { key: 'lat', header: 'Latitude' },
-        { key: 'lon', header: 'Longitude' }
-      ],
-      selectionMode: 'single'
-      //showFilters: true,
-      //editable: false
-    };
-  
+
+  tableConfig: TableConfig<AirportData> = {
+    columns: [
+      { key: 'code', header: 'Code' },
+      { key: 'name', header: 'Name' },
+      { key: 'city', header: 'City' },
+      { key: 'country', header: 'Country' },
+      { key: 'lat', header: 'Latitude' },
+      { key: 'lon', header: 'Longitude' }
+    ],
+    selectionMode: 'multiple',
+    allowAdd: false,
+    allowEdit: false,
+    allowDelete: false
+  };
 
   constructor(
     private cdr: ChangeDetectorRef,

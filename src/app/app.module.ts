@@ -24,10 +24,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { AirportTableComponent } from './components/airport-table/airport-table.component';
 import { StyleEditorComponent } from './components/style-editor/style-editor.component';
 
-import { IxtTableModule } from 'ixtlan';
 import { CommonModule } from '@angular/common';  // Add this import
-
-
+import { IxtTableModule } from '@dvanauken/ixtlan';  // Add this import
 
 
 @NgModule({
@@ -53,7 +51,7 @@ import { CommonModule } from '@angular/common';  // Add this import
     MatIconModule,
     MatTooltipModule,
     BrowserAnimationsModule,
-    IxtTableModule,
+    IxtTableModule  
   ],
   providers: [
     DataService
