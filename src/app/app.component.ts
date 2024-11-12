@@ -11,7 +11,8 @@ import { Resources } from './services/resources'; // Import AirportService
 import { AirportData } from './interfaces/airport-data.interface';
 import { Observable } from 'rxjs';
 import * as Papa from 'papaparse';
-import { TableConfig } from '@dvanauken/ixtlan';
+//import { TableConfig } from '@dvanauken/ixtlan';
+import { TableConfig } from '@dvanauken/ixtlan/dist/ixtlan';
 
 
 @Component({

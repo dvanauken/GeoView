@@ -13,9 +13,7 @@ import { MapComponent } from './components/map/map.component';
 import { TableComponent } from './components/table/table.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-//import { AirportService } from './services/airport.service';
 import { DataService } from './services/data.service';
-//import { RouteService } from './services/route.service';
 
 import { PaneModule } from './components/pane/pane.module';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -25,7 +23,8 @@ import { AirportTableComponent } from './components/airport-table/airport-table.
 import { StyleEditorComponent } from './components/style-editor/style-editor.component';
 
 import { CommonModule } from '@angular/common';  // Add this import
-import { IxtTableModule } from '@dvanauken/ixtlan';  // Add this import
+//import { IxtTableModule } from '@dvanauken/ixtlan';  // Add this import
+import { IxtTableModule } from '@dvanauken/ixtlan/dist/ixtlan';
 
 
 @NgModule({
@@ -37,7 +36,7 @@ import { IxtTableModule } from '@dvanauken/ixtlan';  // Add this import
     StyleEditorComponent
   ],
   imports: [
-    CommonModule,           
+    CommonModule,
     BrowserModule,
     HttpClientModule,
     FormsModule,
@@ -51,7 +50,7 @@ import { IxtTableModule } from '@dvanauken/ixtlan';  // Add this import
     MatIconModule,
     MatTooltipModule,
     BrowserAnimationsModule,
-    IxtTableModule  
+    IxtTableModule
   ],
   providers: [
     DataService

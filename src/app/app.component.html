@@ -16,6 +16,15 @@
         <mat-tab label="Airports">
 
 
+
+          <ixt-table 
+          [data]="airportData"
+          [config]="tableConfig"
+          (rowSelect)="onRowSelect($event)"
+          (selectionChange)="onSelectionChange($event)">
+        </ixt-table>
+
+
         </mat-tab>
         <mat-tab label="Style Editor">
           <app-style-editor></app-style-editor>
