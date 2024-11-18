@@ -9,7 +9,7 @@ import { DataService } from '../../services/data.service';
 import { throttle } from 'lodash';
 import { GlobeDragHandler } from "./globe-drag-handler";
 import { GlobeKeyboardHandler } from './globe-keyboard-handler';
-
+import verticalPerspective from './vertical-perspective';
 
 @Component({
   selector: 'app-map',
@@ -24,7 +24,12 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private gCountries: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gRoutes: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gAirports: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private projection: d3.GeoProjection;
+  //private projection: d3.GeoProjection;
+  private projection = verticalPerspective()
+  //.distance(2.5)  // Adjust perspective height
+  .center([0, 0]) // Set center coordinates
+  .scale(250);    // Adjust scale
+
   private path: d3.GeoPath;
   private resizeObserver: ResizeObserver;
   private subscription: Subscription;
@@ -33,10 +38,44 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private dragHandler: GlobeDragHandler;
   private currentZoomScale: number = 1;
   private renderedAirports: Set<string> = new Set();
-  private keyboardHandler: GlobeKeyboardHandler; // Add this line
+  private keyboardHandler: GlobeKeyboardHandler;
+
+
+
 
   constructor(private dataService: DataService) {
   }
+
+
+  // private clipGeographicExtent(features: Feature[]): Feature[] {
+  //   const minLon = -80;
+  //   const maxLon = -70;
+  //   const minLat = 30;
+  //   const maxLat = 45;
+  
+  //   return features.filter((feature: Feature) => {
+  //     const bounds = d3.geoBounds(feature);
+  //     const [[west, south], [east, north]] = bounds;
+  //     return !(east < minLon || west > maxLon || north < minLat || south > maxLat);
+  //   });
+  // }
+
+  // private updateCountriesLayer(features: Feature[]): void {
+  //   const clippedFeatures = this.clipGeographicExtent(features);
+  //   this.gCountries.selectAll('path')
+  //     .data(clippedFeatures)
+  //     .join(
+  //       enter => enter.append('path')
+  //         .attr('class', (d: Feature) => `${d.geometry.type.toLowerCase()} country`)
+  //         .attr('d', this.path)
+  //         .style('fill', '#cccccc')
+  //         .style('stroke', '#666666')
+  //         .style('stroke-width', '0.5px'),
+  //       update => update.attr('d', this.path),
+  //       exit => exit.remove()
+  //     );
+  // }
+
 
   ngOnInit(): void {
     console.log('MapComponent ngOnInit called.');
@@ -127,12 +166,32 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
     const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
 
-    this.projection = d3.geoOrthographic()
-      .scale(Math.min(width, height) / 2.5)
-      .translate([width / 2, height / 2])
-      .center([0, 0])
-      .rotate([74, -30, 0])
-      .clipAngle(90);
+    // this.projection = d3.geoOrthographic()
+    //   .scale(Math.min(width, height) / 2.5)
+    //   .translate([width / 2, height / 2])
+    //   .center([0, 0])
+    //   .rotate([74, -30, 0])
+    //   .clipAngle(90);
+
+    // this.projection = verticalPerspective()
+    // .distance(1.025)  // Perspective height
+    // .center([-74, 41.5]) // Center coordinates
+    // .tilt(55)  // Tilt angle
+    // .azimuth(210)  // Azimuth angle
+    // .scale(250)
+    // .clipAngle(90); // Adjust this value to control view extent
+      
+    this.projection = verticalPerspective()
+    //.distance(1.025)  // 160km above surface
+    .center([-74, 41.5]) // Center on Newburgh, NY
+    //.tilt(55)  // Matching Snyder's example
+    //.azimuth(210)
+    //.scale(Math.min(width, height) / 2.5)
+    //.translate([width / 2, height / 2])
+    ;
+
+
+    
 
     this.path = d3.geoPath().projection(this.projection);
   }
@@ -366,10 +425,21 @@ private addAirport(airportCode: string): void {
       this.svg.call(this.zoom);
   }
 
+
+
+
+
+
   ngOnDestroy(): void {
     if (this.resizeObserver) this.resizeObserver.disconnect();
     if (this.subscription) this.subscription.unsubscribe();
     if (this.dragHandler) this.dragHandler.destroy();
     if (this.keyboardHandler) this.keyboardHandler.removeEventListener(); // Access property here
   }
+
+
+
+
+
+
 }

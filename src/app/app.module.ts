@@ -22,9 +22,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { AirportTableComponent } from './components/airport-table/airport-table.component';
 import { StyleEditorComponent } from './components/style-editor/style-editor.component';
 
-import { CommonModule } from '@angular/common';  // Add this import
-//import { IxtTableModule } from '@dvanauken/ixtlan';  // Add this import
-import { IxtTableModule } from '@dvanauken/ixtlan/dist/ixtlan';
+import { CommonModule } from '@angular/common';  
+import { IxtTableModule, IxtTabsetModule  } from '@dvanauken/ixtlan/dist/ixtlan';
+
 
 
 @NgModule({
@@ -50,7 +50,8 @@ import { IxtTableModule } from '@dvanauken/ixtlan/dist/ixtlan';
     MatIconModule,
     MatTooltipModule,
     BrowserAnimationsModule,
-    IxtTableModule
+    IxtTableModule,
+    IxtTabsetModule  
   ],
   providers: [
     DataService

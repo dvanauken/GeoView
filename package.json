@@ -1,6 +1,6 @@
 {
   "name": "geo-view",
-  "version": "0.3.0-alpha.1001",
+  "version": "0.3.0-alpha.1002",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -29,7 +29,7 @@
     "@angular/platform-browser": "^16.2.0",
     "@angular/platform-browser-dynamic": "^16.2.0",
     "@angular/router": "^16.2.0",
-    "@dvanauken/ixtlan": "0.3.0-alpha.1001",
+    "@dvanauken/ixtlan": "0.3.0-alpha.1003",
     "d3": "^7.9.0",
     "d3-geo": "^3.1.0",
     "lodash": "^4.17.21",

@@ -9,27 +9,23 @@
     </app-pane>
 
     <app-pane class="right-panel">
-      <mat-tab-group (selectedTabChange)="onTabChange($event)">
-        <mat-tab label="Flight Data">
+      <ixt-tabset 
+        [tabs]="tabs"
+        [config]="tabConfig"
+        (tabChange)="onTabChange($event)">
+        <div *ngIf="tabs[0].active" class="tab-content">
           <app-table></app-table>
-        </mat-tab>
-        <mat-tab label="Airports">
-
-
-
-          <ixt-table 
-          [data]="airportData"
-          [config]="tableConfig"
-          (rowSelect)="onRowSelect($event)"
-          (selectionChange)="onSelectionChange($event)">
-        </ixt-table>
-
-
-        </mat-tab>
-        <mat-tab label="Style Editor">
-          <app-style-editor></app-style-editor>
-        </mat-tab>
-      </mat-tab-group>
+        </div>
+        <div *ngIf="tabs[1].active" class="tab-content">
+          <ixt-table
+            [data]="airportData"
+            [config]="tableConfig">
+          </ixt-table>
+        </div>
+        <div *ngIf="tabs[2].active" class="tab-content">
+          <style-editor></style-editor>
+        </div>
+      </ixt-tabset> 
     </app-pane>
   </app-double-pane>
 </div>

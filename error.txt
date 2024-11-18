@@ -1,2 +1,0 @@
-To https://github.com/dvanauken/GeoView.git
- * [new tag]         v4.7.0 -> v4.7.0

@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import * as Papa from 'papaparse';
 //import { TableConfig } from '@dvanauken/ixtlan';
 import { TableConfig } from '@dvanauken/ixtlan/dist/ixtlan';
+import { ITabContent, ITabsetConfig } from '@dvanauken/ixtlan/dist/ixtlan';
 
 
 @Component({
@@ -49,6 +50,39 @@ export class AppComponent implements OnInit, AfterViewInit {
     allowEdit: false,
     allowDelete: false
   };
+
+
+  tabConfig: ITabsetConfig = {
+    showNotificationBand: true,
+    notificationText: '🗺️ GeoView Navigation',
+    animationDuration: 300
+  };
+
+  tabs: ITabContent[] = [
+    {
+      id: 'map',
+      title: 'Map',
+      content: '',
+      active: true
+    },
+    {
+      id: 'airports',
+      title: 'Airports',
+      content: '',
+      active: false
+    },
+    {
+      id: 'style',
+      title: 'Style Editor',
+      content: '',
+      active: false
+    }
+  ];
+
+
+
+
+
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -214,18 +248,28 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onTabChange(event: any): void {
-    if (event.index === 1) { // Airport tab index
+  // onTabChange(event: any): void {
+  //   if (event.index === 1) { // Airport tab index
+  //     setTimeout(() => {
+  //       if (this.paginator) {
+  //         //this.airportData.paginator = this.paginator;
+  //         this.cdr.detectChanges();
+  //       }
+  //     });
+  //   }
+  // }
+
+  onLayerSelect(layerName: string): void {
+    this.dataService.setSelectedLayer(layerName);
+  }
+
+  onTabChange(tab: ITabContent): void {
+    if (tab.id === 'airports') {
       setTimeout(() => {
         if (this.paginator) {
-          //this.airportData.paginator = this.paginator;
           this.cdr.detectChanges();
         }
       });
     }
-  }
-
-  onLayerSelect(layerName: string): void {
-    this.dataService.setSelectedLayer(layerName);
   }
 }
