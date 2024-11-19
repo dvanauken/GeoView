@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geographical Projection</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        svg {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <svg width="800" height="600"></svg>
+    <script>
+        // Constants
+        const R = 6371; // Mean radius of the Earth in kilometers
+
+        // Custom perspective projection
+        function perspectiveProjection(P, φ0, λ0) {
+            return function(λ, φ) {
+                const φRad = φ * Math.PI / 180;
+                const λRad = λ * Math.PI / 180;
+                const φ0Rad = φ0 * Math.PI / 180;
+                const λ0Rad = λ0 * Math.PI / 180;
+
+                const cosC = Math.sin(φ0Rad) * Math.sin(φRad) +
+                              Math.cos(φ0Rad) * Math.cos(φRad) * Math.cos(λRad - λ0Rad);
+
+                if (cosC < 1 / P) {
+                    return [NaN, NaN]; // Reject points outside the projection
+                }
+
+                const k = (P - 1) / (P * cosC - 1);
+                const x = R * k * Math.cos(φRad) * Math.sin(λRad - λ0Rad);
+                const y = R * k * (Math.cos(φ0Rad) * Math.sin(φRad) - Math.sin(φ0Rad) * Math.cos(φRad) * Math.cos(λRad - λ0Rad));
+                
+                return [x, y];
+            };
+        }
+
+        // Wrap the custom projection with d3.geoProjection
+        const projection = d3.geoProjection(perspectiveProjection(2, 0, 0))
+            .scale(1) // Scale down the projection to fit the SVG
+            .translate([400, 300]); // Center the map in an 800x600 SVG
+
+        const svg = d3.select("svg");
+        const path = d3.geoPath().projection(projection);
+
+        // Load GeoJSON data
+        d3.json("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/refs/heads/master/geojson/ne_110m_admin_0_countries.geojson").then(data => {
+            console.log(data); // Inspect the data structure
+            svg.selectAll("path")
+                .data(data.features)
+                .enter().append("path")
+                .attr("d", path)
+                .attr("fill", "steelblue")
+                .attr("stroke", "black");
+        }).catch(error => {
+            console.error("Error loading the GeoJSON data:", error);
+        });
+    </script>
+</body>
+</html>

@@ -11,13 +11,14 @@ import { GlobeDragHandler } from "./globe-drag-handler";
 import { GlobeKeyboardHandler } from './globe-keyboard-handler';
 import verticalPerspective from './vertical-perspective';
 
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('mapContainer', {static: true}) mapContainer: ElementRef;
+  @ViewChild('mapContainer', { static: true }) mapContainer: ElementRef;
   private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
   private gSphere: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gGraticule: d3.Selection<SVGGElement, unknown, null, undefined>;
@@ -26,9 +27,9 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private gAirports: d3.Selection<SVGGElement, unknown, null, undefined>;
   //private projection: d3.GeoProjection;
   private projection = verticalPerspective()
-  //.distance(2.5)  // Adjust perspective height
-  .center([0, 0]) // Set center coordinates
-  .scale(250);    // Adjust scale
+    //.distance(2.5)  // Adjust perspective height
+    .center([0, 0]) // Set center coordinates
+    .scale(250);    // Adjust scale
 
   private path: d3.GeoPath;
   private resizeObserver: ResizeObserver;
@@ -52,7 +53,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   //   const maxLon = -70;
   //   const minLat = 30;
   //   const maxLat = 45;
-  
+
   //   return features.filter((feature: Feature) => {
   //     const bounds = d3.geoBounds(feature);
   //     const [[west, south], [east, north]] = bounds;
@@ -85,11 +86,11 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateMapSelection(features);
       this.updateLayers();
     });
-//     this.keyboardHandler = new GlobeKeyboardHandler(
-//       this.projection,
-//       () => this.updateMap(),
-//       (zoomFactor) => this.applyZoomChange(zoomFactor)
-//     ); // Assign to the property
+    //     this.keyboardHandler = new GlobeKeyboardHandler(
+    //       this.projection,
+    //       () => this.updateMap(),
+    //       (zoomFactor) => this.applyZoomChange(zoomFactor)
+    //     ); // Assign to the property
   }
 
   ngAfterViewInit(): void {
@@ -144,7 +145,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Add the base sphere with subtle color
     this.gSphere.append('path')
-      .datum({type: 'Sphere'})
+      .datum({ type: 'Sphere' })
       .attr('class', 'sphere')
       .attr('d', this.path);
 
@@ -174,24 +175,20 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     //   .clipAngle(90);
 
     // this.projection = verticalPerspective()
-    // .distance(1.025)  // Perspective height
-    // .center([-74, 41.5]) // Center coordinates
-    // .tilt(55)  // Tilt angle
-    // .azimuth(210)  // Azimuth angle
-    // .scale(250)
-    // .clipAngle(90); // Adjust this value to control view extent
-      
-    this.projection = verticalPerspective()
-    //.distance(1.025)  // 160km above surface
-    .center([-74, 41.5]) // Center on Newburgh, NY
-    //.tilt(55)  // Matching Snyder's example
-    //.azimuth(210)
-    //.scale(Math.min(width, height) / 2.5)
-    //.translate([width / 2, height / 2])
-    ;
+    //   .distance(1.025)  // Height in Earth radii (must be > 1)
+    //   .tilt(55)        // Tilt angle in degrees
+    //   .azimuth(210)    // Azimuth angle in degrees
+    //   .scale(Math.min(width, height) / 2)
+    //   .translate([width / 2, height / 2])
+    //   .center([0, 0])
+    //   .rotate([74, -41.5, 0]);  // Matches lambda0 and phi1 from projection
 
-
-    
+    const projection = verticalPerspective()
+      .distance(2.5)        // Distance in Earth radii
+      .tilt(20)            // Tilt angle in degrees
+      .azimuth(0)          // Azimuth angle in degrees
+      .rotate([-95, -39])  // Center on specific lat/lon
+      .scale(250);         // Adjust scale as needed
 
     this.path = d3.geoPath().projection(this.projection);
   }
@@ -265,7 +262,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-private addAirport(airportCode: string): void {
+  private addAirport(airportCode: string): void {
     const airport = this.dataService.getAirport(airportCode);
     if (!airport) return;
 
@@ -281,27 +278,27 @@ private addAirport(airportCode: string): void {
 
     // Add airport circle
     this.gAirports.append('circle')
-        .attr('class', 'airport-circle')
-        .attr('cx', projectedCoords[0])
-        .attr('cy', projectedCoords[1])
-        .attr('r', 1)
-        .style('fill', '#add8e6')
-        .style('stroke', 'blue')
-        .style('stroke-width', '2px')
-        .attr('data-airport', airportCode)
-        .attr('vector-effect', 'non-scaling-stroke');
+      .attr('class', 'airport-circle')
+      .attr('cx', projectedCoords[0])
+      .attr('cy', projectedCoords[1])
+      .attr('r', 1)
+      .style('fill', '#add8e6')
+      .style('stroke', 'blue')
+      .style('stroke-width', '2px')
+      .attr('data-airport', airportCode)
+      .attr('vector-effect', 'non-scaling-stroke');
 
     // Add single text label with consistent styling
     this.gAirports.append('text')
-        .attr('class', 'airport-label')
-        .attr('x', projectedCoords[0] + 7)
-        .attr('y', projectedCoords[1] + 3)
-        .text(airportCode)
-        .style('font-size', '12px')
-        .style('fill', 'blue')
-        .style('stroke', 'none')
-        .attr('data-airport', airportCode)
-        .attr('vector-effect', 'non-scaling-stroke');
+      .attr('class', 'airport-label')
+      .attr('x', projectedCoords[0] + 7)
+      .attr('y', projectedCoords[1] + 3)
+      .text(airportCode)
+      .style('font-size', '12px')
+      .style('fill', 'blue')
+      .style('stroke', 'none')
+      .attr('data-airport', airportCode)
+      .attr('vector-effect', 'non-scaling-stroke');
   }
 
   private updateAirportPositions(): void {
@@ -411,7 +408,7 @@ private addAirport(airportCode: string): void {
     this.zoom = d3.zoom()
       .scaleExtent([1, 32])
       .on('zoom', (event) => {
-        const {transform} = event;
+        const { transform } = event;
         const scaleTransformString = `translate(${transform.x}, ${transform.y}) scale(${transform.k})`;
         this.gSphere.attr('transform', scaleTransformString);
         this.gGraticule.attr('transform', scaleTransformString);
@@ -422,7 +419,7 @@ private addAirport(airportCode: string): void {
         this.currentZoomScale = event.transform.k;
         this.updateAirportPositions();
       });
-      this.svg.call(this.zoom);
+    this.svg.call(this.zoom);
   }
 
 
