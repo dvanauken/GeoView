@@ -41,42 +41,8 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private renderedAirports: Set<string> = new Set();
   private keyboardHandler: GlobeKeyboardHandler;
 
-
-
-
   constructor(private dataService: DataService) {
   }
-
-
-  // private clipGeographicExtent(features: Feature[]): Feature[] {
-  //   const minLon = -80;
-  //   const maxLon = -70;
-  //   const minLat = 30;
-  //   const maxLat = 45;
-
-  //   return features.filter((feature: Feature) => {
-  //     const bounds = d3.geoBounds(feature);
-  //     const [[west, south], [east, north]] = bounds;
-  //     return !(east < minLon || west > maxLon || north < minLat || south > maxLat);
-  //   });
-  // }
-
-  // private updateCountriesLayer(features: Feature[]): void {
-  //   const clippedFeatures = this.clipGeographicExtent(features);
-  //   this.gCountries.selectAll('path')
-  //     .data(clippedFeatures)
-  //     .join(
-  //       enter => enter.append('path')
-  //         .attr('class', (d: Feature) => `${d.geometry.type.toLowerCase()} country`)
-  //         .attr('d', this.path)
-  //         .style('fill', '#cccccc')
-  //         .style('stroke', '#666666')
-  //         .style('stroke-width', '0.5px'),
-  //       update => update.attr('d', this.path),
-  //       exit => exit.remove()
-  //     );
-  // }
-
 
   ngOnInit(): void {
     console.log('MapComponent ngOnInit called.');
@@ -86,11 +52,6 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateMapSelection(features);
       this.updateLayers();
     });
-    //     this.keyboardHandler = new GlobeKeyboardHandler(
-    //       this.projection,
-    //       () => this.updateMap(),
-    //       (zoomFactor) => this.applyZoomChange(zoomFactor)
-    //     ); // Assign to the property
   }
 
   ngAfterViewInit(): void {
@@ -175,20 +136,40 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     //   .clipAngle(90);
 
     // this.projection = verticalPerspective()
-    //   .distance(1.025)  // Height in Earth radii (must be > 1)
-    //   .tilt(55)        // Tilt angle in degrees
-    //   .azimuth(210)    // Azimuth angle in degrees
-    //   .scale(Math.min(width, height) / 2)
-    //   .translate([width / 2, height / 2])
-    //   .center([0, 0])
-    //   .rotate([74, -41.5, 0]);  // Matches lambda0 and phi1 from projection
+    // .distance(1.025)  // Perspective height
+    // .center([-74, 41.5]) // Center coordinates
+    // .tilt(55)  // Tilt angle
+    // .azimuth(210)  // Azimuth angle
+    // .scale(250)
+    // .clipAngle(90); // Adjust this value to control view extent
+      
+    // this.projection = verticalPerspective()
+    // .distance(1.025)  // 160km above surface
+    // //.center([-74, 41.5]) // Center on Newburgh, NY
+    // .tilt(55)  // Matching Snyder's example
+    // .azimuth(210)
+    // .scale(Math.min(width, height) / 2.5)
+    // .translate([width / 2, height / 2])
+    // ;
 
-    const projection = verticalPerspective()
-      .distance(2.5)        // Distance in Earth radii
-      .tilt(20)            // Tilt angle in degrees
-      .azimuth(0)          // Azimuth angle in degrees
-      .rotate([-95, -39])  // Center on specific lat/lon
-      .scale(250);         // Adjust scale as needed
+
+    // this.projection = verticalPerspective()
+    // .distance(1.025)  // 160km above surface, check if implemented
+    // .center([-74, 41.5]) // Ensure these are used if your custom projection supports it
+    // .tilt(55)  // Check if the tilt is applied as expected
+    // .azimuth(210)  // Ensure azimuth is correctly factored in
+    // .scale(Math.min(width, height) / 2.5)
+    // .translate([width / 2, height / 2]);
+
+
+    this.projection = verticalPerspective()
+      .distance(1.025)  // 160km above surface, check if implemented
+      .center([-74, 41.5]) // Ensure these are used if your custom projection supports it
+      .tilt(55)  // Check if the tilt is applied as expected
+      .azimuth(210)  // Ensure azimuth is correctly factored in
+      .scale(Math.min(width, height) / 2.5)
+      .translate([width / 2, height / 2]);
+
 
     this.path = d3.geoPath().projection(this.projection);
   }

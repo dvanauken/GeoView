@@ -1,6 +1,7 @@
 import { geoProjection, GeoProjection } from "d3-geo";
 
 interface VerticalProjection extends GeoProjection {
+<<<<<<< Updated upstream
     distance(_?: number): VerticalProjection;
     tilt(_?: number): VerticalProjection;
     azimuth(_?: number): VerticalProjection;
@@ -107,6 +108,79 @@ function verticalPerspective(): VerticalProjection {
         .center([0, 0])           // Set center before rotation
         .rotate([lambda0, -phi1]) // Apply rotation to align with center point
         .clipAngle(clipAngle);    // Set clip angle based on distance
+=======
+  distance(_?: number): VerticalProjection;
+  tilt(_?: number): VerticalProjection;
+  azimuth(_?: number): VerticalProjection;
+}
+
+function verticalPerspectiveRaw(P: number, phi1: number, lambda0: number, tiltAngle: number, azimuthAngle: number) {
+//function verticalPerspectiveRaw(distance: number, tiltAngle: number, azimuthAngle: number) {
+  //let phi1 = 0, lambda0 = 0;  // Center coordinates
+  
+  return function(lambda: number, phi: number): [number, number] {
+    const cosLambda = Math.cos(lambda);
+    const cosPhi = Math.cos(phi);
+    const sinPhi = Math.sin(phi);
+    const sinPhi1 = Math.sin(phi1);
+    const cosPhi1 = Math.cos(phi1);
+    
+    const k = (P - 1) / (P - (sinPhi * sinPhi1 + cosPhi * cosPhi1 * cosLambda));
+    let x = k * cosPhi * Math.sin(lambda);
+    let y = k * (cosPhi1 * sinPhi - sinPhi1 * cosPhi * cosLambda);
+    
+    if (tiltAngle || azimuthAngle) {
+      const tiltRad = tiltAngle * Math.PI / 180;
+      const azimuthRad = azimuthAngle * Math.PI / 180;
+      const xRotated = x * Math.cos(azimuthRad) - y * Math.sin(azimuthRad);
+      const yRotated = (x * Math.sin(azimuthRad) + y * Math.cos(azimuthRad)) * Math.cos(tiltRad);
+      x = xRotated;
+      y = yRotated;
+    }
+    
+    return [x, y];
+  };
+}
+
+function verticalPerspective(): VerticalProjection {
+  //let P = 2,
+  //    tiltAngle = 0,
+  //    azimuthAngle = 0;
+
+  let P = 1.025; // distance from the Earth's center in earth radii
+  let phi1 = 41.5; // latitude of Newburgh, NY
+  let lambda0 = -74.0; // longitude of Newburgh, NY
+  let tiltAngle = 55; // tilt in degrees
+  let azimuthAngle = 210; // azimuth in degrees
+
+  //const mutate = geoProjectionMutator(verticalPerspectiveRaw);
+  //.const projection = mutate(P, tiltAngle, azimuthAngle) as VerticalProjection;
+  const mutate = () => geoProjection(verticalPerspectiveRaw(P, phi1, lambda0, tiltAngle, azimuthAngle)).scale(250).translate([480, 250]);
+  const projection = mutate() as VerticalProjection;
+
+
+  projection.distance = function(_?: number): VerticalProjection {
+    if (!arguments.length) return this;
+    P = _!;
+    return projection;
+  };
+
+  projection.tilt = function(_?: number): VerticalProjection {
+    if (!arguments.length) return this;
+    tiltAngle = _!;
+    return projection;
+  };
+
+  projection.azimuth = function(_?: number): VerticalProjection {
+    if (!arguments.length) return this;
+    azimuthAngle = _!;
+    return projection;
+  };
+
+  return projection
+    .scale(250)
+    .clipAngle(Math.acos(1/P) * 180 / Math.PI);
+>>>>>>> Stashed changes
 }
 
 export default verticalPerspective;

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tilted Perspective Projection with Graticule and Full Extent</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        svg {
+            display: block;
+            margin: auto;
+            background-color: #f0f0f0;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px;
+        }
+        .controls label {
+            display: block;
+        }
+        .controls input {
+            width: 80px;
+        }
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Tilted Perspective Projection with Graticule and Full Extent</h1>
+    <div class="controls">
+        <div>
+            <label>
+                Longitude Center
+                <input type="number" id="longitude" value="-74" step="1">
+            </label>
+        </div>
+        <div>
+            <label>
+                Latitude Center
+                <input type="number" id="latitude" value="41.5" step="1">
+            </label>
+        </div>
+        <div>
+            <label>
+                Tilt (Degrees)
+                <input type="number" id="tilt" value="55" step="1">
+            </label>
+        </div>
+        <div>
+            <label>
+                Yaw (Degrees)
+                <input type="number" id="yaw" value="210" step="1">
+            </label>
+        </div>
+        <div>
+            <label>
+                Perspective Distance (P)
+                <input type="number" id="distance" value="1.025" step="0.01">
+            </label>
+        </div>
+        <div>
+            <label>
+                Earth Radius (R)
+                <input type="number" id="radius" value="6371" step="100">
+            </label>
+        </div>
+        <button id="update">Update Projection</button>
+        <button id="zoom-extent">Zoom to Full Extent</button>
+    </div>
+    <svg width="800" height="600"></svg>
+
+    <script>
+        function geoTiltedPerspective() {
+            let lambda0 = -74, // Longitude of projection center
+                phi0 = 41.5,  // Latitude of projection center
+                omega = 55,   // Tilt angle in degrees
+                gamma = 210,  // Yaw angle in degrees
+                R = 6371,     // Earth's radius in kilometers
+                P = 1.025;    // Perspective distance (relative to Earth's radius)
+
+            function projection(lambda, phi) {
+                const rad = Math.PI / 180;
+                lambda *= rad;
+                phi *= rad;
+                const lambda0Rad = lambda0 * rad;
+                const phi0Rad = phi0 * rad;
+                const omegaRad = omega * rad;
+                const gammaRad = gamma * rad;
+
+                const sinPhi = Math.sin(phi), cosPhi = Math.cos(phi);
+                const sinPhi0 = Math.sin(phi0Rad), cosPhi0 = Math.cos(phi0Rad);
+                const cosC = sinPhi0 * sinPhi + cosPhi0 * cosPhi * Math.cos(lambda - lambda0Rad);
+
+                if (cosC < 1 / P) return null; // Clip points outside visible hemisphere
+
+                const kPrime = (P - 1) / (P - cosC);
+                if (!isFinite(kPrime)) return null; // Avoid invalid scale factors
+
+                const x = R * kPrime * Math.cos(phi) * Math.sin(lambda - lambda0Rad);
+                const y = R * kPrime * (cosPhi0 * sinPhi - sinPhi0 * cosPhi * Math.cos(lambda - lambda0Rad));
+                const z = R * kPrime * (sinPhi0 * sinPhi + cosPhi0 * cosPhi * Math.cos(lambda - lambda0Rad));
+
+                const xt = x;
+                const yt = y * Math.cos(omegaRad) - z * Math.sin(omegaRad);
+                const zt = y * Math.sin(omegaRad) + z * Math.cos(omegaRad);
+
+                const xFinal = xt * Math.cos(gammaRad) - yt * Math.sin(gammaRad);
+                const yFinal = xt * Math.sin(gammaRad) + yt * Math.cos(gammaRad);
+
+                return [xFinal, yFinal];
+            }
+
+            projection.stream = function(outputStream) {
+                return {
+                    point: function(lambda, phi) {
+                        const point = projection(lambda, phi);
+                        if (point) outputStream.point(point[0], point[1]);
+                    },
+                    lineStart: function() { outputStream.lineStart(); },
+                    lineEnd: function() { outputStream.lineEnd(); },
+                    polygonStart: function() { outputStream.polygonStart(); },
+                    polygonEnd: function() { outputStream.polygonEnd(); }
+                };
+            };
+
+            projection.center = function([lambda, phi]) {
+                if (!arguments.length) return [lambda0, phi0];
+                lambda0 = lambda;
+                phi0 = phi;
+                return projection;
+            };
+
+            projection.tilt = function(value) {
+                if (!arguments.length) return omega;
+                omega = value;
+                return projection;
+            };
+
+            projection.yaw = function(value) {
+                if (!arguments.length) return gamma;
+                gamma = value;
+                return projection;
+            };
+
+            projection.perspectiveDistance = function(value) {
+                if (!arguments.length) return P;
+                P = value;
+                return projection;
+            };
+
+            projection.radius = function(value) {
+                if (!arguments.length) return R;
+                R = value;
+                return projection;
+            };
+
+            return projection;
+        }
+
+        const svg = d3.select("svg");
+        const width = +svg.attr("width");
+        const height = +svg.attr("height");
+
+        const projection = geoTiltedPerspective()
+            .center([-74, 41.5]) // Newburgh, NY
+            .tilt(55)            // Tilt angle
+            .yaw(210)            // Yaw angle
+            .perspectiveDistance(1.025)
+            .radius(6371);
+
+        const path = d3.geoPath().projection(projection);
+
+        const g = svg.append("g");
+
+        const graticule = d3.geoGraticule().step([10, 10]); // 10-degree graticule
+
+        const updateMap = () => {
+            g.selectAll("*").remove(); // Clear the map and graticule
+
+            // Draw graticule
+            g.append("path")
+                .datum(graticule)
+                .attr("class", "graticule")
+                .attr("d", path)
+                .attr("fill", "none")
+                .attr("stroke", "#ccc");
+
+            // Draw map
+            d3.json("https://github.com/datasets/geo-countries/blob/main/data/countries.geojson").then(geojson => {
+            //d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(geojson => {
+                g.selectAll("path.map")
+                    .data(geojson.features)
+                    .join("path")
+                    .attr("class", "map")
+                    .attr("d", path)
+                    .attr("fill", "#69b3a2")
+                    .attr("stroke", "#333");
+            });
+        };
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 10]) // Set zoom range
+            .on("zoom", function (event) {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        document.getElementById("update").addEventListener("click", () => {
+            const lambda = +document.getElementById("longitude").value;
+            const phi = +document.getElementById("latitude").value;
+            const omega = +document.getElementById("tilt").value;
+            const gamma = +document.getElementById("yaw").value;
+            const P = +document.getElementById("distance").value;
+            const R = +document.getElementById("radius").value;
+
+            projection
+                .center([lambda, phi])
+                .tilt(omega)
+                .yaw(gamma)
+                .perspectiveDistance(P)
+                .radius(R);
+
+            updateMap();
+        });
+
+        document.getElementById("zoom-extent").addEventListener("click", () => {
+            const bounds = g.node().getBBox();
+            const dx = bounds.width,
+                  dy = bounds.height,
+                  x = bounds.x + dx / 2,
+                  y = bounds.y + dy / 2,
+                  scale = 0.9 / Math.max(dx / width, dy / height),
+                  translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+        });
+
+        updateMap();
+    </script>
+</body>
+</html>
