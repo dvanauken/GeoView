@@ -68,27 +68,27 @@ export class DoublePaneComponent implements AfterViewInit, AfterContentInit, OnD
   }
 
   private updatePaneWidths(): void {
-    console.log('Updating pane widths...');
+    //console.log('Updating pane widths...');
     const paneArray = this.panes.toArray();
-    console.log('Pane array:', paneArray);
+    //console.log('Pane array:', paneArray);
 
     if (paneArray.length === 2) {
-      console.log(`Setting left pane width to ${this.leftPaneWidth}%`);
+      //console.log(`Setting left pane width to ${this.leftPaneWidth}%`);
       paneArray[0].setWidth(`${this.leftPaneWidth}%`);
 
-      console.log(`Setting right pane width to ${100 - this.leftPaneWidth}%`);
+      //console.log(`Setting right pane width to ${100 - this.leftPaneWidth}%`);
       paneArray[1].setWidth(`${100 - this.leftPaneWidth}%`);
 
       this.cdr.detectChanges();
-      console.log('Change detection triggered.');
+      //console.log('Change detection triggered.');
 
-      // Ensure the map component exists and trigger its resize logic
-      if (this.mapComponent) {
-        console.log('Calling resizeMap on the MapComponent instance.');
-        this.mapComponent.resizeMap();
-      } else {
-        console.warn('MapComponent instance not found.');
-      }
+      //// Ensure the map component exists and trigger its resize logic
+      //if (this.mapComponent) {
+      //  console.log('Calling resizeMap on the MapComponent instance.');
+      //  this.mapComponent.resizeMap();
+      //} else {
+      //  console.warn('MapComponent instance not found.');
+      //}
     } else {
       console.warn('Expected 2 panes, but found:', paneArray.length);
     }

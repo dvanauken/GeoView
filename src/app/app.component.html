@@ -9,12 +9,32 @@
     </app-pane>
 
     <app-pane class="right-panel">
+
+
+      <ixt-tabset title="Employee Form">
+        <ixt-tab title="City Pairs">
+          <app-table></app-table>
+        </ixt-tab>
+        <ixt-tab title="City Editor">
+          <ixt-table
+            [data]="airportData"
+            [config]="tableConfig">
+          </ixt-table>
+        </ixt-tab>
+        <ixt-tab title="Style Editor">
+          <h1></h1>
+          <style-editor></style-editor>
+        </ixt-tab>
+      </ixt-tabset>
+    
+
+      <!--
       <ixt-tabset 
         [tabs]="tabs"
         [config]="tabConfig"
         (tabChange)="onTabChange($event)">
         <div *ngIf="tabs[0].active" class="tab-content">
-          <app-table></app-table>
+          
         </div>
         <div *ngIf="tabs[1].active" class="tab-content">
           <ixt-table
@@ -26,6 +46,10 @@
           <style-editor></style-editor>
         </div>
       </ixt-tabset> 
+      -->
+
+
+
     </app-pane>
   </app-double-pane>
 </div>

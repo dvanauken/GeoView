@@ -9,7 +9,6 @@ import { DataService } from '../../services/data.service';
 import { throttle } from 'lodash';
 import { GlobeDragHandler } from "./globe-drag-handler";
 import { GlobeKeyboardHandler } from './globe-keyboard-handler';
-import verticalPerspective from './vertical-perspective';
 
 
 @Component({
@@ -25,12 +24,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private gCountries: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gRoutes: d3.Selection<SVGGElement, unknown, null, undefined>;
   private gAirports: d3.Selection<SVGGElement, unknown, null, undefined>;
-  //private projection: d3.GeoProjection;
-  private projection = verticalPerspective()
-    //.distance(2.5)  // Adjust perspective height
-    .center([0, 0]) // Set center coordinates
-    .scale(250);    // Adjust scale
-
+  private projection: d3.GeoProjection;
   private path: d3.GeoPath;
   private resizeObserver: ResizeObserver;
   private subscription: Subscription;
@@ -45,17 +39,17 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log('MapComponent ngOnInit called.');
+    //console.log('MapComponent ngOnInit called.');
     this.initMap();
     this.subscription = this.dataService.getSelectedFeatures().subscribe(features => {
-      console.log('MapComponent received updated features:', features);
+      //console.log('MapComponent received updated features:', features);
       this.updateMapSelection(features);
       this.updateLayers();
     });
   }
 
   ngAfterViewInit(): void {
-    console.log('MapComponent ngAfterViewInit called. Ready for interaction.');
+    //console.log('MapComponent ngAfterViewInit called. Ready for interaction.');
     this.resizeObserver = new ResizeObserver(() => this.resizeMap());
     this.resizeObserver.observe(this.mapContainer.nativeElement);
   }
@@ -66,7 +60,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateMap(): void {
-    console.log('Updating the map based on new rotations or changes.');
+    //console.log('Updating the map based on new rotations or changes.');
     // Re-render or refresh any D3 map layers as necessary
     this.gSphere.selectAll('path').attr('d', this.path);
     this.gGraticule.selectAll('path').attr('d', this.path);
@@ -76,7 +70,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupSVG(): void {
-    console.log('Setting up SVG elements.');
+    //console.log('Setting up SVG elements.');
     const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
     const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
 
@@ -98,7 +92,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initMap(): void {
-    console.log('Initializing map.');
+    //console.log('Initializing map.');
     this.setupSVG();
     this.setProjection(this.projectionType);
 
@@ -124,61 +118,26 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setProjection(type: ProjectionType): void {
-    console.log('Setting projection:', type);
+    //console.log('Setting projection:', type);
     const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
     const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
 
-    // this.projection = d3.geoOrthographic()
-    //   .scale(Math.min(width, height) / 2.5)
-    //   .translate([width / 2, height / 2])
-    //   .center([0, 0])
-    //   .rotate([74, -30, 0])
-    //   .clipAngle(90);
-
-    // this.projection = verticalPerspective()
-    // .distance(1.025)  // Perspective height
-    // .center([-74, 41.5]) // Center coordinates
-    // .tilt(55)  // Tilt angle
-    // .azimuth(210)  // Azimuth angle
-    // .scale(250)
-    // .clipAngle(90); // Adjust this value to control view extent
-      
-    // this.projection = verticalPerspective()
-    // .distance(1.025)  // 160km above surface
-    // //.center([-74, 41.5]) // Center on Newburgh, NY
-    // .tilt(55)  // Matching Snyder's example
-    // .azimuth(210)
-    // .scale(Math.min(width, height) / 2.5)
-    // .translate([width / 2, height / 2])
-    // ;
-
-
-    // this.projection = verticalPerspective()
-    // .distance(1.025)  // 160km above surface, check if implemented
-    // .center([-74, 41.5]) // Ensure these are used if your custom projection supports it
-    // .tilt(55)  // Check if the tilt is applied as expected
-    // .azimuth(210)  // Ensure azimuth is correctly factored in
-    // .scale(Math.min(width, height) / 2.5)
-    // .translate([width / 2, height / 2]);
-
-
-    this.projection = verticalPerspective()
-      .distance(1.025)  // 160km above surface, check if implemented
-      .center([-74, 41.5]) // Ensure these are used if your custom projection supports it
-      .tilt(55)  // Check if the tilt is applied as expected
-      .azimuth(210)  // Ensure azimuth is correctly factored in
-      .scale(Math.min(width, height) / 2.5)
-      .translate([width / 2, height / 2]);
+    this.projection = d3.geoOrthographic()
+       .scale(Math.min(width, height) / 2.5)
+       .translate([width / 2, height / 2])
+       .center([0, 0])
+       .rotate([74, -30, 0])
+       .clipAngle(90);
 
 
     this.path = d3.geoPath().projection(this.projection);
   }
 
   private updateLayers(): void {
-    console.log('Updating layers on the map.');
+    //console.log('Updating layers on the map.');
     const layerNames = this.dataService.getLayerNames();
     layerNames.forEach(layerName => {
-      console.log(`Processing layer: ${layerName}`);
+      //console.log(`Processing layer: ${layerName}`);
       const layer = this.dataService.getLayer(layerName);
       if (layer && layer.getFeatures()) {
         if (layerName === 'countries') {
@@ -322,7 +281,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public resizeMap(): void {
-    console.log('Resizing map.');
+    //console.log('Resizing map.');
     if (this.mapContainer && this.svg) {
       const width = this.mapContainer.nativeElement.offsetWidth * 0.95;
       const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
@@ -370,7 +329,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private applyZoom(): void {
-    console.log('Applying zoom behavior to the map.');
+    //console.log('Applying zoom behavior to the map.');
 
     this.dragHandler = new GlobeDragHandler(
       this.projection,

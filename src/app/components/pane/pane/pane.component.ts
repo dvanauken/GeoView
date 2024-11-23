@@ -13,12 +13,12 @@ export class PaneComponent implements AfterContentInit {
   ) {}
 
   ngAfterContentInit() {
-    console.log('PaneComponent - ngAfterContentInit');
+    //console.log('PaneComponent - ngAfterContentInit');
     //console.log('Pane content:', this.el.nativeElement.innerHTML);
   }
 
   setWidth(width: string) {
-    console.log('Setting pane width:', width);
+    //console.log('Setting pane width:', width);
     this.renderer.setStyle(this.elementRef.nativeElement, 'width', width);
     this.cdr.detectChanges(); // Force change detection
   }

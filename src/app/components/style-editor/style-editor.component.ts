@@ -11,7 +11,7 @@ interface StyleRow {
 }
 
 @Component({
-  selector: 'app-style-editor',
+  selector: 'style-editor',
   templateUrl: './style-editor.component.html',
   styleUrls: ['./style-editor.component.scss']
 })

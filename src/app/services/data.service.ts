@@ -43,7 +43,7 @@ export class DataService {
     this.selectedLayerName = layerName;
     const selectedLayer = this.layersMap.get(layerName);
     if (selectedLayer && selectedLayer.getFeatures()) {
-      console.log(`Setting selected layer: ${layerName} with ${selectedLayer.getFeatures().length} features`);
+      //console.log(`Setting selected layer: ${layerName} with ${selectedLayer.getFeatures().length} features`);
       this.setSelectedFeatures(selectedLayer.getFeatures());
     } else {
       this.setSelectedFeatures([]); // Clear features if the layer is undefined or has no features
@@ -51,7 +51,7 @@ export class DataService {
   }
 
   public setSelectedFeatures(features: Feature[]): void {
-    console.log('DataService.setSelectedFeatures called with features:', features);
+    //console.log('DataService.setSelectedFeatures called with features:', features);
     this.selectedFeatures.next(features);
   }
 
@@ -69,7 +69,7 @@ export class DataService {
     airports.forEach(airport => {
       this.airports.set(airport.code, airport);
     });
-    console.log('Airports data set in DataService');
+    //console.log('Airports data set in DataService');
   }
 
   public getAirport(code: string): AirportData | undefined {
@@ -79,9 +79,9 @@ export class DataService {
   public setAirport(airport: AirportData): void {
     if (airport && airport.code) {
       this.airports.set(airport.code, airport);
-      console.log(`Airport data updated for ${airport.code} in DataService`);
+      //console.log(`Airport data updated for ${airport.code} in DataService`);
     } else {
-      console.error('Invalid airport data provided');
+      //console.error('Invalid airport data provided');
     }
   }
 

@@ -107,15 +107,11 @@ export class AppComponent implements OnInit, AfterViewInit {
         //this.airportData = new MatTableDataSource<AirportData>(this.dataService.getAirports());
         //console.log('Loaded airport data for display:', this.airportData.data);
 
-
-
-
-
         const files = await Resources.load(['assets/110m/countries.geojson', 'assets/routes.json', 'assets/pa.csv']);
         files.forEach(({ data, path }) => {
           if (path.endsWith('countries.geojson')) {
             this.dataService.addLayer('countries', new Layer('FeatureCollection', data.features || data));
-            console.log("countries.geojson:path=" + path + ", data=" + data.features);
+            console.log("countries.geojson:path=" + path + ", data=" + data.features.length);
           } else if (path.endsWith('routes.json')) {
             // Ensure `airports[0].data` contains airport data for lookups
             //const airportData = airports[0].data;
@@ -160,7 +156,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             this.dataService.addLayer('routes', new Layer("routes", features));
           }
           else if (path.endsWith('pa.csv')) {
-            console.log("pa.csv:path=" + path + ", data=" + data);
+            console.log("pa.csv:path=" + path + ", data=" + data.length);
 
             // Print sample data for verification
             console.log('Filtered data sample:', data.filter(row => row['origin'] && row['destination']).slice(0, 3));
@@ -219,33 +215,33 @@ export class AppComponent implements OnInit, AfterViewInit {
               .sort((a, b) => a.id.localeCompare(b.id));  // Sort features by id in alphabetical order
 
             // Print the sorted features for verification
-            console.log('Sorted Features:', features);
+            console.log('Sorted Features:', features.length);
 
             // Optional: Add the features to DataService as a new layer
-            //this.dataService.addLayer('PA', new Layer("PA", features));
+            this.dataService.addLayer('PA', new Layer("PA", features));
           }
         });
-        console.log('All resource loading completed.');
+        //console.log('All resource loading completed.');
         this.dataService.setSelectedLayer("routes");
 
         this.isLoading = false;
       } catch (err) {
-        console.error('An error occurred during loading:', err);
+        //console.error('An error occurred during loading:', err);
         this.isLoading = false;
       }
     })();
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      if (this.paginator) {
-        //this.airportData.paginator = this.paginator;
-        this.cdr.detectChanges();
-        console.log("Paginator linked successfully");
-      } else {
-        console.warn("Paginator not found");
-      }
-    });
+    // setTimeout(() => {
+    //   if (this.paginator) {
+    //     //this.airportData.paginator = this.paginator;
+    //     this.cdr.detectChanges();
+    //     console.log("Paginator linked successfully");
+    //   } else {
+    //     console.warn("Paginator not found");
+    //   }
+    // });
   }
 
   // onTabChange(event: any): void {
