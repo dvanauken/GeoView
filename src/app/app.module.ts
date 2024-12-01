@@ -10,6 +10,7 @@ import { MatSortModule } from '@angular/material/sort';
 
 // GeoView Components
 import { MapComponent } from './components/map/map.component';
+import { MapViewComponent } from './components/map-view/map-view.component';  // Make sure this is imported
 import { TableComponent } from './components/table/table.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -25,6 +26,9 @@ import { StyleEditorComponent } from './components/style-editor/style-editor.com
 import { CommonModule } from '@angular/common';  
 import { IxtTableModule, IxtTabsetModule  } from '@dvanauken/ixtlan/dist/ixtlan';
 
+import { LoginComponent } from './components/login/login.component';
+import { AuthService } from './services/auth.service';
+import { AuthGuard } from './guards/auth.guard';
 
 
 @NgModule({
@@ -33,7 +37,9 @@ import { IxtTableModule, IxtTabsetModule  } from '@dvanauken/ixtlan/dist/ixtlan'
     MapComponent,
     TableComponent,
     AirportTableComponent,
-    StyleEditorComponent
+    StyleEditorComponent,
+    LoginComponent,
+    MapViewComponent,  // Make sure this is declared
   ],
   imports: [
     CommonModule,
@@ -54,7 +60,9 @@ import { IxtTableModule, IxtTabsetModule  } from '@dvanauken/ixtlan/dist/ixtlan'
     IxtTabsetModule  
   ],
   providers: [
-    DataService
+    DataService,
+    AuthService,
+    AuthGuard
   ],
 
   bootstrap: [AppComponent],
