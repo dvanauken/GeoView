@@ -2,15 +2,12 @@
   <img src="assets/spinner.gif" alt="Loading..." />
 </div>
 
-<div *ngIf="!isLoading" class="app-container">
+<div *ngIf="!isLoading" class="map-view-container">
   <app-double-pane>
     <app-pane class="left-panel">
       <app-map #map></app-map>
     </app-pane>
-
     <app-pane class="right-panel">
-
-
       <ixt-tabset title="Employee Form">
         <ixt-tab title="City Pairs">
           <app-table></app-table>
@@ -26,30 +23,6 @@
           <style-editor></style-editor>
         </ixt-tab>
       </ixt-tabset>
-    
-
-      <!--
-      <ixt-tabset 
-        [tabs]="tabs"
-        [config]="tabConfig"
-        (tabChange)="onTabChange($event)">
-        <div *ngIf="tabs[0].active" class="tab-content">
-          
-        </div>
-        <div *ngIf="tabs[1].active" class="tab-content">
-          <ixt-table
-            [data]="airportData"
-            [config]="tableConfig">
-          </ixt-table>
-        </div>
-        <div *ngIf="tabs[2].active" class="tab-content">
-          <style-editor></style-editor>
-        </div>
-      </ixt-tabset> 
-      -->
-
-
-
     </app-pane>
   </app-double-pane>
 </div>

@@ -1,5 +1,6 @@
-// src/app/app.component.ts
 import { Component } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +8,13 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  isLoading = false;  // Set to false since we'll handle loading in individual components
+  isLoginPage = false;
+  
+  constructor(private router: Router) {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.isLoginPage = event.url === '/login' || event.url === '/logout';
+    });
+  }
 }

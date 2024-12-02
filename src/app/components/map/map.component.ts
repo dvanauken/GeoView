@@ -83,6 +83,13 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
+    // Add external stylesheet reference
+    this.svg.append('defs')
+      .append('link')
+      .attr('href', 'assets/styles/map.svg.css')
+      .attr('type', 'text/css')
+      .attr('rel', 'stylesheet');
+
     // Create groups in correct order (bottom to top)
     this.gSphere = this.svg.append('g').attr('class', 'sphere-layer');
     this.gGraticule = this.svg.append('g').attr('class', 'graticule-layer');
@@ -123,11 +130,11 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     const height = this.mapContainer.nativeElement.offsetHeight * 0.95;
 
     this.projection = d3.geoOrthographic()
-       .scale(Math.min(width, height) / 2.5)
-       .translate([width / 2, height / 2])
-       .center([0, 0])
-       .rotate([74, -30, 0])
-       .clipAngle(90);
+      .scale(Math.min(width, height) / 2.5)
+      .translate([width / 2, height / 2])
+      .center([0, 0])
+      .rotate([74, -30, 0])
+      .clipAngle(90);
 
 
     this.path = d3.geoPath().projection(this.projection);

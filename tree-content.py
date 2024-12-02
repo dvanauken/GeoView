@@ -10,7 +10,6 @@ TEXT_EXTENSIONS = {".html", ".ts", ".scss"}
 
 def show_tree(path=".", prefix="", output_file=None):
     """Recursively display directory tree structure with file contents for specific extensions."""
-    
     try:
         # Get all items in directory
         items = []
@@ -60,6 +59,8 @@ def show_tree(path=".", prefix="", output_file=None):
             # Recursively process directories
             if item.is_dir():
                 show_tree(item.path, next_prefix, output_file)
+    except Exception as e:
+        print(f"Error processing path {path}: {str(e)}", file=sys.stderr)
 
 def main():
     # Get command line argument for path, default to current directory
@@ -69,14 +70,18 @@ def main():
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     output_file = f"tree.{timestamp}.txt"
     
-    # Create or clear the output file
-    with open(output_file, 'w', encoding='utf-8') as f:
-        pass
-    
-    # Generate the tree
-    show_tree(path, "", output_file)
-    
-    print(f"Directory structure saved to {output_file}.")
+    try:
+        # Create or clear the output file
+        with open(output_file, 'w', encoding='utf-8') as f:
+            pass
+        
+        # Generate the tree
+        show_tree(path, "", output_file)
+        
+        print(f"Directory structure saved to {output_file}.")
+    except Exception as e:
+        print(f"Error: {str(e)}", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

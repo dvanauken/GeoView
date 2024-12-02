@@ -18,7 +18,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/geo-view",
-            "index": "src/index.html",
+            "index": "src/index.html", 
             "main": "src/main.ts",
             "polyfills": [
               "zone.js"
@@ -27,11 +27,17 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*.css",
+                "input": "src/assets/styles",
+                "output": "/assets/styles"
+              }
             ],
             "styles": [
               "@angular/material/prebuilt-themes/purple-green.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/assets/styles/map.svg.css"
             ],
             "scripts": []
           },
@@ -91,11 +97,17 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*.css",
+                "input": "src/assets/styles",
+                "output": "/assets/styles"
+              }
             ],
             "styles": [
               "@angular/material/prebuilt-themes/purple-green.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/assets/styles/map.svg.css"
             ],
             "scripts": []
           }
@@ -103,4 +115,4 @@
       }
     }
   }
-}
+ }

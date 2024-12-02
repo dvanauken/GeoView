@@ -1,0 +1,114 @@
+/* .sphere { 
+    fill: greenyellow; 
+}
+
+.graticule { 
+    fill: none; 
+    stroke: #222222; 
+    stroke-width: 0.2;
+    stroke-opacity: 0.2; 
+}
+
+.country { 
+    fill: #333333; 
+    stroke: #444444;
+    stroke-width: 0.5; 
+}
+
+.airport-circle {
+    fill: #0088ff;
+    stroke: white;
+    stroke-width: 1;
+}
+
+.airport-label {
+    fill: #0088ff;
+    font-size: 10px;
+    font-family: Arial, sans-serif;
+}
+
+.route {
+    fill: none;
+    stroke: #0088ff;
+    stroke-width: 1;
+    stroke-opacity: 0.6;
+}
+
+.route:hover {
+    stroke-opacity: 1;
+    stroke-width: 2;
+}
+
+.route.selected {
+    stroke: #ffff00;
+    stroke-opacity: 1;
+    stroke-width: 2;
+}
+
+linestring.routes{
+    stroke: red;
+} */
+
+/* Map Container */
+.map-container {
+    background: #999;
+  
+    /* Map features styling */
+    .point {
+      fill: #6c5ce7; /* Soft purple */
+      stroke: #2d3436; /* Dark charcoal */
+      stroke-width: 0.5px;
+      r: 5px;
+    }
+  
+    .multipoint {
+      fill: #6c5ce7; /* Soft purple */
+      stroke: #2d3436; /* Dark charcoal */
+      stroke-width: 1px;
+      r: 3px;
+    }
+  
+    .sphere {
+      fill: #eee; /* Light ash gray */
+      stroke: none;
+    }
+  
+    .graticule{
+      fill: none;
+      stroke: #bbb;
+    }
+  
+    .polygon,
+    .multipolygon {
+      fill: #00cec9; /* Fresh teal */
+      stroke: #0984e3; /* Bright blue */
+      stroke-width: 0.5px;
+    }
+  
+    .linestring.routes {
+      fill: none;
+      stroke: #090; /* Soft pink */
+      stroke-width: 2px;
+      stroke-opacity: 0.5;
+  
+      &.selected {
+        stroke: #d63031; /* Vivid red */
+        stroke-width: 10.5px !important;
+        stroke-opacity: 0.8;
+        z-index: 10;
+      }
+    }
+  
+    .linestring.PA {
+      fill: none;
+      stroke: blue; /* Slate gray */
+      stroke-width: 1px;
+  
+      &.selected {
+        stroke: #2d3436; /* Dark charcoal */
+        stroke-width: 10.5px !important;
+        stroke-opacity: 0.8;
+        z-index: 10;
+      }
+    }
+  }
