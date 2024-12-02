@@ -30,6 +30,11 @@ import { UsernameComponent } from './components/identity/username/username.compo
 import { ProfileComponent } from './components/identity/profile/profile.component';
 import { MainLayoutComponent } from './components/layout/main-layout.component';
 import { IxtTableModule, IxtTabsetModule } from '@dvanauken/ixtlan/dist/ixtlan';
+import { UserDetailComponent } from './components/admin/user-detail/user-detail.component';
+import { UsersComponent } from './components/admin/users/users.component';
+import { RoleDetailComponent } from './components/admin/role-detail/role-detail.component';
+import { RolesComponent } from './components/admin/roles/roles.component';
+
 
 @NgModule({
   declarations: [
@@ -43,7 +48,12 @@ import { IxtTableModule, IxtTabsetModule } from '@dvanauken/ixtlan/dist/ixtlan';
     MainLayoutComponent,
     UsernameComponent,
     PasswordComponent,
-    ProfileComponent
+    ProfileComponent,
+    UsernameComponent,
+    UsersComponent,
+    UserDetailComponent,
+    RolesComponent,
+    RoleDetailComponent
   ],
   imports: [
     CommonModule,

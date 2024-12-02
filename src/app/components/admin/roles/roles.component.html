@@ -1,0 +1,31 @@
+
+<!-- src/app/components/admin/roles/roles.component.html -->
+<div class="table-container">
+    <div class="table-card">
+      <h2>Role Management</h2>
+  
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th *ngFor="let column of displayedColumns">
+              {{ column | titlecase }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let role of roles">
+            <td>
+              <a [routerLink]="['/admin/roles', role.roleId]" class="role-link">
+                {{ role.roleName }}
+              </a>
+            </td>
+            <td>{{ role.roleDescription }}</td>
+            <td>{{ role.createDate | date:'short' }}</td>
+            <td>{{ role.updateDate | date:'short' }}</td>
+            <td>{{ role.createdBy }}</td>
+            <td>{{ role.updatedBy }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>

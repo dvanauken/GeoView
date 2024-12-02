@@ -1,0 +1,76 @@
+<!-- src/app/admin/users/user-detail/user-detail.component.html -->
+<div class="form-container">
+    <div class="form-card">
+      <h2>Edit User</h2>
+  
+      <form (ngSubmit)="onSubmit()" #userForm="ngForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username"
+            [(ngModel)]="user.username"
+            class="form-control"
+            disabled
+          >
+        </div>
+  
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            name="firstName"
+            [(ngModel)]="user.firstName"
+            class="form-control"
+            required
+          >
+        </div>
+  
+        <div class="form-group">
+          <label for="middleInitial">Middle Initial</label>
+          <input 
+            type="text" 
+            id="middleInitial" 
+            name="middleInitial"
+            [(ngModel)]="user.middleInitial"
+            class="form-control"
+            maxlength="1"
+          >
+        </div>
+  
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            name="lastName"
+            [(ngModel)]="user.lastName"
+            class="form-control"
+            required
+          >
+        </div>
+  
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select 
+            id="status" 
+            name="status"
+            [(ngModel)]="user.status"
+            class="form-control"
+            required
+          >
+            <option *ngFor="let status of statuses" [value]="status">
+              {{ status | titlecase }}
+            </option>
+          </select>
+        </div>
+  
+        <div class="button-group">
+          <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!userForm.form.valid">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>

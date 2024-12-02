@@ -1,0 +1,56 @@
+<!-- src/app/components/admin/role-detail/role-detail.component.html -->
+<div class="form-container">
+    <div class="form-card">
+      <h2>Edit Role</h2>
+  
+      <form (ngSubmit)="onSubmit()" #roleForm="ngForm">
+        <div class="form-group">
+          <label for="roleName">Role Name</label>
+          <input 
+            type="text" 
+            id="roleName" 
+            name="roleName"
+            [(ngModel)]="role.roleName"
+            class="form-control"
+            required
+          >
+        </div>
+  
+        <div class="form-group">
+          <label for="roleDescription">Description</label>
+          <textarea 
+            id="roleDescription" 
+            name="roleDescription"
+            [(ngModel)]="role.roleDescription"
+            class="form-control"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+  
+        <div class="metadata-section">
+          <div class="metadata-item">
+            <label>Created By:</label>
+            <span>{{ role.createdBy }}</span>
+          </div>
+          <div class="metadata-item">
+            <label>Created Date:</label>
+            <span>{{ role.createDate | date:'short' }}</span>
+          </div>
+          <div class="metadata-item">
+            <label>Updated By:</label>
+            <span>{{ role.updatedBy }}</span>
+          </div>
+          <div class="metadata-item">
+            <label>Updated Date:</label>
+            <span>{{ role.updateDate | date:'short' }}</span>
+          </div>
+        </div>
+  
+        <div class="button-group">
+          <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!roleForm.form.valid">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>

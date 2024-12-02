@@ -11,7 +11,7 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     // Define public routes that don't require authentication
-    const publicRoutes = ['/login', '/identity/profile', '/identity/password', '/identity/username'];
+    const publicRoutes = ['/admin/users', '/login', '/identity/profile', '/identity/password', '/identity/username'];
     
     // Check if the current route is in public routes
     if (publicRoutes.some(route => state.url.startsWith(route))) {

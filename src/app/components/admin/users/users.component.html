@@ -1,0 +1,37 @@
+<!-- src/app/admin/users/users.component.html -->
+<div class="table-container">
+    <div class="table-card">
+      <h2>User Management</h2>
+  
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th *ngFor="let column of displayedColumns">
+              {{ column | titlecase }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>
+              <a [routerLink]="['/admin/users', user.id]" class="username-link">
+                {{ user.username }}
+              </a>
+            </td>
+            <td>{{ user.firstName }}</td>
+            <td>{{ user.middleInitial }}</td>
+            <td>{{ user.lastName }}</td>
+            <td>
+              <span class="status-badge" [style.background-color]="getStatusColor(user.status)">
+                {{ user.status | titlecase }}
+              </span>
+            </td>
+            <td>{{ user.createDate | date:'short' }}</td>
+            <td>{{ user.updateDate | date:'short' }}</td>
+            <td>{{ user.createdBy }}</td>
+            <td>{{ user.updatedBy }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
