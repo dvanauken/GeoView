@@ -23,13 +23,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { AirportTableComponent } from './components/airport-table/airport-table.component';
 import { StyleEditorComponent } from './components/style-editor/style-editor.component';
 
-import { CommonModule } from '@angular/common';  
+import { CommonModule } from '@angular/common';
 import { IxtTableModule, IxtTabsetModule  } from '@dvanauken/ixtlan/dist/ixtlan';
 
 import { LoginComponent } from './components/login/login.component';
 import { AuthService } from './services/auth.service';
 import { AuthGuard } from './guards/auth.guard';
 
+import { RouterModule } from '@angular/router';
+import { MainLayoutComponent } from './components/layout/main-layout.component';
 
 @NgModule({
   declarations: [
@@ -39,9 +41,11 @@ import { AuthGuard } from './guards/auth.guard';
     AirportTableComponent,
     StyleEditorComponent,
     LoginComponent,
-    MapViewComponent,  // Make sure this is declared
+    MapViewComponent,
+    MainLayoutComponent
   ],
   imports: [
+    RouterModule,
     CommonModule,
     BrowserModule,
     HttpClientModule,
@@ -57,7 +61,7 @@ import { AuthGuard } from './guards/auth.guard';
     MatTooltipModule,
     BrowserAnimationsModule,
     IxtTableModule,
-    IxtTabsetModule  
+    IxtTabsetModule
   ],
   providers: [
     DataService,
