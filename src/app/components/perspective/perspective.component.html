@@ -1,0 +1,33 @@
+<div class="controls">
+    <h3>Satellite Position</h3>
+    <label>
+      <input name="longitude" type="range" min="-180" max="180" value="-85" step="any">
+      Longitude = <output>-85°</output>
+    </label>
+    <label>
+      <input name="latitude" type="range" min="-90" max="90" value="18" step="any">
+      Latitude = <output>18°</output>
+    </label>
+    <label>
+      <input name="altitude" type="range" min="3" max="15" value="10" step="0.1">
+      Altitude = <output>1024 km</output>
+    </label>
+  </div>
+  
+  <div class="controls">
+    <h3>Camera Properties</h3>
+    <label>
+      <input name="rotation" type="range" min="-180" max="180" value="15" step="2">
+      Rotation = <output>15°</output>
+    </label>
+    <label>
+      <input name="tilt" type="range" min="0" max="89" value="45" step="1">
+      Tilt = <output>45°</output>
+    </label>
+    <label>
+      <input name="fieldOfView" type="range" min="1" max="175" value="30" step="1">
+      Field of View = <output>30°</output>
+    </label>
+  </div>
+  
+  <canvas #mapCanvas></canvas>

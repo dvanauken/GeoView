@@ -34,6 +34,8 @@ import { UserDetailComponent } from './components/admin/user-detail/user-detail.
 import { UsersComponent } from './components/admin/users/users.component';
 import { RoleDetailComponent } from './components/admin/role-detail/role-detail.component';
 import { RolesComponent } from './components/admin/roles/roles.component';
+import { PerspectiveComponent } from './components/perspective/perspective.component';
+
 
 
 @NgModule({
@@ -53,7 +55,8 @@ import { RolesComponent } from './components/admin/roles/roles.component';
     UsersComponent,
     UserDetailComponent,
     RolesComponent,
-    RoleDetailComponent
+    RoleDetailComponent,
+    PerspectiveComponent,
   ],
   imports: [
     CommonModule,

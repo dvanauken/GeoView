@@ -12,6 +12,7 @@ import { UsersComponent } from './components/admin/users/users.component';
 import { UserDetailComponent } from './components/admin/user-detail/user-detail.component';
 import { RoleDetailComponent } from './components/admin/role-detail/role-detail.component';
 import { RolesComponent } from './components/admin/roles/roles.component';
+import { PerspectiveComponent } from './components/perspective/perspective.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -26,6 +27,8 @@ const routes: Routes = [
       { path: 'admin/users/:id', component: UserDetailComponent, canActivate: [AuthGuard] },
       { path: 'admin/roles', component: RolesComponent, canActivate: [AuthGuard] },
       { path: 'admin/roles/:id',  component: RoleDetailComponent, canActivate: [AuthGuard] },
+      { path: 'perspective', component: PerspectiveComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+
       { path: 'logout', redirectTo: '/login', pathMatch: 'full' }
     ]
   },

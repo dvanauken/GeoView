@@ -1,0 +1,15 @@
+.controls {
+    display: inline-block;
+    border: 1px solid red;
+    padding: 8px;
+    margin: 5px 5px 0 5px;
+    width: 345px;
+    
+    label {
+        display: block;
+    }
+    
+    input[type="range"] {
+        width: 180px;
+    }
+}
