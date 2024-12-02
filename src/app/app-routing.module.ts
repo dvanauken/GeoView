@@ -5,6 +5,9 @@ import { LoginComponent } from './components/login/login.component';
 import { MainLayoutComponent } from './components/layout/main-layout.component';
 import { MapViewComponent } from './components/map-view/map-view.component';
 import { AuthGuard } from './guards/auth.guard';
+import { PasswordComponent } from './components/identity/password/password.component';
+import { ProfileComponent } from './components/identity/profile/profile.component';
+import { UsernameComponent } from './components/identity/username/username.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -18,6 +21,10 @@ const routes: Routes = [
       { path: 'logout', redirectTo: '/login', pathMatch: 'full' }
     ]
   },
+  { path: 'identity/profile', component: ProfileComponent }, // Route for user registration
+  { path: 'identity/password', component: PasswordComponent }, // Route for password reset
+  { path: 'identity/username', component: UsernameComponent }, // Route for username assistance
+
   { path: '**', redirectTo: '/login', pathMatch: 'full' } // Wildcard route for a 404 page
 ];
 

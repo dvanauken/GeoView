@@ -79,3 +79,19 @@ input:focus {
 .login-button:hover {
   background: #0056b3;
 }
+
+
+.extra-links {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+
+  a {
+    color: #007bff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

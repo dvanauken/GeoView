@@ -16,7 +16,7 @@ export class LoginComponent {
 
   onSubmit() {
     // Simulate login validation
-    if (this.username !== 'correctUsername' || this.password !== 'correctPassword') {
+    if (this.username !== 'admin' || this.password !== 'admin') {
       this.errorMessage = 'Username and/or password is not correct.'; // Set error message
       this.username = ''; // Clear username
       this.password = ''; // Clear password
