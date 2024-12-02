@@ -7,61 +7,75 @@
 }
 
 .login-card {
+  display: flex; /* Enable flex for the column layout */
+  flex-direction: column; /* Arrange children in a column */
+  align-items: stretch; /* Make children align to the container's width */
   background: white;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
+  gap: 1rem; /* Add consistent spacing between elements */
+}
 
-  h2 {
-    margin: 0 0 1.5rem;
-    color: #333;
-    text-align: center;
-  }
+h2 {
+  margin: 0;
+  color: #333;
+  text-align: center;
+}
 
-  .form-field {
-    margin-bottom: 1rem;
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between icon and text */
+  background-color: #f8d7da; /* Light red for error messages */
+  color: #721c24;
+  padding: 0.75rem;
+  border-radius: 4px;
+}
 
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #555;
-      font-weight: 500;
-    }
+.error-icon {
+  font-size: 24px; /* Icon size */
+}
 
-    input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
+.login-form {
+  display: flex;
+  flex-direction: column; /* Stack form fields */
+  gap: 1rem; /* Add spacing between fields */
+}
 
-      &:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-      }
-    }
-  }
+.form-field label {
+  margin-bottom: 0.25rem;
+  color: #555;
+  font-weight: 500;
+}
 
-  .login-button {
-    width: 100%;
-    padding: 0.75rem;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
+.form-field input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
 
-    &:hover {
-      background: #0056b3;
-    }
+input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
 
-    &:active {
-      transform: translateY(1px);
-    }
-  }
+.login-button {
+  padding: 0.75rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-button:hover {
+  background: #0056b3;
 }

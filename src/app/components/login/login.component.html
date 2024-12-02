@@ -1,7 +1,11 @@
 <div class="login-container">
   <div class="login-card">
     <h2>GeoView Login</h2>
-    <form (ngSubmit)="onSubmit()">
+    <div *ngIf="errorMessage" class="error-message">
+      <span class="material-icons error-icon">error_outline</span>
+      {{ errorMessage }}
+    </div>
+    <form class="login-form" (ngSubmit)="onSubmit()">
       <div class="form-field">
         <label for="username">Username:</label>
         <input 
