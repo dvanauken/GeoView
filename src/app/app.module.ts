@@ -35,6 +35,7 @@ import { UsersComponent } from './components/admin/users/users.component';
 import { RoleDetailComponent } from './components/admin/role-detail/role-detail.component';
 import { RolesComponent } from './components/admin/roles/roles.component';
 import { PerspectiveComponent } from './components/perspective/perspective.component';
+import { PasswordResetComponent } from './components/identity/password-reset/password-reset.component';
 
 
 
@@ -57,6 +58,7 @@ import { PerspectiveComponent } from './components/perspective/perspective.compo
     RolesComponent,
     RoleDetailComponent,
     PerspectiveComponent,
+    PasswordResetComponent
   ],
   imports: [
     CommonModule,

@@ -13,6 +13,7 @@ import { AirportData } from 'src/app/interfaces/airport-data.interface';
 import { DataService } from 'src/app/services/data.service';
 import { Resources } from 'src/app/services/resources';
 import { Layer } from 'src/app/models/layer';
+import { DataProvider } from './data.provider';
 
 
 @Component({
@@ -33,6 +34,10 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   selectedFeatures$: Observable<Feature[]>;
   layers: Layer[] = [];
   formatCoord = (coord: number) => coord.toFixed(1);
+
+
+
+  matrixColumnConfigs = this.dataProvider.getAirportColumnConfigs();
 
 
   tableConfig: TableConfig<AirportData> = {
@@ -85,7 +90,8 @@ export class MapViewComponent implements OnInit, AfterViewInit {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private dataService: DataService
+    private dataService: DataService,
+    public dataProvider: DataProvider,
   ) {
     this.selectedFeatures$ = this.dataService.getSelectedFeatures();
   }

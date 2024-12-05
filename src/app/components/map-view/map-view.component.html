@@ -13,6 +13,17 @@
           <app-table></app-table>
         </ixt-tab>
         <ixt-tab title="City Editor">
+
+          <ixt-matrix 
+            [data]="airportData"
+            [columnConfigs]="matrixColumnConfigs" 
+            *ngIf="airportData.length">
+          </ixt-matrix>
+
+
+          <ixt-matrix>
+
+          </ixt-matrix>
           <ixt-table
             [data]="airportData"
             [config]="tableConfig">

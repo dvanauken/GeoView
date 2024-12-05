@@ -13,6 +13,7 @@ import { UserDetailComponent } from './components/admin/user-detail/user-detail.
 import { RoleDetailComponent } from './components/admin/role-detail/role-detail.component';
 import { RolesComponent } from './components/admin/roles/roles.component';
 import { PerspectiveComponent } from './components/perspective/perspective.component';
+import { PasswordResetComponent } from './components/identity/password-reset/password-reset.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -35,6 +36,7 @@ const routes: Routes = [
   { path: 'identity/profile', component: ProfileComponent }, // Route for user registration
   { path: 'identity/password', component: PasswordComponent }, // Route for password reset
   { path: 'identity/username', component: UsernameComponent }, // Route for username assistance
+  { path: 'identity/password-reset', component: PasswordResetComponent }, // New route
   { path: '**', redirectTo: '/login', pathMatch: 'full' } // Wildcard route for a 404 page
 ];
 

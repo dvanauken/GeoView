@@ -29,7 +29,7 @@
     "@angular/platform-browser": "^16.2.0",
     "@angular/platform-browser-dynamic": "^16.2.0",
     "@angular/router": "^16.2.0",
-    "@dvanauken/ixtlan": "^0.3.0-alpha.1005",
+    "@dvanauken/ixtlan": "^0.3.0-alpha.1009",
     "@types/topojson-client": "^3.1.5",
     "d3": "^7.9.0",
     "d3-geo": "^3.1.0",
