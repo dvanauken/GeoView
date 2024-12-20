@@ -127,3 +127,81 @@ The following keyboard shortcuts can be used to control the rotation of the map:
 - **R**: Reset rotation to default (0, 0, 0)
 - **+**: Zoom In
 - **-**: Zoom Out
+
+
+# Map Projection Series Implementation
+
+This project implements various map projection series, focusing on the Eckert and Wagner families of projections. Each projection makes different trade-offs between preserving various geographic properties.
+
+# Map Projection Series Implementation
+
+This project implements various map projection series, focusing on the Eckert and Wagner families of projections. Each projection makes different trade-offs between preserving various geographic properties.
+
+## Projection Characteristics
+
+| Projection | Equal Area | Pseudocylindrical | Sinusoidal Spacing | Meridians Curved | Equidistant | Compromise | Parallel Latitudes | Symmetric |
+|------------|:---------:|:-----------------:|:-----------------:|:---------------:|:-----------:|:----------:|:-----------------:|:---------:|
+| Eckert I   |           | X                 |                   |                 | X           |            | X                 | X         |
+| Eckert II  |           | X                 |                   | X               | X           |            | X                 | X         |
+| Eckert III |           | X                 | X                 | X               |             | X          | X                 | X         |
+| Eckert IV  | X         | X                 | X                 | X               |             |            | X                 | X         |
+| Eckert V   |           | X                 | X                 | X               |             | X          | X                 | X         |
+| Eckert VI  | X         | X                 | X                 | X               |             |            | X                 | X         |
+| Wagner I   | X         |                   |                   |                 |             |            | X                 | X         |
+| Wagner II  | X         | X                 |                   | X               |             |            | X                 | X         |
+| Wagner III | X         | X                 | X                 | X               |             |            | X                 | X         |
+| Wagner IV  | X         | X                 |                   | X               |             |            | X                 | X         |
+| Wagner V   | X         | X                 | X                 | X               |             |            | X                 | X         |
+| Wagner VI  | X         | X                 |                   | X               |             |            | X                 | X         |
+| Wagner VII | X         | X                 |                   | X               |             |            | X                 | X         |
+
+## Property Definitions
+
+- **Equal Area**: The projection preserves relative areas across the entire map
+- **Pseudocylindrical**: Meridians are curved lines (unlike true cylindrical projections with straight meridians)
+- **Sinusoidal Spacing**: Uses sinusoidal functions to determine meridian spacing
+- **Meridians Curved**: Whether the meridians appear as curves rather than straight lines
+- **Equidistant**: Preserves distances along specific lines (typically parallels)
+- **Compromise**: Makes balanced trade-offs between different characteristics
+- **Parallel Latitudes**: All parallels of latitude appear as straight, parallel lines
+- **Symmetric**: The projection is symmetric about both the equator and central meridian
+
+## Implementation Notes
+
+### Common Characteristics
+- All projections in both series maintain parallel latitude lines
+- All are symmetric about the equator and central meridian
+- The Wagner series consistently preserves area
+- Eckert series shows progression from simple (I-II) to complex (IV-VI)
+
+### Planned Class Structure
+```python
+AbstractProjection
+├── AbstractCylindrical
+└── AbstractPseudocylindrical
+    ├── EckertSeries
+    │   ├── EckertI
+    │   ├── EckertII
+    │   └── ...
+    └── WagnerSeries
+        ├── WagnerII
+        ├── WagnerIII
+        └── ...
+```
+
+### Key Implementation Considerations
+1. Base classes should handle common characteristics:
+   - Parallel latitude lines
+   - Symmetry about equator and central meridian
+   - Basic forward/inverse transformations
+
+2. Specific implementations focus on:
+   - Meridian spacing functions
+   - Latitude scaling calculations
+   - Area preservation where applicable
+   - Distance preservation where applicable
+
+## References
+- Snyder, J.P., "Map Projections: A Working Manual"
+- Wagner, K., "Kartographische Netzentwürfe"
+- Eckert, M., "Die Kartenwissenschaft"

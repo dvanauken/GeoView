@@ -36,11 +36,15 @@ import { RoleDetailComponent } from './components/admin/role-detail/role-detail.
 import { RolesComponent } from './components/admin/roles/roles.component';
 import { PerspectiveComponent } from './components/perspective/perspective.component';
 import { PasswordResetComponent } from './components/identity/password-reset/password-reset.component';
+import { SolarComponent } from './components/projections/solar/solar.component';
+import { AlbersComponent } from './components/projections/albers/albers.component';
 
 
 
 @NgModule({
   declarations: [
+    AlbersComponent,
+    SolarComponent,
     AppComponent,
     MapComponent,
     TableComponent,
@@ -52,7 +56,6 @@ import { PasswordResetComponent } from './components/identity/password-reset/pas
     UsernameComponent,
     PasswordComponent,
     ProfileComponent,
-    UsernameComponent,
     UsersComponent,
     UserDetailComponent,
     RolesComponent,

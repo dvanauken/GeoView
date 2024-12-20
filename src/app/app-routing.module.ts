@@ -15,6 +15,9 @@ import { RolesComponent } from './components/admin/roles/roles.component';
 import { PerspectiveComponent } from './components/perspective/perspective.component';
 import { PasswordResetComponent } from './components/identity/password-reset/password-reset.component';
 import { OrthographicComponent } from './components/projections/azimuthal/orthographic/orthographic.component';
+import { SolarComponent } from './components/projections/solar/solar.component';
+import { UtmComponent } from './components/projections/cylindrical/utm/utm.component';
+import { AlbersComponent } from './components/projections/albers/albers.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -31,6 +34,18 @@ const routes: Routes = [
       { path: 'admin/roles/:id',  component: RoleDetailComponent, canActivate: [AuthGuard] },
       { path: 'orthographic', component: OrthographicComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
       { path: 'perspective', component: PerspectiveComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+      { path: 'solar', component: SolarComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+      { path: 'utm', component: UtmComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+
+
+      //{ path: 'gnomic', component: UtmComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+      //{ path: 'two-point', component: UtmComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+      //{ path: 'lambert', component: UtmComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+      { path: 'albers', component: AlbersComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+      //{ path: 'cylindrical', component: CylinricalComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
+
+
+
 
       { path: 'logout', redirectTo: '/login', pathMatch: 'full' }
     ]

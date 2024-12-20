@@ -1,0 +1,31 @@
+.utm-container {
+    display: grid;
+    grid-template-rows: 50px 1fr; /* Horizontal ruler (top), map (main) */
+    grid-template-columns: 50px 1fr; /* Vertical ruler (left), map (main) */
+    gap: 0; /* No gap between grid areas */
+  }
+  
+  #mapCanvas {
+    grid-row: 2;
+    grid-column: 2;
+    width: 100%; /* Stretch to fill allocated space */
+    height: 100%; /* Stretch to fill allocated space */
+    border: 1px solid #ccc;
+  }
+  
+  #horizontalRulerCanvas {
+    grid-row: 1;
+    grid-column: 2;
+    width: 100%; /* Stretch to fill allocated space */
+    height: 50px; /* Fixed height for horizontal ruler */
+    background-color: red; /* For debugging */
+  }
+  
+  #verticalRulerCanvas {
+    grid-row: 2;
+    grid-column: 1;
+    width: 50px; /* Fixed width for vertical ruler */
+    height: 100%; /* Stretch to fill allocated space */
+    background-color: green; /* For debugging */
+  }
+  
