@@ -43,7 +43,9 @@
               "src/styles.scss",
               "src/assets/styles/map.svg.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/solar-calculator/dist/solar-calculator.min.js"
+            ]
           },
           "configurations": {
             "production": {
