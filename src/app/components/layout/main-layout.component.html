@@ -1,8 +1,10 @@
-<main>
+<!-- main-layout.component.html -->
+<main [class.aside-hidden]="!(isVisible$ | async)">
     <nav>
         <ul>
             <li><a routerLink="/map">Map</a></li>
             <li><a routerLink="/perspective">Perspective</a></li>
+            <li><a routerLink="/orthographic">Orthographic</a></li>
             <li><a routerLink="/map">Satellite</a></li>
             <li><a routerLink="/map">Satellite 2</a></li>
             <li><a routerLink="/admin/users">Users</a></li>
@@ -16,6 +18,18 @@
     <section>
         <router-outlet></router-outlet>
     </section>
-    <aside></aside>
+    <aside *ngIf="content$ | async as content">
+        <header>
+            <h2>{{content.title}}</h2>
+            <button (click)="toggleAside()">×</button>
+        </header>
+        <ul>
+            <li *ngFor="let command of content.commands">
+                <h3>{{command.action}}</h3>
+                <div>{{command.keys}}</div>
+                <p>{{command.description}}</p>
+            </li>
+        </ul>
+    </aside>
     <footer></footer>
 </main>

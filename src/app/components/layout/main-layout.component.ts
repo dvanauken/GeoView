@@ -1,7 +1,7 @@
 // main-layout.component.ts
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-
+import { AsideService } from '../../services/aside.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -9,9 +9,19 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./main-layout.component.scss']
 })
 export class MainLayoutComponent {
-  constructor(private authService: AuthService) {}
+  content$ = this.asideService.getContent();
+  isVisible$ = this.asideService.getVisibility();
+
+  constructor(
+    private authService: AuthService,
+    private asideService: AsideService
+  ) {}
   
   logout() {
     this.authService.logout();
+  }
+
+  toggleAside() {
+    this.asideService.toggleVisibility();
   }
 }

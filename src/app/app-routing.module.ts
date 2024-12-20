@@ -14,6 +14,7 @@ import { RoleDetailComponent } from './components/admin/role-detail/role-detail.
 import { RolesComponent } from './components/admin/roles/roles.component';
 import { PerspectiveComponent } from './components/perspective/perspective.component';
 import { PasswordResetComponent } from './components/identity/password-reset/password-reset.component';
+import { OrthographicComponent } from './components/projections/azimuthal/orthographic/orthographic.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -28,6 +29,7 @@ const routes: Routes = [
       { path: 'admin/users/:id', component: UserDetailComponent, canActivate: [AuthGuard] },
       { path: 'admin/roles', component: RolesComponent, canActivate: [AuthGuard] },
       { path: 'admin/roles/:id',  component: RoleDetailComponent, canActivate: [AuthGuard] },
+      { path: 'orthographic', component: OrthographicComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
       { path: 'perspective', component: PerspectiveComponent, canActivate: [AuthGuard] }, // Fixed typo in 'perspective'
 
       { path: 'logout', redirectTo: '/login', pathMatch: 'full' }
