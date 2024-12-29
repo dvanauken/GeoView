@@ -1,24 +1,10 @@
-// src/app/matrix/ixt-matrix.provider.ts
+//src\app\components\map-view\data.provider.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AirportCodeEditorComponent, ColumnConfigs, CoordinateEditorComponent, IxtDialogService } from '@dvanauken/ixtlan/dist/ixtlan';
 
-//import { TableConfig } from '@dvanauken/ixtlan';
-import { TableConfig } from '@dvanauken/ixtlan/dist/ixtlan';
-import { ITabContent, ITabsetConfig} from '@dvanauken/ixtlan';
-
-interface MatrixNode {
-  id?: number;
-  name: string;
-  department?: string;
-  position?: string;
-  salary?: number;
-  type?: string;
-  size?: string;
-  modified?: string;
-  children?: MatrixNode[];
-}
+import { IxtDialogService } from '@dvanauken/ixtlan';
+import { ColumnConfigs, AirportCodeEditorComponent, CoordinateEditorComponent } from '@dvanauken/ixtlan';
 
 @Injectable({
   providedIn: 'root'
@@ -75,9 +61,6 @@ export class DataProvider {
       }
     };
   }
-
-
-
 
   getAirportData(): Observable<any[]> {
     return this.http.get<any[]>('assets/Airport.json');

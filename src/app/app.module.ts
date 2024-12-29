@@ -1,3 +1,4 @@
+//src\app\app.module.ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -29,7 +30,10 @@ import { PasswordComponent } from './components/identity/password/password.compo
 import { UsernameComponent } from './components/identity/username/username.component';
 import { ProfileComponent } from './components/identity/profile/profile.component';
 import { MainLayoutComponent } from './components/layout/main-layout.component';
-import { IxtTableModule, IxtTabsetModule } from '@dvanauken/ixtlan/dist/ixtlan';
+import { IxtDialogService, IxtTableModule, IxtTabsetModule } from '@dvanauken/ixtlan';
+
+
+
 import { UserDetailComponent } from './components/admin/user-detail/user-detail.component';
 import { UsersComponent } from './components/admin/users/users.component';
 import { RoleDetailComponent } from './components/admin/role-detail/role-detail.component';
@@ -85,7 +89,8 @@ import { AlbersComponent } from './components/projections/albers/albers.componen
   providers: [
     DataService,
     AuthService,
-    AuthGuard
+    AuthGuard,
+    IxtDialogService  
   ],
   bootstrap: [AppComponent]
 })

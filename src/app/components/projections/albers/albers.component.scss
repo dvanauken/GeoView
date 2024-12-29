@@ -1,42 +1,17 @@
 :host {
   display: block;
+  width: 100%;
+  height: 100%;
 }
 
 #map-container {
-  width: 975px;
-  height: 610px;
-  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  background: #eee;
+}
 
-  svg {
-    width: 100%;
-    height: 100%;
-    background: white;
-  }
-
-  path {
-    fill: white;
-  }
-
-  .county-boundaries {
-    fill: none;
-    stroke: #aaa;
-    stroke-width: 0.5;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-
-  .state-boundaries {
-    fill: none;
-    stroke: #000;
-    stroke-width: 0.5;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-
-  .nation-boundary {
-    fill: none;
-    stroke: #000;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
+path.district-boundaries {
+  fill: lightgrey;
+  stroke: grey;
+  stroke-width: 0.5;
 }

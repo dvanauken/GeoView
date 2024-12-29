@@ -1,14 +1,9 @@
+//src\app\components\map-view\map-view.component.ts
 import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from "@angular/material/table";
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { Feature, LineString, FeatureCollection } from 'geojson';
+import { Feature } from 'geojson';
 import { Observable } from 'rxjs';
-import * as Papa from 'papaparse';
-//import { TableConfig } from '@dvanauken/ixtlan';
-import { TableConfig } from '@dvanauken/ixtlan/dist/ixtlan';
-import { ITabContent, ITabsetConfig } from '@dvanauken/ixtlan/dist/ixtlan';
+import { ITabContent, ITabsetConfig } from '@dvanauken/ixtlan';
 import { AirportData } from 'src/app/interfaces/airport-data.interface';
 import { DataService } from 'src/app/services/data.service';
 import { Resources } from 'src/app/services/resources';
@@ -40,20 +35,20 @@ export class MapViewComponent implements OnInit, AfterViewInit {
   matrixColumnConfigs = this.dataProvider.getAirportColumnConfigs();
 
 
-  tableConfig: TableConfig<AirportData> = {
-    columns: [
-      { key: 'code', header: 'Code' },
-      { key: 'name', header: 'Name' },
-      { key: 'city', header: 'City' },
-      { key: 'country', header: 'Country' },
-      { key: 'lat', header: 'Latitude' },
-      { key: 'lon', header: 'Longitude' }
-    ],
-    selectionMode: 'multiple',
-    allowAdd: false,
-    allowEdit: false,
-    allowDelete: false
-  };
+  // tableConfig: TableConfig<AirportData> = {
+  //   columns: [
+  //     { key: 'code', header: 'Code' },
+  //     { key: 'name', header: 'Name' },
+  //     { key: 'city', header: 'City' },
+  //     { key: 'country', header: 'Country' },
+  //     { key: 'lat', header: 'Latitude' },
+  //     { key: 'lon', header: 'Longitude' }
+  //   ],
+  //   selectionMode: 'multiple',
+  //   allowAdd: false,
+  //   allowEdit: false,
+  //   allowDelete: false
+  // };
 
 
   tabConfig: ITabsetConfig = {
