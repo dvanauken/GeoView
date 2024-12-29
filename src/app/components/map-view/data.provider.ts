@@ -2,9 +2,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AirportCodeEditorComponent, ColumnConfigs, CoordinateEditorComponent, IxtDialogService } from '@dvanauken/ixtlan';
 
-import { IxtDialogService } from '@dvanauken/ixtlan';
-import { ColumnConfigs, AirportCodeEditorComponent, CoordinateEditorComponent } from '@dvanauken/ixtlan';
 
 @Injectable({
   providedIn: 'root'
