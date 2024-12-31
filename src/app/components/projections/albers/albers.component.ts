@@ -55,7 +55,9 @@ export class AlbersComponent implements OnInit {
 
     Promise.all(
       this.states.map(state =>
-        fetch(`/assets/congress-3/us-districts-${state.code}-119.topojson`)
+        //fetch(`/assets/congress-3/us-districts-${state.code}-119.topojson`)
+        fetch(`/assets/us_census_cbsa_2023_0001.topojson`)
+        
           .then(response => response.json())
       )
     ).then(districts => {
